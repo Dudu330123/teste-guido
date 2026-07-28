@@ -1,0 +1,21 @@
+# dependencies
+/node_modules
+
+# next.js
+/.next/
+/out/
+
+# testing
+/coverage/
+
+# local environment files (the example is intentionally tracked)
+.env
+.env.*
+!.env.example
+
+# logs and operating system files
+*.log
+.DS_Store
+
+# TypeScript
+*.tsbuildinfo
