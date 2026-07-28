@@ -1,17 +1,125 @@
+import { actions } from "@/data/actions";
+import { financialApplications } from "@/data/applications";
 import type { Guide, GuideStep, Task } from "@/types/content";
 
-export const tasks: Task[] = [
+const coreTasks: Task[] = [
   {
     id: "task-pagar-boleto-demo",
     applicationId: "app-demo-bancos",
+    actionId: "boleto",
     title: "Pagar um boleto",
     slug: "pagar-boleto",
     description: "Aprenda a reconhecer as etapas comuns, sem realizar um pagamento.",
     difficulty: "medium",
     safetyWarning: "Conteúdo demonstrativo, não oficial e pendente de validação humana.",
+    searchTerms: ["bole", "boletu", "pagar conta", "código de barras", "linha digitável"],
+    availability: "demo",
+    status: "draft",
+  },
+  {
+    id: "task-enviar-audio-whatsapp",
+    applicationId: "app-whatsapp",
+    title: "Enviar um áudio",
+    slug: "enviar-audio-whatsapp",
+    description: "Aprenda a gravar e enviar uma mensagem de voz.",
+    difficulty: "easy",
+    safetyWarning: "Conteúdo em preparação e ainda sem guia validado.",
+    searchTerms: ["mandar áudio", "mensagem de voz", "audio", "gravar voz", "zap"],
+    availability: "preparing",
+    status: "draft",
+  },
+  {
+    id: "task-fazer-chamada-whatsapp",
+    applicationId: "app-whatsapp",
+    title: "Fazer uma chamada",
+    slug: "fazer-chamada-whatsapp",
+    description: "Aprenda a iniciar uma ligação pelo WhatsApp.",
+    difficulty: "easy",
+    safetyWarning: "Conteúdo em preparação e ainda sem guia validado.",
+    searchTerms: ["ligar", "ligação", "telefonar", "chamada de voz", "zap"],
+    availability: "preparing",
+    status: "draft",
+  },
+  {
+    id: "task-bloquear-contato-whatsapp",
+    applicationId: "app-whatsapp",
+    title: "Bloquear um contato",
+    slug: "bloquear-contato-whatsapp",
+    description: "Saiba onde procurar a opção de bloquear uma pessoa.",
+    difficulty: "easy",
+    safetyWarning: "Conteúdo em preparação e ainda sem guia validado.",
+    searchTerms: ["bloquear pessoa", "contato indesejado", "mensagem suspeita", "zap"],
+    availability: "preparing",
+    status: "draft",
+  },
+  {
+    id: "task-acessar-gov-br",
+    applicationId: "app-gov-br",
+    title: "Acessar o Gov.br",
+    slug: "acessar-gov-br",
+    description: "Aprenda a localizar o acesso à sua conta Gov.br.",
+    difficulty: "medium",
+    safetyWarning: "Conteúdo em preparação. Nunca informe códigos de acesso fora do aplicativo ou site oficial.",
+    searchTerms: ["entrar gov", "conta governo", "login gov", "acessar governo"],
+    availability: "preparing",
+    status: "draft",
+  },
+  {
+    id: "task-recuperar-senha-gov-br",
+    applicationId: "app-gov-br",
+    title: "Recuperar a senha do Gov.br",
+    slug: "recuperar-senha-gov-br",
+    description: "Saiba como encontrar o processo oficial de recuperação de acesso.",
+    difficulty: "medium",
+    safetyWarning: "Conteúdo em preparação. O Guido nunca pede sua senha ou código de recuperação.",
+    searchTerms: ["esqueci senha", "senha gov", "recuperar conta", "não consigo entrar"],
+    availability: "preparing",
     status: "draft",
   },
 ];
+
+const genericTaskDefinitions: Array<[string, string, string, string, string[]]> = [
+  ["pagar-conta-codigo-barras", "boleto", "Pagar conta com código de barras", "Reconheça as opções comuns para contas de consumo.", ["conta de luz", "conta de água", "cod barras"]],
+  ["enviar-pix-chave", "pix", "Enviar Pix usando chave", "Entenda o conceito de chave Pix sem informar dados.", ["chave piks", "pix contato"]],
+  ["pagar-pix-qr-code", "pix", "Usar Pix por QR Code", "Reconheça a opção de QR Code sem abrir câmera ou imagem.", ["qrcode pix", "qr pix"]],
+  ["baixar-segunda-via-boleto", "boleto", "Encontrar segunda via de boleto", "Saiba como procurar o canal oficial de quem emitiu a conta.", ["2 via", "boleto novo", "segunda bia"]],
+  ["trocar-senha-app-banco", "seguranca", "Trocar senha do aplicativo", "Encontre orientações oficiais de segurança sem informar sua senha ao Guido.", ["esqueci senha", "senha banco"]],
+  ["identificar-golpe-bancario", "seguranca", "Identificar golpe bancário", "Conheça sinais de mensagens e pedidos suspeitos.", ["goupe", "fralde", "mensagem suspeita"]],
+  ["caiu-em-golpe-banco", "seguranca", "O que fazer ao suspeitar de golpe", "Pare o contato e procure imediatamente os canais oficiais.", ["fui roubado", "perdi dinheiro", "fraude"]],
+  ["falar-atendimento-banco-app", "atendimento", "Encontrar atendimento oficial", "Saiba como procurar ajuda dentro do aplicativo oficial.", ["chat banco", "suporte", "falar banco"]],
+];
+
+const additionalGenericTasks: Task[] = genericTaskDefinitions.map(([slug, actionId, title, description, searchTerms]) => ({
+  id: `task-${slug}`,
+  applicationId: "app-demo-bancos",
+  actionId,
+  title,
+  slug,
+  description,
+  difficulty: "medium" as const,
+  safetyWarning: "Conteúdo recuperado como rascunho e pendente de pesquisa e validação humana.",
+  searchTerms,
+  availability: "preparing" as const,
+  status: "draft" as const,
+}));
+
+const applicationTasks: Task[] = financialApplications.flatMap((application) =>
+  actions.map((action) => ({
+    id: `task-${action.id}-${application.slug}`,
+    applicationId: application.id,
+    actionId: action.id,
+    title: action.taskTitle,
+    slug: `${action.slug}-${application.slug}`,
+    description: `${action.description} Conteúdo de ${application.name} ainda não validado.`,
+    difficulty: "medium" as const,
+    safetyWarning: "Guia em preparação. Não siga este registro como tutorial oficial.",
+    searchTerms: [...action.searchTerms, application.name, ...application.searchTerms],
+    availability: "preparing" as const,
+    status: "draft" as const,
+  })),
+);
+
+export const tasks: Task[] = [...coreTasks, ...additionalGenericTasks, ...applicationTasks];
 
 export const guides: Guide[] = (["android", "ios"] as const).map((operatingSystem) => ({
   id: `guide-pagar-boleto-${operatingSystem}`,

@@ -1,6 +1,6 @@
 # Guido
 
-O Guido é uma plataforma de inclusão digital para pessoas idosas e quem tem pouca familiaridade com tecnologia. Este repositório contém um MVP navegável com catálogo, busca local, escolha entre Android e iPhone e um guia educativo fictício de pagamento de boleto.
+O Guido é uma plataforma de inclusão digital para pessoas idosas e quem tem pouca familiaridade com tecnologia. Este repositório contém um MVP navegável com busca local, catálogo por tarefa e aplicativo, escolha entre Android e iPhone e um guia educativo fictício de pagamento de boleto.
 
 > **Aviso:** o guia financeiro é demonstrativo, não oficial e pendente de validação humana. O Guido não acessa bancos, não coleta dados bancários e não realiza nem confirma pagamentos.
 
@@ -54,10 +54,17 @@ Para habilitar Auth, crie manualmente um projeto no painel do Supabase, copie a 
 
 - dados de catálogo e guias são locais;
 - somente “Pagar um boleto” é navegável e suas telas são placeholders;
+- tarefas de áudio, chamada e bloqueio no WhatsApp e acesso/recuperação no Gov.br aparecem somente como conteúdo em preparação;
+- seis ações e dez aplicativos financeiros recuperados do protótipo anterior aparecem como rascunhos, sem passos navegáveis;
+- a busca reconhece sugestões e algumas variações de escrita, mas ainda não é um mecanismo de busca completo;
 - o guia é genérico, não corresponde a um banco ou versão de aplicativo;
 - autenticação exige configuração manual do Supabase e ainda não possui middleware de renovação de sessão;
 - progresso fica apenas no navegador atual;
 - não há painel administrativo, upload, offline, analytics, OCR ou integração bancária;
 - logos oficiais não foram incluídos; cartões usam abreviações textuais.
+
+## Conteúdo recuperado do protótipo anterior
+
+Foram adaptados o fluxo tarefa → aplicativo, identidade visual azul, mockups genéricos, sugestões rápidas, termos alternativos e conceitos de manuais. As 60 combinações entre seis ações e dez aplicativos financeiros são geradas por uma fonte única e permanecem `draft`/“em preparação”. Não foram importados arquivos compilados, dependências antigas, marcas aproximadas, credenciais, passos de autenticação ou etapas de confirmação financeira.
 
 Leia também [arquitetura](docs/ARQUITETURA.md), [decisões](docs/DECISOES.md), [pesquisa](docs/PESQUISA_GUIAS.md) e [segurança](docs/SEGURANCA.md).

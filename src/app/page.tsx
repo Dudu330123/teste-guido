@@ -1,7 +1,9 @@
 import { SiteHeader } from "@/components/site-header";
+import { actions } from "@/data/actions";
 import { applications } from "@/data/applications";
 import { tasks } from "@/data/guides";
 import { ApplicationCard } from "@/features/applications/application-card";
+import { ActionCard } from "@/features/actions/action-card";
 import { HomeSearch } from "@/features/search/home-search";
 
 export default function HomePage() {
@@ -10,6 +12,17 @@ export default function HomePage() {
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-5 py-8 sm:py-12">
         <HomeSearch applications={applications} tasks={tasks} />
+
+        <section aria-labelledby="actions-title" className="mt-14">
+          <p className="font-semibold text-[var(--primary)]">Escolha pelo que deseja fazer</p>
+          <h2 id="actions-title" className="mt-1 text-3xl font-bold sm:text-4xl">Tarefas populares</h2>
+          <p className="mt-2 max-w-3xl">Primeiro escolha a tarefa. Depois mostraremos quais aplicativos já estão cadastrados.</p>
+          <div className="mt-7 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {actions.map((action) => (
+              <ActionCard key={action.id} action={action} taskCount={tasks.filter((task) => task.actionId === action.id).length} />
+            ))}
+          </div>
+        </section>
 
         <section aria-labelledby="popular-title" className="mt-14">
           <p className="font-semibold text-[var(--primary)]">Escolha por aplicativo</p>

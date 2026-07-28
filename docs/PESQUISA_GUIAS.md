@@ -50,5 +50,11 @@ Para cada item, a equipe deve verificar separadamente Android e iOS, registrar v
 - Bradesco: pagar boleto;
 - Santander: pagar boleto;
 - Nubank: pagar boleto.
+- Banco Inter: Pix, boleto, comprovante, cartão, saldo e limite;
+- PicPay: Pix, boleto, comprovante, cartão, saldo e limite;
+- Mercado Pago: Pix, boleto, comprovante, cartão, saldo e limite;
+- C6 Bank: Pix, boleto, comprovante, cartão, saldo e limite.
+
+Os registros acima podem aparecer no catálogo como “em preparação”, mas isso não significa que seus passos tenham sido pesquisados ou aprovados.
 
 Também falta confirmar fontes oficiais e autorização de uso para todos os logos. Até isso ocorrer, a interface usa placeholders textuais sem alterar ou reproduzir marcas.

@@ -3,26 +3,28 @@
 import Link from "next/link";
 import { useState } from "react";
 import type { Application, Task } from "@/types/content";
+import { normalizeSearch, rankSearch } from "./search-content";
 
 interface HomeSearchProps {
   applications: Application[];
   tasks: Task[];
 }
 
-function normalize(value: string) {
-  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-}
-
 export function HomeSearch({ applications, tasks }: HomeSearchProps) {
   const [query, setQuery] = useState("");
   const [submittedQuery, setSubmittedQuery] = useState("");
-  const normalizedQuery = normalize(submittedQuery);
+  const normalizedQuery = normalizeSearch(submittedQuery);
   const matchingTasks = normalizedQuery
-    ? tasks.filter((task) => normalize(`${task.title} ${task.description}`).includes(normalizedQuery))
+    ? rankSearch(tasks, normalizedQuery, (task) => `${task.title} ${task.description} ${task.searchTerms.join(" ")}`, 8)
     : [];
   const matchingApplications = normalizedQuery
-    ? applications.filter((application) => normalize(`${application.name} ${application.description} ${application.category}`).includes(normalizedQuery))
+    ? rankSearch(applications, normalizedQuery, (application) => `${application.name} ${application.description} ${application.category} ${application.searchTerms.join(" ")}`, 4)
     : [];
+
+  const submitSuggestion = (suggestion: string) => {
+    setQuery(suggestion);
+    setSubmittedQuery(suggestion);
+  };
 
   return (
     <section aria-labelledby="search-title" className="rounded-3xl bg-[var(--primary-dark)] px-6 py-10 text-white sm:px-10">
@@ -52,6 +54,22 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
         </button>
       </form>
 
+      <div className="mt-5" aria-label="Sugestões rápidas">
+        <p className="text-base font-bold">Sugestões rápidas</p>
+        <div className="mt-2 flex flex-wrap gap-3">
+          {["pagar boleto", "enviar áudio", "fazer chamada", "acessar Gov.br", "recuperar senha"].map((suggestion) => (
+            <button
+              key={suggestion}
+              type="button"
+              onClick={() => submitSuggestion(suggestion)}
+              className="min-h-12 border-2 border-[#9db9ff] bg-white px-4 py-2 font-bold text-[var(--primary-dark)] hover:bg-[#e8f0ff]"
+            >
+              {suggestion}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {submittedQuery && (
         <div className="mt-6 rounded-2xl bg-white p-5 text-[var(--foreground)]" aria-live="polite">
           <h2 className="text-2xl font-bold">Resultados para “{submittedQuery}”</h2>
@@ -61,8 +79,11 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
             <ul className="mt-3 space-y-3">
               {matchingTasks.map((task) => (
                 <li key={task.id}>
-                  <Link className="block min-h-12 rounded-xl border-2 border-[var(--primary)] p-3 font-bold underline" href={`/tarefas/${task.slug}`}>
-                    {task.title} — demonstração não validada
+                  <Link
+                    className="block min-h-12 rounded-xl border-2 border-[var(--primary)] p-3 font-bold underline"
+                    href={task.availability === "demo" ? `/tarefas/${task.slug}` : `/aplicativos/${applications.find((application) => application.id === task.applicationId)?.slug ?? ""}`}
+                  >
+                    {task.title} — {task.availability === "demo" ? "demonstração não validada" : "em preparação"}
                   </Link>
                 </li>
               ))}

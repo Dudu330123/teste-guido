@@ -29,15 +29,21 @@ export default async function ApplicationPage({ params }: ApplicationPageProps) 
         <section aria-labelledby="tasks-title" className="mt-10">
           <h2 id="tasks-title" className="text-3xl font-bold">Tarefas</h2>
           {applicationTasks.length > 0 ? (
-            <div className="mt-5 rounded-2xl border-2 border-[var(--border)] bg-white p-6">
+            <div className="mt-5 space-y-5">
               {applicationTasks.map((task) => (
-                <article key={task.id}>
+                <article key={task.id} className="rounded-2xl border-2 border-[var(--border)] bg-white p-6">
                   <h3 className="text-2xl font-bold">{task.title}</h3>
                   <p className="mt-2">{task.description}</p>
                   <p className="mt-3 rounded-xl border-2 border-[#a66a00] bg-[#fff3cf] p-4 font-semibold">{task.safetyWarning}</p>
-                  <Link href={`/tarefas/${task.slug}`} className="mt-5 inline-block min-h-12 bg-[var(--primary)] px-6 py-3 font-bold text-white">
-                    Escolher meu celular
-                  </Link>
+                  {task.availability === "demo" ? (
+                    <Link href={`/tarefas/${task.slug}`} className="mt-5 inline-block min-h-12 bg-[var(--primary)] px-6 py-3 font-bold text-white">
+                      Escolher meu celular
+                    </Link>
+                  ) : (
+                    <p className="mt-5 inline-block rounded-xl border-2 border-[var(--border)] bg-[#eef4ff] px-5 py-3 font-bold text-[var(--primary-dark)]">
+                      Guia em preparação
+                    </p>
+                  )}
                 </article>
               ))}
             </div>

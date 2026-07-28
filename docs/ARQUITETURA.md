@@ -5,7 +5,7 @@
 O MVP é um monólito modular em Next.js. Rotas do App Router compõem módulos de interface e dados locais. Componentes de cliente são usados somente quando há interação com navegador, como pesquisa, síntese de voz, seleção de aparelho, Auth e `localStorage`.
 
 ```text
-App Router → features/components → data + types
+App Router → features/components → actions + applications + tasks + types
                          ├──────→ progress storage (localStorage)
                          └──────→ Supabase client (opcional)
 ```
@@ -15,6 +15,7 @@ App Router → features/components → data + types
 - `src/app`: rotas, layout, metadados e manifesto PWA inicial;
 - `src/components`: cabeçalho compartilhado;
 - `src/features/applications`: apresentação do catálogo;
+- `src/features/actions`: entrada no catálogo pela tarefa desejada;
 - `src/features/search`: busca local demonstrativa;
 - `src/features/guides`: seleção de sistema, placeholder e visualizador;
 - `src/features/progress`: navegação pura e adaptador de armazenamento;
@@ -26,7 +27,7 @@ App Router → features/components → data + types
 
 ## Fluxos de dados
 
-Na busca, dados estáticos chegam do Server Component e são filtrados no cliente. No guia, a rota valida o sistema operacional, resolve guia e passos locais e entrega os dados ao visualizador. O visualizador valida todo progresso lido antes de usá-lo e persiste somente campos permitidos. Formulários validam entradas antes de chamar Supabase Auth; sem configuração, exibem mensagem amigável.
+Na busca, dados estáticos chegam do Server Component, recebem pontuação local e são limitados antes da apresentação. O catálogo permite começar por ação ou aplicativo. As combinações ação/aplicativo são geradas como tarefas `draft`, sem gerar guias. No guia, a rota valida o sistema operacional, resolve guia e passos locais e entrega os dados ao visualizador. O visualizador valida todo progresso lido antes de usá-lo e persiste somente campos permitidos. Formulários validam entradas antes de chamar Supabase Auth; sem configuração, exibem mensagem amigável.
 
 ## Responsabilidades e limites
 
@@ -38,6 +39,8 @@ O Next.js concentra interface e futuro backend. Supabase será responsável por 
 - tipos de domínio independentes de Supabase;
 - adaptador de progresso separado para futura troca por repositório remoto;
 - dados demonstrativos explícitos e sem HTML arbitrário;
+- disponibilidade explícita por tarefa, separando demonstração de conteúdo em preparação;
+- combinações de catálogo geradas por composição, sem duplicar passos ou alegar especificidade;
 - versões Android e iOS representadas como guias separados;
 - dependências pequenas e com finalidade direta.
 
