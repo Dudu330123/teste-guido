@@ -12,12 +12,12 @@ describe("seletor de celular", () => {
   it("oferece controles nomeados e confirma a escolha do iPhone", async () => {
     const user = userEvent.setup();
     render(<OsSelector />);
-    const android = screen.getByRole("radio", { name: /android/i });
+    const other = screen.getByRole("radio", { name: /outro/i });
     const ios = screen.getByRole("radio", { name: /iphone/i });
-    expect(android).toBeChecked();
+    expect(other).toBeChecked();
     await user.click(ios);
     expect(ios).toBeChecked();
-    await user.click(screen.getByRole("button", { name: /confirmar e abrir/i }));
+    await user.click(screen.getByRole("button", { name: /próximo/i }));
     expect(localStorage.getItem("guido:preferred-os")).toBe("ios");
     expect(push).toHaveBeenCalledWith("/guias/pagar-boleto?os=ios");
   });

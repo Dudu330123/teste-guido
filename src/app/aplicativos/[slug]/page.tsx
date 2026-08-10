@@ -31,16 +31,16 @@ export default async function ApplicationPage({ params }: ApplicationPageProps) 
           {applicationTasks.length > 0 ? (
             <div className="mt-5 space-y-5">
               {applicationTasks.map((task) => (
-                <article key={task.id} className="rounded-2xl border-2 border-[var(--border)] bg-white p-6">
+                <article key={task.id} className="glass-panel rounded-2xl p-6">
                   <h3 className="text-2xl font-bold">{task.title}</h3>
                   <p className="mt-2">{task.description}</p>
-                  <p className="mt-3 rounded-xl border-2 border-[#a66a00] bg-[#fff3cf] p-4 font-semibold">{task.safetyWarning}</p>
+                  <p className="notice-info mt-3 rounded-xl p-4 font-semibold">{task.safetyWarning}</p>
                   {task.availability === "demo" ? (
-                    <Link href={`/tarefas/${task.slug}`} className="mt-5 inline-block min-h-12 bg-[var(--primary)] px-6 py-3 font-bold text-white">
+                    <Link href={`/tarefas/${task.slug}`} className="primary-action mt-5 inline-block min-h-12 px-6 py-3 font-bold">
                       Escolher meu celular
                     </Link>
                   ) : (
-                    <p className="mt-5 inline-block rounded-xl border-2 border-[var(--border)] bg-[#eef4ff] px-5 py-3 font-bold text-[var(--primary-dark)]">
+                    <p className="soft-panel mt-5 inline-block rounded-xl px-5 py-3 font-bold text-[var(--primary-dark)]">
                       Guia em preparação
                     </p>
                   )}
@@ -48,7 +48,7 @@ export default async function ApplicationPage({ params }: ApplicationPageProps) 
               ))}
             </div>
           ) : (
-            <div className="mt-5 rounded-2xl border-2 border-[var(--border)] bg-white p-6">
+            <div className="glass-panel mt-5 rounded-2xl p-6">
               <p className="text-xl font-bold">Conteúdo em preparação</p>
               <p className="mt-2">Nenhum guia deste aplicativo foi validado para esta versão.</p>
             </div>

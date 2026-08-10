@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Application, Task } from "@/types/content";
 import { normalizeSearch, rankSearch } from "./search-content";
@@ -10,33 +11,54 @@ interface HomeSearchProps {
   tasks: Task[];
 }
 
+const searchExamples = [
+  { category: "Banco", label: "Como pagar um boleto?", href: "/tarefas/pagar-boleto" },
+  { category: "WhatsApp", label: "Como enviar um áudio?", href: "/aplicativos/whatsapp" },
+  { category: "Gov.br", label: "Como acessar minha conta?", href: "/aplicativos/gov-br" },
+] as const;
+
+function getTaskHref(task: Task, applications: Application[]) {
+  if (task.availability === "demo") return `/tarefas/${task.slug}`;
+  if (task.applicationId === "app-demo-bancos" && task.actionId) return `/acoes/${task.actionId}`;
+  const application = applications.find((item) => item.id === task.applicationId);
+  return `/aplicativos/${application?.slug ?? ""}`;
+}
+
 export function HomeSearch({ applications, tasks }: HomeSearchProps) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [submittedQuery, setSubmittedQuery] = useState("");
+  const liveQuery = normalizeSearch(query);
   const normalizedQuery = normalizeSearch(submittedQuery);
-  const matchingTasks = normalizedQuery
-    ? rankSearch(tasks, normalizedQuery, (task) => `${task.title} ${task.description} ${task.searchTerms.join(" ")}`, 8)
+  const liveSuggestions = liveQuery
+    ? rankSearch(tasks, liveQuery, (task) => `${task.title} ${task.description} ${task.searchTerms.join(" ")}`, 40)
+      .filter((task, index, rankedTasks) => rankedTasks.findIndex((candidate) => normalizeSearch(candidate.title) === normalizeSearch(task.title)) === index)
+      .slice(0, 3)
     : [];
-  const matchingApplications = normalizedQuery
-    ? rankSearch(applications, normalizedQuery, (application) => `${application.name} ${application.description} ${application.category} ${application.searchTerms.join(" ")}`, 4)
-    : [];
-
-  const submitSuggestion = (suggestion: string) => {
-    setQuery(suggestion);
-    setSubmittedQuery(suggestion);
-  };
 
   return (
-    <section aria-labelledby="search-title" className="rounded-3xl bg-[var(--primary-dark)] px-6 py-10 text-white sm:px-10">
-      <h1 id="search-title" className="max-w-3xl text-4xl font-bold leading-tight sm:text-5xl">
-        Com o que você precisa de ajuda?
+    <section aria-labelledby="search-title" className="w-full">
+      <h1 id="search-title" className="text-center text-6xl font-black tracking-tight text-[var(--primary)] sm:text-7xl">
+        Guido
       </h1>
-      <p className="mt-4 max-w-2xl text-xl">Encontre orientações simples para tarefas do dia a dia.</p>
+      <p className="mx-auto mt-3 text-center text-base font-semibold text-[var(--muted)] sm:whitespace-nowrap sm:text-xl">
+        Você pode fazer isso com calma. Vamos ajudar um passo de cada vez.
+      </p>
       <form
-        className="mt-7 flex flex-col gap-3 sm:flex-row"
+        className="glass-control guido-search-form relative mt-7 min-h-16 overflow-hidden rounded-full border-2 focus-within:border-[var(--primary)]"
         role="search"
         onSubmit={(event) => {
           event.preventDefault();
+          const matchingTask = rankSearch(tasks, query, (task) => `${task.title} ${task.description} ${task.searchTerms.join(" ")}`, 1)[0];
+          if (matchingTask) {
+            router.push(getTaskHref(matchingTask, applications));
+            return;
+          }
+          const matchingApplication = rankSearch(applications, query, (application) => `${application.name} ${application.description} ${application.category} ${application.searchTerms.join(" ")}`, 1)[0];
+          if (matchingApplication) {
+            router.push(`/aplicativos/${matchingApplication.slug}`);
+            return;
+          }
           setSubmittedQuery(query);
         }}
       >
@@ -45,57 +67,69 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
           id="home-search"
           type="search"
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Ex.: pagar boleto ou enviar áudio"
-          className="min-h-16 flex-1 border-2 border-white bg-white px-5 text-xl text-[var(--foreground)] placeholder:text-[#56635b]"
+          onChange={(event) => {
+            setQuery(event.target.value);
+            setSubmittedQuery("");
+          }}
+          placeholder="Com o que você precisa de ajuda?"
+          className="min-h-16 w-full rounded-none border-0 bg-transparent py-3 pl-[4.5rem] pr-[4.5rem] text-lg text-[var(--foreground)] outline-none placeholder:text-[var(--muted)] sm:text-xl"
         />
-        <button type="submit" className="min-h-16 bg-[var(--accent)] px-8 text-xl font-bold text-[#202016] hover:bg-[#ffd368]">
-          Pesquisar
+        <button
+          type="submit"
+          aria-label="Pesquisar"
+          className="guido-search-button"
+        >
+          <svg aria-hidden="true" viewBox="0 0 24 24" className="size-7 fill-none" stroke="currentColor" strokeWidth="2.5">
+            <circle cx="11" cy="11" r="6.5" />
+            <path d="m16 16 4.25 4.25" strokeLinecap="round" />
+          </svg>
         </button>
       </form>
 
-      <div className="mt-5" aria-label="Sugestões rápidas">
-        <p className="text-base font-bold">Sugestões rápidas</p>
-        <div className="mt-2 flex flex-wrap gap-3">
-          {["pagar boleto", "enviar áudio", "fazer chamada", "acessar Gov.br", "recuperar senha"].map((suggestion) => (
-            <button
-              key={suggestion}
-              type="button"
-              onClick={() => submitSuggestion(suggestion)}
-              className="min-h-12 border-2 border-[#9db9ff] bg-white px-4 py-2 font-bold text-[var(--primary-dark)] hover:bg-[#e8f0ff]"
+      <p className="sr-only" aria-live="polite">
+        {liveQuery ? `${liveSuggestions.length} sugestões relacionadas encontradas.` : ""}
+      </p>
+      <div className="mt-5 grid gap-3" aria-label={liveQuery ? "Sugestões relacionadas à pesquisa" : "Exemplos de pesquisas comuns"}>
+        {liveQuery ? (
+          liveSuggestions.length > 0 ? liveSuggestions.map((task) => {
+            const application = applications.find((item) => item.id === task.applicationId);
+            const category = task.actionId === "pix"
+              ? "Pix"
+              : task.actionId === "comprovante" ? "Comprovante" : application?.name ?? "Sugestão";
+            return (
+              <Link
+                key={task.id}
+                aria-label={`${category}: ${task.title}`}
+                href={getTaskHref(task, applications)}
+                className="calm-choice min-h-20 rounded-2xl px-5 py-3 text-left"
+              >
+                <span className="block text-sm font-bold uppercase tracking-wide text-[var(--primary)]">{category}</span>
+                <span className="mt-1 block font-semibold text-[var(--foreground)]">{task.title}</span>
+                <span className="mt-1 block text-sm text-[var(--muted)]">{task.availability === "demo" ? "Demonstração disponível" : "Em preparação"}</span>
+              </Link>
+            );
+          }) : (
+            <p className="calm-choice min-h-16 rounded-2xl px-5 py-4 text-[var(--muted)]">
+              Continue digitando ou pressione a lupa para pesquisar.
+            </p>
+          )
+        ) : searchExamples.map((example) => (
+            <Link
+              key={example.category}
+              aria-label={`${example.category}: ${example.label}`}
+              href={example.href}
+              className="calm-choice min-h-20 rounded-2xl px-5 py-3 text-left"
             >
-              {suggestion}
-            </button>
+              <span className="block text-sm font-bold uppercase tracking-wide text-[var(--primary)]">{example.category}</span>
+              <span className="mt-1 block font-semibold text-[var(--foreground)]">{example.label}</span>
+            </Link>
           ))}
-        </div>
       </div>
 
-      {submittedQuery && (
-        <div className="mt-6 rounded-2xl bg-white p-5 text-[var(--foreground)]" aria-live="polite">
-          <h2 className="text-2xl font-bold">Resultados para “{submittedQuery}”</h2>
-          {matchingTasks.length === 0 && matchingApplications.length === 0 ? (
-            <p className="mt-2">Ainda não temos esse guia. Tente “pagar boleto” ou procure no catálogo.</p>
-          ) : (
-            <ul className="mt-3 space-y-3">
-              {matchingTasks.map((task) => (
-                <li key={task.id}>
-                  <Link
-                    className="block min-h-12 rounded-xl border-2 border-[var(--primary)] p-3 font-bold underline"
-                    href={task.availability === "demo" ? `/tarefas/${task.slug}` : `/aplicativos/${applications.find((application) => application.id === task.applicationId)?.slug ?? ""}`}
-                  >
-                    {task.title} — {task.availability === "demo" ? "demonstração não validada" : "em preparação"}
-                  </Link>
-                </li>
-              ))}
-              {matchingApplications.map((application) => (
-                <li key={application.id}>
-                  <Link className="block min-h-12 rounded-xl border-2 border-[var(--border)] p-3 font-bold underline" href={`/aplicativos/${application.slug}`}>
-                    {application.name} — {application.status === "available" ? "demonstração disponível" : "conteúdo em preparação"}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
+      {normalizedQuery && (
+        <div className="glass-panel mt-8 rounded-2xl p-5 text-[var(--foreground)]" aria-live="polite">
+          <h2 className="text-2xl font-bold">Ainda não encontramos “{submittedQuery}”</h2>
+          <p className="mt-2">Tente usar palavras mais curtas ou procure “pagar boleto”.</p>
         </div>
       )}
     </section>

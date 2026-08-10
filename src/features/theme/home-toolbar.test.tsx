@@ -1,0 +1,49 @@
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { afterEach, describe, expect, it } from "vitest";
+import { HomeToolbar } from "./home-toolbar";
+
+describe("controles da página inicial", () => {
+  afterEach(() => {
+    window.localStorage.clear();
+    delete document.documentElement.dataset.theme;
+    delete document.documentElement.dataset.themePreference;
+    document.documentElement.style.removeProperty("color-scheme");
+  });
+
+  it("abre e fecha as orientações de ajuda", async () => {
+    const user = userEvent.setup();
+    render(<HomeToolbar />);
+
+    await user.click(screen.getByRole("button", { name: "Ajuda" }));
+    expect(screen.getByRole("dialog", { name: "Como usar o Guido" })).toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: "Fechar ajuda" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("alterna e salva o modo de cor", async () => {
+    const user = userEvent.setup();
+    render(<HomeToolbar />);
+
+    await user.click(screen.getByRole("button", { name: "Alternar entre modo claro e escuro" }));
+
+    expect(document.documentElement).toHaveAttribute("data-theme", "dark");
+    expect(document.documentElement).toHaveAttribute("data-theme-preference", "dark");
+    expect(window.localStorage.getItem("guido-theme")).toBe("dark");
+    expect(screen.getByText("Claro / escuro")).toBeVisible();
+  });
+
+  it("volta ao modo claro no segundo clique sem abrir menu", async () => {
+    const user = userEvent.setup();
+    render(<HomeToolbar />);
+
+    const themeButton = screen.getByRole("button", { name: "Alternar entre modo claro e escuro" });
+    await user.click(themeButton);
+    await user.click(themeButton);
+
+    expect(document.documentElement).toHaveAttribute("data-theme", "light");
+    expect(window.localStorage.getItem("guido-theme")).toBe("light");
+    expect(screen.queryByText("Escolha o tema")).not.toBeInTheDocument();
+  });
+});

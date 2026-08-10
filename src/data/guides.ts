@@ -80,6 +80,9 @@ const coreTasks: Task[] = [
 
 const genericTaskDefinitions: Array<[string, string, string, string, string[]]> = [
   ["pagar-conta-codigo-barras", "boleto", "Pagar conta com código de barras", "Reconheça as opções comuns para contas de consumo.", ["conta de luz", "conta de água", "cod barras"]],
+  ["fazer-pix", "pix", "Fazer Pix", "Entenda onde normalmente começa uma transferência Pix, sem enviar dinheiro.", ["como fazer pix", "enviar pix", "transferir pix"]],
+  ["ver-comprovante-pix", "comprovante", "Ver comprovante Pix", "Saiba onde normalmente procurar o recibo de uma transferência Pix.", ["comprovante pix", "recibo pix", "pix feito"]],
+  ["cobrar-via-pix", "pix", "Cobrar via Pix", "Entenda onde normalmente fica a opção de cobrança Pix, sem criar uma cobrança real.", ["como cobrar pix", "receber pix", "pedir pix", "cobrança pix"]],
   ["enviar-pix-chave", "pix", "Enviar Pix usando chave", "Entenda o conceito de chave Pix sem informar dados.", ["chave piks", "pix contato"]],
   ["pagar-pix-qr-code", "pix", "Usar Pix por QR Code", "Reconheça a opção de QR Code sem abrir câmera ou imagem.", ["qrcode pix", "qr pix"]],
   ["baixar-segunda-via-boleto", "boleto", "Encontrar segunda via de boleto", "Saiba como procurar o canal oficial de quem emitiu a conta.", ["2 via", "boleto novo", "segunda bia"]],

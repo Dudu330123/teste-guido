@@ -10,7 +10,7 @@ describe("ilustração do passo", () => {
   it("oferece descrição acessível e alvo textual no primeiro passo", () => {
     render(<ScreenPlaceholder step={steps[0]!} />);
     expect(screen.getByRole("img", { name: steps[0]!.imageAlt })).toBeVisible();
-    expect(screen.getByText("Aplicativo oficial")).toBeVisible();
+    expect(screen.getAllByText("Banco de demonstração")).toHaveLength(2);
     expect(screen.getByText("Toque aqui ↓")).toBeVisible();
   });
 

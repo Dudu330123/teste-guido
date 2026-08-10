@@ -21,8 +21,8 @@ export function RecoveryForm() {
       setMessage(error ? "Não foi possível enviar o pedido agora." : "Se houver uma conta com esse e-mail, você receberá as instruções.");
     }}>
       <label htmlFor="recovery-email" className="block font-bold">E-mail da conta</label>
-      <input id="recovery-email" name="email" type="email" autoComplete="email" required className="mt-2 min-h-14 w-full border-2 border-[var(--border)] px-4" />
-      <button type="submit" className="mt-7 min-h-14 w-full bg-[var(--primary)] px-5 py-3 text-xl font-bold text-white">Enviar instruções</button>
+      <input id="recovery-email" name="email" type="email" autoComplete="email" required className="glass-control mt-2 min-h-14 w-full px-4" />
+      <button type="submit" className="primary-action mt-7 min-h-14 w-full px-5 py-3 text-xl font-bold">Enviar instruções</button>
       <FormMessage message={message} type={success ? "success" : "error"} />
       <Link href="/entrar" className="mt-6 block font-bold underline">Voltar para entrar</Link>
     </form>

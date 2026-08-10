@@ -1,13 +1,19 @@
+import Image from "next/image";
 import type { GuideStep } from "@/types/content";
+
+const demoBankIconPath = "/guide-placeholders/banco-demonstracao-icon.png";
 
 export function ScreenPlaceholder({ step }: { step: GuideStep }) {
   return (
-    <div role="img" aria-label={step.imageAlt} className="mx-auto aspect-[9/18] w-full max-w-[22rem] rounded-[2.75rem] border-[11px] border-[#111827] bg-[#111827] p-2 shadow-2xl">
+    <div role="img" aria-label={step.imageAlt} className="mock-phone mx-auto aspect-[9/18] w-full max-w-[22rem] rounded-[2.75rem] border-[11px] p-2 shadow-2xl">
       <div className="relative flex h-full flex-col overflow-hidden rounded-[2rem] bg-[#f7fbff]" aria-hidden="true">
         <div className="absolute left-1/2 top-3 z-10 h-2 w-20 -translate-x-1/2 rounded-full bg-[#273449]" />
-        <div className="border-b-2 border-[#d9e7ff] bg-white px-5 pb-3 pt-8">
-          <p className="text-sm font-black uppercase tracking-wide text-[var(--primary)]">Banco de demonstração</p>
-          <p className="text-xs font-bold text-[var(--muted)]">Tela fictícia · sem dados reais</p>
+        <div className="flex items-center gap-3 border-b-2 border-[#d9e7ff] bg-white px-5 pb-3 pt-8">
+          <Image src={demoBankIconPath} alt="" width={44} height={44} className="size-11 rounded-xl" />
+          <div>
+            <p className="text-sm font-black uppercase tracking-wide text-[var(--primary)]">Banco de demonstração</p>
+            <p className="text-xs font-bold text-[var(--muted)]">Tela fictícia · sem dados reais</p>
+          </div>
         </div>
         <div className="flex flex-1 flex-col p-5">
           <MockScreen step={step} />
@@ -34,7 +40,12 @@ function MockScreen({ step }: { step: GuideStep }) {
     return (
       <div className="mt-12 grid grid-cols-2 gap-5">
         <div className="h-24 rounded-3xl bg-[#dce7f7]" />
-        <TouchTarget>Aplicativo oficial</TouchTarget>
+        <TouchTarget>
+          <span className="flex flex-col items-center gap-2">
+            <Image src={demoBankIconPath} alt="" width={72} height={72} className="size-16 rounded-2xl" />
+            Banco de demonstração
+          </span>
+        </TouchTarget>
         <div className="h-24 rounded-3xl bg-[#dce7f7]" />
         <div className="h-24 rounded-3xl bg-[#dce7f7]" />
       </div>

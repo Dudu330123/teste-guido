@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { Application, Guide, GuideStep, Task } from "@/types/content";
 import { clearProgress, loadProgress, saveProgress } from "@/features/progress/progress-storage";
 import { nextStep, previousStep, restartGuide } from "@/features/progress/guide-navigation";
@@ -20,6 +20,8 @@ export function GuideViewer({ application, guide, steps, task }: GuideViewerProp
   const [resumeStep, setResumeStep] = useState<number | null>(null);
   const [speechMessage, setSpeechMessage] = useState("");
   const [completed, setCompleted] = useState(false);
+  const stepTitleRef = useRef<HTMLHeadingElement>(null);
+  const previousRenderedStep = useRef(0);
   const step = steps[currentStep];
 
   useEffect(() => {
@@ -51,6 +53,17 @@ export function GuideViewer({ application, guide, steps, task }: GuideViewerProp
     });
   }, [completed, currentStep, guide, ready, resumeStep]);
 
+  useEffect(() => {
+    if (!ready || resumeStep !== null || previousRenderedStep.current === currentStep) return;
+    previousRenderedStep.current = currentStep;
+    const frame = window.requestAnimationFrame(() => {
+      stepTitleRef.current?.focus({ preventScroll: true });
+      const behavior = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+      stepTitleRef.current?.scrollIntoView?.({ behavior, block: "start" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [currentStep, ready, resumeStep]);
+
   if (!ready || !step) {
     return <main className="mx-auto max-w-4xl px-5 py-14"><p role="status">Carregando o guia…</p></main>;
   }
@@ -58,14 +71,15 @@ export function GuideViewer({ application, guide, steps, task }: GuideViewerProp
   if (resumeStep !== null) {
     return (
       <main className="mx-auto max-w-2xl px-5 py-16">
-        <div className="rounded-3xl border-2 border-[var(--primary)] bg-white p-7 text-center">
+        <div className="glass-panel rounded-3xl border-[var(--primary)] p-7 text-center">
           <h1 className="text-3xl font-bold">Continuar de onde parou?</h1>
           <p className="mt-4 text-xl">Você parou no passo {resumeStep + 1} de {steps.length}. Deseja continuar?</p>
+          <p className="mt-3 font-semibold text-[var(--muted)]">Seu progresso está salvo. Escolha com calma.</p>
           <div className="mt-7 flex flex-col justify-center gap-4 sm:flex-row">
-            <button className="min-h-14 bg-[var(--primary)] px-6 py-3 font-bold text-white" onClick={() => { setCurrentStep(resumeStep); setResumeStep(null); }}>
+            <button className="primary-action min-h-14 px-6 py-3 font-bold" onClick={() => { setCurrentStep(resumeStep); setResumeStep(null); }}>
               Continuar
             </button>
-            <button className="min-h-14 border-2 border-[var(--primary)] px-6 py-3 font-bold" onClick={() => { clearProgress(window.localStorage, guide.id); setCurrentStep(0); setResumeStep(null); }}>
+            <button className="secondary-action min-h-14 px-6 py-3 font-bold" onClick={() => { clearProgress(window.localStorage, guide.id); setCurrentStep(0); setResumeStep(null); }}>
               Começar novamente
             </button>
           </div>
@@ -80,7 +94,7 @@ export function GuideViewer({ application, guide, steps, task }: GuideViewerProp
       return;
     }
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(`${step.title}. ${step.instruction}${step.warning ? ` Atenção: ${step.warning}` : ""}`);
+    const utterance = new SpeechSynthesisUtterance(`${step.title}. ${step.instruction}${step.warning ? ` Importante: ${step.warning}` : ""}`);
     utterance.lang = "pt-BR";
     window.speechSynthesis.speak(utterance);
     setSpeechMessage("Instrução sendo lida em voz alta.");
@@ -102,63 +116,84 @@ export function GuideViewer({ application, guide, steps, task }: GuideViewerProp
     setSpeechMessage("");
   };
 
+  const remainingSteps = steps.length - currentStep - 1;
+  const progressMessage = completed
+    ? "Demonstração concluída com segurança."
+    : currentStep === steps.length - 1
+      ? "Este é o último passo. Nenhum pagamento será confirmado pelo Guido."
+      : `${remainingSteps === 1 ? "Falta 1 passo" : `Faltam ${remainingSteps} passos`}. Continue no seu ritmo.`;
+
   return (
-    <main className="mx-auto max-w-6xl px-5 py-7">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link href="/tarefas/pagar-boleto" className="min-h-12 px-2 py-2 font-bold underline">← Sair do guia</Link>
-        <button type="button" onClick={restart} className="min-h-12 border-2 border-[var(--primary)] px-4 py-2 font-bold">Começar novamente</button>
+    <main className="mx-auto max-w-6xl px-5 py-5 sm:py-7">
+      <div className="flex items-center justify-between gap-2">
+        <Link href="/tarefas/pagar-boleto" className="quiet-action min-h-12 px-2 py-2 text-base font-bold underline">← Sair do guia</Link>
+        <button type="button" onClick={restart} className="quiet-action min-h-12 px-2 py-2 text-base font-bold">Começar novamente</button>
       </div>
 
-      <div className="mt-5 rounded-2xl border-2 border-[#a66a00] bg-[#fff3cf] p-4" role="note">
-        <strong>Demonstração não oficial:</strong> conteúdo fictício, não validado e sem conexão com bancos.
-      </div>
-
-      <header className="mt-7">
-        <p className="font-semibold text-[var(--primary)]">{application.name} · {guide.operatingSystem === "android" ? "Android" : "iPhone"}</p>
-        <h1 className="text-4xl font-bold">{task.title}</h1>
-        <p className="mt-3 text-xl font-bold" aria-live="polite">Passo {currentStep + 1} de {steps.length}</p>
-        <div className="mt-3 h-4 overflow-hidden rounded-full bg-[#d5ddd7]" role="progressbar" aria-label="Progresso do guia" aria-valuemin={1} aria-valuemax={steps.length} aria-valuenow={currentStep + 1}>
-          <div className="h-full bg-[var(--primary)]" style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }} />
+      <header className="glass-panel mt-3 rounded-2xl px-5 py-4 sm:px-6">
+        <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end sm:gap-6">
+          <div>
+            <p className="text-base font-semibold text-[var(--primary)]">{application.name} · {guide.operatingSystem === "ios" ? "iPhone" : "Outro"}</p>
+            <h1 className="text-2xl font-bold sm:text-3xl">{task.title}</h1>
+          </div>
+          <div className="shrink-0 sm:text-right">
+            <p className="text-lg font-bold" aria-live="polite">Passo {currentStep + 1} de {steps.length}</p>
+            <p className="text-sm font-semibold text-[var(--muted)]" aria-live="polite">{progressMessage}</p>
+          </div>
+        </div>
+        <div className="soft-panel mt-3 h-2 overflow-hidden rounded-full" role="progressbar" aria-label="Progresso do guia" aria-valuemin={1} aria-valuemax={steps.length} aria-valuenow={currentStep + 1}>
+          <div className="guide-progress-fill h-full bg-[var(--primary)]" style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }} />
         </div>
       </header>
 
-      <div className="mt-8 grid items-start gap-8 lg:grid-cols-[1fr_1.1fr]">
-        <ScreenPlaceholder step={step} />
-        <section aria-labelledby="step-title" className="rounded-3xl bg-white p-6 shadow-sm sm:p-8">
-          <h2 id="step-title" className="text-3xl font-bold">{step.title}</h2>
+      <div className="mt-5 grid items-start gap-8 lg:mt-6 lg:grid-cols-[1fr_1.1fr]">
+        <div className="order-2 lg:order-1">
+          <ScreenPlaceholder step={step} />
+        </div>
+        <section aria-labelledby="step-title" className="glass-panel order-1 rounded-3xl p-5 lg:order-2 sm:p-8">
+          <p className="text-base font-black uppercase tracking-wide text-[var(--primary)]">Agora faça somente isto</p>
+          <h2 ref={stepTitleRef} id="step-title" tabIndex={-1} className="mt-1 scroll-mt-5 text-3xl font-bold">{step.title}</h2>
           <p className="mt-4 text-2xl leading-relaxed">{step.instruction}</p>
           {step.warning && (
-            <div role="alert" className="mt-6 rounded-2xl border-4 border-[var(--danger)] bg-[#fff0f0] p-5 text-xl font-bold text-[#721b1b]">
-              <p>Atenção</p>
+            <div role="alert" className="notice-danger mt-6 rounded-2xl border-4 p-5 text-xl font-bold">
+              <p>Antes de continuar</p>
               <p className="mt-2">{step.warning}</p>
             </div>
           )}
           {completed && step.confirmationMessage && (
-            <p role="status" className="mt-6 rounded-xl border-2 border-[var(--primary)] bg-[#e8f5ed] p-4 font-bold">{step.confirmationMessage}</p>
+            <p role="status" className="notice-success mt-6 rounded-xl p-4 font-bold">{step.confirmationMessage}</p>
           )}
 
-          <button type="button" onClick={speak} className="mt-7 min-h-14 w-full border-2 border-[var(--primary)] px-5 py-3 text-xl font-bold">
+          <button type="button" onClick={speak} className="secondary-action mt-7 min-h-14 w-full px-5 py-3 text-xl font-bold">
             Ouvir instrução
           </button>
           <p className="mt-2 text-base" aria-live="polite">{speechMessage}</p>
 
-          <div className="mt-7 grid gap-4 sm:grid-cols-2">
+          <div className="mt-7 grid gap-5 sm:grid-cols-2">
             <button
               type="button"
               disabled={currentStep === 0}
               onClick={() => { setCurrentStep((value) => previousStep(value)); setSpeechMessage(""); }}
-              className="min-h-14 border-2 border-[var(--primary)] px-5 py-3 text-xl font-bold disabled:cursor-not-allowed disabled:opacity-45"
+              className="secondary-action min-h-14 px-5 py-3 text-xl font-bold disabled:cursor-not-allowed disabled:opacity-45"
             >
               Voltar
             </button>
-            <button type="button" onClick={finishOrAdvance} className="min-h-14 bg-[var(--primary)] px-5 py-3 text-xl font-bold text-white">
+            <button type="button" onClick={finishOrAdvance} className="primary-action min-h-14 px-5 py-3 text-xl font-bold">
               {currentStep === steps.length - 1 ? "Concluir demonstração" : "Próximo"}
             </button>
           </div>
 
-          <details className="mt-7 rounded-2xl border-2 border-[var(--border)] p-4">
+          <details className="soft-panel mt-7 rounded-2xl p-4">
             <summary className="min-h-12 cursor-pointer py-2 text-xl font-bold">Preciso de ajuda</summary>
-            <p className="mt-3">Pare e peça ajuda a uma pessoa de confiança. Não compartilhe senha, código de segurança ou dados do boleto.</p>
+            <div className="mt-3 space-y-3">
+              <p>Você não precisa ter pressa.</p>
+              <ol className="list-decimal space-y-2 pl-6">
+                <li>Use “Ouvir instrução” para escutar este passo novamente.</li>
+                <li>Use “Voltar” para rever o passo anterior.</li>
+                <li>Se ainda tiver dúvida, pare e peça ajuda a uma pessoa de confiança.</li>
+              </ol>
+              <p className="font-bold">Não compartilhe senha, código de segurança ou dados do boleto.</p>
+            </div>
           </details>
         </section>
       </div>

@@ -38,6 +38,8 @@ Consulta realizada em **28 de julho de 2026**. Somente páginas públicas oficia
 
 Os seis passos existentes em `src/data/guides.ts` são uma hipótese genérica para testar a interface. Eles não foram extraídos das fontes acima, não representam banco específico, usam placeholders fictícios e têm status `draft`. O fluxo termina antes de confirmação.
 
+O arquivo `public/guide-placeholders/banco-demonstracao-icon.png` foi gerado por IA em 9 de agosto de 2026 exclusivamente para identificar o aplicativo bancário fictício nos mockups. O símbolo é genérico, não foi obtido de terceiros, não representa instituição financeira real e não deve ser apresentado como marca oficial.
+
 ## Verificação manual pendente
 
 Para cada item, a equipe deve verificar separadamente Android e iOS, registrar versão e data, produzir capturas autorizadas e anonimizadas e obter revisão de duas pessoas quando houver risco financeiro.

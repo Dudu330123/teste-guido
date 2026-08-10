@@ -23,10 +23,10 @@ export function LoginForm() {
       setMessage(error ? "Não foi possível entrar. Confira o e-mail e a senha." : "Entrada realizada com sucesso.");
     }}>
       <label htmlFor="email" className="block font-bold">E-mail</label>
-      <input id="email" name="email" type="email" autoComplete="email" required className="mt-2 min-h-14 w-full border-2 border-[var(--border)] px-4" />
+      <input id="email" name="email" type="email" autoComplete="email" required className="glass-control mt-2 min-h-14 w-full px-4" />
       <label htmlFor="password" className="mt-5 block font-bold">Senha</label>
-      <input id="password" name="password" type="password" autoComplete="current-password" required minLength={8} className="mt-2 min-h-14 w-full border-2 border-[var(--border)] px-4" />
-      <button type="submit" className="mt-7 min-h-14 w-full bg-[var(--primary)] px-5 py-3 text-xl font-bold text-white">Entrar</button>
+      <input id="password" name="password" type="password" autoComplete="current-password" required minLength={8} className="glass-control mt-2 min-h-14 w-full px-4" />
+      <button type="submit" className="primary-action mt-7 min-h-14 w-full px-5 py-3 text-xl font-bold">Entrar</button>
       <FormMessage message={message} type={success ? "success" : "error"} />
       <div className="mt-6 flex flex-col gap-3">
         <Link href="/recuperar-senha" className="font-bold underline">Esqueci minha senha</Link>

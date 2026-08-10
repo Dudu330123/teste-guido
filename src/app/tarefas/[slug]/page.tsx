@@ -27,14 +27,10 @@ export default async function TaskPage({ params }: TaskPageProps) {
         <p className="mt-8 font-semibold text-[var(--primary)]">Guia educativo</p>
         <h1 className="text-4xl font-bold">{task.title}</h1>
         <p className="mt-3 text-xl">{task.description}</p>
-        <div role="note" className="mt-6 rounded-2xl border-2 border-[#a66a00] bg-[#fff3cf] p-5">
-          <p className="font-bold">Demonstração não validada</p>
-          <p>As telas são fictícias e as posições podem ser diferentes no aplicativo do seu banco. O guia termina antes de qualquer confirmação.</p>
-        </div>
         {task.availability === "demo" ? (
           <OsSelector />
         ) : (
-          <div className="mt-7 rounded-2xl border-2 border-[var(--border)] bg-white p-6">
+          <div className="glass-panel mt-7 rounded-2xl p-6">
             <h2 className="text-2xl font-bold">Guia em preparação</h2>
             <p className="mt-2">Esta tarefa foi cadastrada para pesquisa, mas ainda não possui passos revisados para Android ou iPhone.</p>
           </div>

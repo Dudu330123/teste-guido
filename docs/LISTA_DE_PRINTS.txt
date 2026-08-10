@@ -1,0 +1,279 @@
+GUIDO — LISTA DE PRINTS NECESSÁRIOS
+===================================
+
+Data do levantamento: 28/07/2026
+Status: planejamento inicial, pendente de validação humana
+
+
+REGRAS DE SEGURANÇA
+-------------------
+
+[ ] Nunca enviar senha, CPF, agência, conta ou token.
+[ ] Nunca enviar código recebido por SMS ou e-mail.
+[ ] Nunca mostrar saldo, nome, telefone ou conversa real.
+[ ] Nunca mostrar QR Code, código de barras ou linha digitável real.
+[ ] Nunca mostrar beneficiário, valor ou vencimento real.
+[ ] Nunca capturar rosto, biometria ou documento pessoal.
+[ ] Cobrir informações usando blocos opacos, não apenas desfoque.
+[ ] Remover notificações da barra superior do celular.
+[ ] Não desenhar setas ou círculos; o Guido adicionará os destaques.
+[ ] Enviar as imagens em PNG, na resolução original.
+[ ] Informar aplicativo, Android/iPhone, versão e data da captura.
+[ ] Criar capturas separadas para Android e iPhone.
+
+
+ORDEM DE IMPORTÂNCIA DOS APLICATIVOS
+------------------------------------
+
+1. WhatsApp
+2. Gov.br
+3. CAIXA Tem
+4. App CAIXA
+5. Banco do Brasil
+6. Itaú
+7. Bradesco
+8. Santander
+9. Nubank
+10. Banco Inter
+11. PicPay
+12. Mercado Pago
+13. C6 Bank
+
+IMPORTANTE: CAIXA Tem, App CAIXA e Cartões CAIXA são aplicativos
+diferentes. As telas não devem ser misturadas no mesmo guia.
+
+
+PRIMEIRA ENTREGA RECOMENDADA
+----------------------------
+
+[ ] WhatsApp para Android: 12 prints
+[ ] Gov.br para Android: 14 prints
+[ ] CAIXA Tem para Android: aproximadamente 10 prints
+[ ] Banco do Brasil para Android: 5 prints do fluxo de boleto
+[ ] Itaú para Android: 5 prints do fluxo de boleto
+
+Total inicial aproximado: 46 capturas.
+
+Depois dessa entrega, o formato deverá ser validado com usuários antes
+de produzir todas as variações para iPhone e para os demais bancos.
+
+
+1. WHATSAPP — 12 PRINTS POR SISTEMA
+-----------------------------------
+
+[ ] W01 — Lista de conversas usando contatos fictícios.
+[ ] W02 — Botão para iniciar uma conversa.
+[ ] W03 — Conversa fictícia aberta.
+[ ] W04 — Microfone usado para gravar áudio.
+[ ] W05 — Estado da tela durante a gravação.
+[ ] W06 — Áudio gravado antes do envio.
+[ ] W07 — Botão para iniciar chamada.
+[ ] W08 — Tela de chamada iniciada com contato fictício.
+[ ] W09 — Tela de informações do contato.
+[ ] W10 — Opções Bloquear e Denunciar.
+[ ] W11 — Tela de verificação em duas etapas.
+[ ] W12 — Tela de dispositivos conectados.
+
+Não usar conversas, números, nomes ou fotografias reais.
+
+
+2. GOV.BR — 14 PRINTS POR SISTEMA
+---------------------------------
+
+[ ] G01 — Tela inicial do aplicativo.
+[ ] G02 — Botão Entrar.
+[ ] G03 — Campo de CPF vazio.
+[ ] G04 — Campo de senha vazio e opção Esqueci minha senha.
+[ ] G05 — Início do processo de recuperação.
+[ ] G06 — Lista de métodos de recuperação disponíveis.
+[ ] G07 — Instruções do reconhecimento facial, sem mostrar rosto.
+[ ] G08 — Seleção de banco credenciado.
+[ ] G09 — Recuperação por e-mail, com endereço oculto.
+[ ] G10 — Recuperação por celular, com número oculto.
+[ ] G11 — Opção de formulário de atendimento.
+[ ] G12 — Tela inicial após acesso, totalmente higienizada.
+[ ] G13 — Segurança da conta e verificação em duas etapas.
+[ ] G14 — Prova de vida e lista de pendências, sem dados pessoais.
+
+Não capturar reconhecimento facial, CPF, código de acesso ou documento.
+
+
+3. PACOTE BANCÁRIO PADRÃO — 15 PRINTS POR SISTEMA
+-------------------------------------------------
+
+Este pacote será usado como referência para cada banco. Quando duas
+funções aparecerem na mesma tela, um único print poderá atender ambas.
+
+[ ] B01 — Tela inicial ou pré-login.
+[ ] B02 — Página inicial após acesso, totalmente higienizada.
+[ ] B03 — Área de saldo, sem mostrar valor real.
+[ ] B04 — Extrato, sem mostrar transações reais.
+[ ] B05 — Entrada de Pagamentos ou Pagar.
+[ ] B06 — Opção Boleto, Conta ou Código de barras.
+[ ] B07 — Escolha entre câmera e digitação.
+[ ] B08 — Entrada da área Pix.
+[ ] B09 — Escolha entre chave, QR Code e Copia e Cola.
+[ ] B10 — Histórico ou comprovantes, sem informações reais.
+[ ] B11 — Área de cartões.
+[ ] B12 — Menu de segurança do cartão.
+[ ] B13 — Bloqueio por perda ou roubo.
+[ ] B14 — Consulta de limite, sem mostrar valor real.
+[ ] B15 — Ajuda, chat ou atendimento oficial.
+
+O Guido criará telas fictícias para:
+
+- conferência de beneficiário, valor e vencimento;
+- conferência do destinatário de um Pix;
+- senha, token ou biometria;
+- confirmação final de pagamento;
+- aviso para interromper o guia antes de pagar.
+
+
+4. CAIXA — CAPTURAR SEPARADAMENTE
+---------------------------------
+
+CAIXA TEM
+
+[ ] CXT01 — Tela inicial.
+[ ] CXT02 — Página principal higienizada.
+[ ] CXT03 — Consultar saldo.
+[ ] CXT04 — Consultar extrato.
+[ ] CXT05 — Pagar contas.
+[ ] CXT06 — Escolher leitura ou digitação de código.
+[ ] CXT07 — Área Pix.
+[ ] CXT08 — Histórico ou comprovantes.
+[ ] CXT09 — Ajuda ou atendimento.
+[ ] CXT10 — Segurança ou regularização de acesso.
+
+APP CAIXA
+
+[ ] CXA01 — Tela inicial.
+[ ] CXA02 — Página principal higienizada.
+[ ] CXA03 — Pagamentos.
+[ ] CXA04 — Boleto ou código de barras.
+[ ] CXA05 — Câmera ou digitação.
+[ ] CXA06 — Pix.
+[ ] CXA07 — Saldo.
+[ ] CXA08 — Extrato.
+[ ] CXA09 — Comprovantes.
+[ ] CXA10 — Atendimento oficial.
+
+CARTÕES CAIXA
+
+[ ] CXC01 — Tela inicial.
+[ ] CXC02 — Lista de cartões higienizada.
+[ ] CXC03 — Área de limite sem valor real.
+[ ] CXC04 — Botão Bloquear cartão ou Liga/Desliga.
+[ ] CXC05 — Opções de bloqueio temporário.
+[ ] CXC06 — Orientação para perda ou roubo.
+
+
+5. ORDEM DE COLETA DOS BANCOS
+-----------------------------
+
+PRIMEIRA RODADA
+
+[ ] CAIXA Tem
+[ ] App CAIXA
+[ ] Cartões CAIXA
+[ ] Banco do Brasil
+
+SEGUNDA RODADA
+
+[ ] Itaú
+[ ] Bradesco
+[ ] Santander
+[ ] Nubank
+
+TERCEIRA RODADA
+
+[ ] Banco Inter
+[ ] PicPay
+[ ] Mercado Pago
+[ ] C6 Bank
+
+Para cada banco, usar o pacote bancário padrão B01 a B15.
+
+
+6. TAREFAS QUE OS GUIAS DEVERÃO COBRIR
+--------------------------------------
+
+PRIORIDADE MÁXIMA
+
+[ ] Identificar mensagem, ligação ou cobrança suspeita.
+[ ] Bloquear e denunciar contato no WhatsApp.
+[ ] Enviar mensagem de texto ou áudio.
+[ ] Fazer chamada de voz ou vídeo.
+[ ] Entrar no Gov.br.
+[ ] Recuperar acesso ao Gov.br.
+[ ] Consultar saldo e extrato.
+[ ] Encontrar atendimento oficial do banco.
+[ ] Bloquear cartão perdido ou roubado.
+[ ] Consultar um comprovante pelo próprio aplicativo.
+
+PRIORIDADE ALTA
+
+[ ] Pagar boleto com código de barras.
+[ ] Fazer Pix usando uma chave.
+[ ] Conferir o nome do recebedor antes de pagar.
+[ ] Consultar limite e fatura do cartão.
+[ ] Consultar prova de vida no Gov.br.
+[ ] Ativar verificação em duas etapas.
+[ ] Ver dispositivos conectados ao WhatsApp.
+
+PRIORIDADE POSTERIOR
+
+[ ] Fazer Pix por QR Code.
+[ ] Encontrar segunda via de boleto.
+[ ] Cancelar pagamento agendado.
+[ ] Contestar compra desconhecida.
+[ ] Alterar limite Pix.
+[ ] Criar ou bloquear cartão virtual.
+[ ] Configurar débito automático.
+[ ] Fazer recarga de celular.
+
+
+7. PADRÃO PARA ENTREGA DOS ARQUIVOS
+-----------------------------------
+
+Exemplo de estrutura:
+
+prints/
+  whatsapp/
+    android/
+      versao-do-aplicativo/
+        W01-lista-conversas.png
+        W02-nova-conversa.png
+    ios/
+      versao-do-aplicativo/
+  gov-br/
+    android/
+    ios/
+  caixa-tem/
+    android/
+    ios/
+  banco-do-brasil/
+    android/
+    ios/
+
+Junto das imagens, informar:
+
+- nome do aplicativo;
+- sistema operacional: Android ou iPhone;
+- versão do aplicativo;
+- versão do sistema operacional;
+- data da captura;
+- tela ou tarefa representada;
+- confirmação de que não existem dados pessoais visíveis.
+
+
+8. AVISOS FINAIS
+----------------
+
+- Os guias financeiros serão educativos e não oficiais.
+- O Guido nunca solicitará senha ou código de autenticação.
+- O Guido não realizará nem confirmará pagamentos.
+- Todo guia deverá terminar antes da confirmação financeira.
+- Nenhuma captura será publicada sem revisão humana.
+- Interfaces podem mudar; versão e data da captura são obrigatórias.
+- Na dúvida sobre a segurança de uma imagem, não envie o arquivo.

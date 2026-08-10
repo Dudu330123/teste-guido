@@ -21,6 +21,11 @@ describe("visualizador do guia", () => {
     expect(screen.getByRole("button", { name: "Voltar" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Ouvir instrução" })).toBeEnabled();
     expect(screen.getByText("Preciso de ajuda")).toBeVisible();
+    expect(screen.queryByText(/Você está no controle/)).not.toBeInTheDocument();
+    expect(screen.getByText("Faltam 5 passos. Continue no seu ritmo.")).toBeVisible();
+
+    await user.click(screen.getByText("Preciso de ajuda"));
+    expect(screen.getByText("Você não precisa ter pressa.")).toBeVisible();
 
     await user.click(screen.getByRole("button", { name: "Próximo" }));
     expect(screen.getByText("Passo 2 de 6")).toBeVisible();
