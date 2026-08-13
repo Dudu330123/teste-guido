@@ -29,6 +29,19 @@ O Next.js apresenta a interface e contém somente a coordenação necessária. P
 
 O diretório `backend/` está congelado como referência da implementação anterior. Não participa da execução nem da CI e será removido somente depois da validação completa da migração.
 
+### Rascunhos de prints no painel experimental
+
+A rota `/admin` permanece temporariamente sem autenticação a pedido do produto,
+por isso não possui permissão de escrita remota. Os arquivos escolhidos são
+validados e guardados como `Blob` no IndexedDB do próprio navegador. Esse fluxo
+permite revisar proporção e associação com cada passo sem criar uma porta pública
+de upload.
+
+Após autenticação e autorização por `team_members`, os arquivos migrarão para o
+bucket privado do Supabase Storage. O PostgreSQL guardará somente metadados e a
+chave do objeto; o HTML nunca incorporará o conteúdo binário. A apresentação usa
+contenção proporcional para adaptar prints verticais ou horizontais sem corte.
+
 ## Fluxo público
 
 Catálogo e guias são consultados no servidor Next.js com a chave publicável. RLS permite apenas conteúdo `published` e o `draft` explicitamente marcado como `is_demo`. Respostas são validadas antes de chegar aos componentes. Imagens e áudios permanecem em bucket privado e são entregues por URLs temporárias.

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { signUpSchema } from "@/lib/validation/auth";
+import { getSignupErrorMessage } from "./auth-error-message";
 import { FormMessage } from "./form-message";
 
 export function SignupForm() {
@@ -34,7 +35,7 @@ export function SignupForm() {
       });
       setSubmitting(false);
       setSuccess(!error);
-      setMessage(error ? "Não foi possível criar a conta. Revise os dados e tente novamente." : "Cadastro recebido. Verifique seu e-mail para continuar.");
+      setMessage(error ? getSignupErrorMessage(error) : "Cadastro recebido. Verifique seu e-mail para continuar.");
     }}>
       <div><label htmlFor="name" className="block font-bold">Nome</label><input id="name" name="name" autoComplete="name" required className="glass-control mt-2 min-h-14 w-full px-4" /></div>
       <div><label htmlFor="signup-email" className="block font-bold">E-mail</label><input id="signup-email" name="email" type="email" autoComplete="email" required className="glass-control mt-2 min-h-14 w-full px-4" /></div>

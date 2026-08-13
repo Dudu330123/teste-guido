@@ -9,6 +9,9 @@ export function SiteHeader() {
           Guido
         </Link>
         <nav aria-label="Navegação principal" className="ml-auto flex flex-wrap items-center justify-end gap-3">
+          <Link href="/admin" className="quiet-action min-h-12 px-4 py-2 font-semibold">
+            Admin
+          </Link>
           <Link href="/#ajuda" className="quiet-action min-h-12 px-4 py-2 font-semibold underline decoration-2 underline-offset-4">
             Preciso de ajuda
           </Link>

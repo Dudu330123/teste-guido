@@ -25,6 +25,7 @@ describe("controles da página inicial", () => {
   it("oferece acesso direto à página de login", () => {
     render(<HomeToolbar />);
     expect(screen.getByRole("link", { name: "Entrar" })).toHaveAttribute("href", "/entrar");
+    expect(screen.getByRole("link", { name: "Admin" })).toHaveAttribute("href", "/admin");
   });
 
   it("alterna e salva o modo de cor", async () => {

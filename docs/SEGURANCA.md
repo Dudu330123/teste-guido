@@ -40,6 +40,11 @@ O Guido não deve coletar ou armazenar senha bancária, CPF usado numa operaçã
 
 Aceitar apenas formatos e tamanhos permitidos, verificar MIME e conteúdo, usar nomes não controlados pelo usuário, remover metadados, procurar dados pessoais, armazenar em bucket privado durante revisão e liberar por URLs temporárias. Nunca reutilizar captura de cliente. Logos precisam de fonte oficial e não podem ter cor ou proporção alterada.
 
+O painel experimental `/admin` não envia arquivos ao servidor enquanto estiver
+sem login. PNG, JPEG e WebP de até 10 MB ficam apenas no IndexedDB do navegador.
+Antes de liberar Storage, será obrigatório validar sessão, papel em `team_members`,
+dimensões, assinatura real do arquivo, metadados e revisão de dados pessoais.
+
 ## Supabase
 
 - somente URL e chave publishable (`sb_publishable_...`) no cliente;
