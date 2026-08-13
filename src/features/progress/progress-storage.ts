@@ -9,6 +9,11 @@ export interface StorageLike {
   removeItem(key: string): void;
 }
 
+export interface EnumerableStorageLike extends StorageLike {
+  readonly length: number;
+  key(index: number): string | null;
+}
+
 function keyFor(guideId: string) {
   return `${STORAGE_PREFIX}${guideId}`;
 }
@@ -44,4 +49,30 @@ export function clearProgress(storage: StorageLike, guideId: string): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * Recupera somente registros pertencentes ao Guido e validados pelo mesmo
+ * contrato usado no salvamento. Isso evita exibir conteúdo arbitrário que
+ * outro script ou uma extensão tenha colocado no armazenamento do navegador.
+ */
+export function listProgress(storage: EnumerableStorageLike): UserProgress[] {
+  const progressEntries: UserProgress[] = [];
+
+  try {
+    for (let index = 0; index < storage.length; index += 1) {
+      const storageKey = storage.key(index);
+      if (!storageKey?.startsWith(STORAGE_PREFIX)) continue;
+
+      const guideId = storageKey.slice(STORAGE_PREFIX.length);
+      const progress = loadProgress(storage, guideId);
+      if (progress?.guideId === guideId) progressEntries.push(progress);
+    }
+  } catch {
+    return [];
+  }
+
+  return progressEntries.sort((first, second) =>
+    second.lastAccessedAt.localeCompare(first.lastAccessedAt),
+  );
 }

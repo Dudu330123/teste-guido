@@ -22,6 +22,11 @@ describe("controles da página inicial", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
+  it("oferece acesso direto à página de login", () => {
+    render(<HomeToolbar />);
+    expect(screen.getByRole("link", { name: "Entrar" })).toHaveAttribute("href", "/entrar");
+  });
+
   it("alterna e salva o modo de cor", async () => {
     const user = userEvent.setup();
     render(<HomeToolbar />);

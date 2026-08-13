@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SessionNavigation } from "@/features/auth/session-navigation";
 
 type ThemePreference = "light" | "dark" | "system";
 
@@ -67,23 +68,28 @@ export function HomeToolbar() {
 
   return (
     <>
-      <nav aria-label="Ações da página inicial" className="absolute right-4 top-4 z-20 flex gap-2 sm:right-6 sm:top-6">
-        <button
-          type="button"
-          onClick={() => setHelpOpen(true)}
-          className="toolbar-action min-h-12 rounded-full px-4 font-bold"
-        >
-          Ajuda
-        </button>
-        <button
-          type="button"
-          onClick={toggleTheme}
-          aria-label="Alternar entre modo claro e escuro"
-          className="toolbar-action min-h-12 rounded-full px-4 font-bold"
-        >
-          Claro / escuro
-        </button>
-      </nav>
+      <div className="absolute inset-x-4 top-4 z-20 flex flex-wrap items-start justify-between gap-3 sm:inset-x-6 sm:top-6">
+        <nav aria-label="Acesso à conta" className="flex flex-wrap gap-2">
+          <SessionNavigation loginLabel="Entrar" />
+        </nav>
+        <nav aria-label="Ações da página inicial" className="ml-auto flex gap-2">
+          <button
+            type="button"
+            onClick={() => setHelpOpen(true)}
+            className="toolbar-action min-h-12 rounded-full px-4 font-bold"
+          >
+            Ajuda
+          </button>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label="Alternar entre modo claro e escuro"
+            className="toolbar-action min-h-12 rounded-full px-4 font-bold"
+          >
+            Claro / escuro
+          </button>
+        </nav>
+      </div>
 
       {helpOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-5" role="presentation">

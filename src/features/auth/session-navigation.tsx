@@ -6,8 +6,15 @@ import { useRouter } from "next/navigation";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { getSupabaseConfig } from "@/lib/validation/env";
 
-export function SessionNavigation() {
-  const router = useRouter();
+interface SessionNavigationProps {
+  loginLabel?: string;
+  showHistory?: boolean;
+}
+
+export function SessionNavigation({
+  loginLabel = "Entrar ou criar conta",
+  showHistory = true,
+}: SessionNavigationProps) {
   const [authenticated, setAuthenticated] = useState(false);
   const [ready, setReady] = useState(() => !getSupabaseConfig().configured);
 
@@ -31,16 +38,33 @@ export function SessionNavigation() {
   if (!ready || !authenticated) {
     return (
       <Link href="/entrar" className="secondary-action min-h-12 px-4 py-2 font-semibold">
-        Entrar ou criar conta
+        {loginLabel}
       </Link>
     );
   }
+
+  return <AuthenticatedNavigation showHistory={showHistory} onSignedOut={() => setAuthenticated(false)} />;
+}
+
+function AuthenticatedNavigation({
+  onSignedOut,
+  showHistory,
+}: {
+  onSignedOut: () => void;
+  showHistory: boolean;
+}) {
+  const router = useRouter();
 
   return (
     <div className="flex flex-wrap items-center gap-2">
       <Link href="/conta" className="secondary-action min-h-12 px-4 py-2 font-semibold">
         Minha conta
       </Link>
+      {showHistory && (
+        <Link href="/historico" className="secondary-action min-h-12 px-4 py-2 font-semibold">
+          Histórico
+        </Link>
+      )}
       <button
         type="button"
         className="quiet-action min-h-12 px-4 py-2 font-semibold underline decoration-2 underline-offset-4"
@@ -48,7 +72,7 @@ export function SessionNavigation() {
           const supabase = getSupabaseBrowserClient();
           if (!supabase) return;
           await supabase.auth.signOut();
-          setAuthenticated(false);
+          onSignedOut();
           router.push("/");
           router.refresh();
         }}
