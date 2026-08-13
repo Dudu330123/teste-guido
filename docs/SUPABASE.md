@@ -1,6 +1,6 @@
 # Integração do Supabase — sujeita a revisão de produto
 
-As migrations `001` a `005` foram validadas em PostgreSQL efêmero e aplicadas ao
+As migrations `001` a `006` foram validadas em PostgreSQL efêmero e aplicadas ao
 projeto Supabase remoto. A auditoria de segurança da CLI não apresentou alertas
 depois da migration `005`. O conteúdo demonstrativo continua pendente de revisão
 humana e não deve ser promovido a oficial.
