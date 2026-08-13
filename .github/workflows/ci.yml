@@ -49,7 +49,8 @@ jobs:
           # build, embora o Guido conecte somente ao PostgreSQL em runtime.
           sudo apt-get install -y \
             cmake ninja-build libdrogon-dev libpq-dev postgresql-client \
-            libjsoncpp-dev default-libmysqlclient-dev libhiredis-dev libyaml-cpp-dev
+            libjsoncpp-dev default-libmysqlclient-dev libhiredis-dev libyaml-cpp-dev \
+            uuid-dev
       - name: Preparar banco efêmero
         env:
           PGPASSWORD: postgres
