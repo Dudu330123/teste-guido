@@ -45,9 +45,10 @@ oficial, configure:
 - deploy para produção: habilitado;
 - branching automático: opcional, pois ambientes de preview exigem plano compatível.
 
-A integração oficial foi autorizada pelo proprietário em 13 de agosto de 2026.
-O primeiro ciclo após a conexão deve confirmar que a branch `main` está sendo
-observada, mesmo quando o commit não contém uma migration nova.
+A autorização OAuth do GitHub foi iniciada pelo proprietário em 13 de agosto de
+2026. O vínculo no nível do projeto só deve ser considerado concluído quando o
+painel exibir `castroo00/guido` e uma migration enviada pela `main` aparecer no
+histórico remoto sem `db push` manual.
 
 A autorização do aplicativo GitHub do Supabase exige confirmação do proprietário
 da conta no painel. Depois de habilitada, novas migrations presentes em

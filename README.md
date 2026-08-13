@@ -87,4 +87,4 @@ O frontend e seus Route Handlers estão preparados para Netlify por `netlify.tom
 
 O diretório `backend/` contém a implementação C++ anterior, congelada apenas como referência durante a migração. Ela não participa mais do build, da CI ou da execução do Guido.
 
-Prévia publicada: `https://guido-ajuda-digital.netlify.app`.
+Site publicado: `https://guido-assistente-digital.netlify.app`.

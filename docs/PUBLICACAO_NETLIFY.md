@@ -10,8 +10,8 @@ A URL pública executa o Next.js e seus Route Handlers. Login, sincronização e
 
 Projeto Netlify atual:
 
-- produção: `https://guido-ajuda-digital.netlify.app`;
-- painel: `https://app.netlify.com/projects/guido-ajuda-digital`.
+- produção: `https://guido-assistente-digital.netlify.app`;
+- painel: `https://app.netlify.com/projects/guido-assistente-digital`.
 
 Projetos novos podem herdar visibilidade privada da equipe. Para uma publicação
 aberta, confirme **Project configuration > General > Visitor access > Project
