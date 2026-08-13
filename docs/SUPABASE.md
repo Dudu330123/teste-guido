@@ -45,6 +45,10 @@ oficial, configure:
 - deploy para produção: habilitado;
 - branching automático: opcional, pois ambientes de preview exigem plano compatível.
 
+A integração oficial foi autorizada pelo proprietário em 13 de agosto de 2026.
+O primeiro ciclo após a conexão deve confirmar que a branch `main` está sendo
+observada, mesmo quando o commit não contém uma migration nova.
+
 A autorização do aplicativo GitHub do Supabase exige confirmação do proprietário
 da conta no painel. Depois de habilitada, novas migrations presentes em
 `supabase/migrations` são aplicadas quando chegam à branch de produção. Alterações
