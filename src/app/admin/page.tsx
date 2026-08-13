@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
+import { financialApplications } from "@/data/applications";
 import { getGuide, getStepsForGuide } from "@/data/guides";
 import { GuideAdmin } from "@/features/admin/guide-admin";
 
@@ -15,10 +16,18 @@ export default function AdminPage() {
         <p className="font-bold text-[var(--primary)]">Área administrativa experimental</p>
         <h1 className="mt-1 text-4xl font-bold sm:text-5xl">Prints dos guias</h1>
         <p className="mt-3 max-w-3xl text-xl">Analise cada passo e associe uma captura de tela sem perder a proporção original.</p>
-        <GuideAdmin stepsByOperatingSystem={{
-          android: getStepsForGuide(androidGuide.id),
-          ios: getStepsForGuide(iosGuide.id),
-        }} />
+        <GuideAdmin
+          guides={[{
+            slug: "pagar-boleto",
+            title: "Pagar um boleto",
+            category: "bank",
+            stepsByOperatingSystem: {
+              android: getStepsForGuide(androidGuide.id),
+              ios: getStepsForGuide(iosGuide.id),
+            },
+          }]}
+          bankApplications={financialApplications.map(({ slug, name }) => ({ slug, name }))}
+        />
       </main>
     </>
   );

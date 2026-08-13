@@ -1,10 +1,16 @@
 import type { ImageDimensions } from "./guide-image-validation";
 
 const databaseName = "guido-admin-drafts";
-const storeName = "guide-screenshots";
-const databaseVersion = 1;
+// Mantemos a coleção antiga intacta para não apagar rascunhos criados antes da
+// separação por guia, aplicativo e sistema operacional.
+const storeName = "guide-screenshot-contexts";
+const databaseVersion = 2;
 
 export interface GuideImageDraft extends ImageDimensions {
+  draftId: string;
+  guideSlug: string;
+  applicationSlug: string | null;
+  operatingSystem: "android" | "ios";
   stepId: string;
   file: Blob;
   filename: string;
@@ -18,12 +24,27 @@ function openDraftDatabase(): Promise<IDBDatabase> {
     const request = indexedDB.open(databaseName, databaseVersion);
     request.onupgradeneeded = () => {
       if (!request.result.objectStoreNames.contains(storeName)) {
-        request.result.createObjectStore(storeName, { keyPath: "stepId" });
+        request.result.createObjectStore(storeName, { keyPath: "draftId" });
       }
     };
     request.onsuccess = () => resolve(request.result);
     request.onerror = () => reject(request.error ?? new Error("Não foi possível abrir os rascunhos locais."));
   });
+}
+
+/** Evita que o print de um aplicativo substitua o mesmo passo de outro. */
+export function buildGuideImageDraftId(context: {
+  guideSlug: string;
+  applicationSlug: string | null;
+  operatingSystem: "android" | "ios";
+  stepId: string;
+}) {
+  return [
+    context.guideSlug,
+    context.applicationSlug ?? "sem-aplicativo",
+    context.operatingSystem,
+    context.stepId,
+  ].join(":");
 }
 
 function waitForTransaction(transaction: IDBTransaction): Promise<void> {
@@ -55,10 +76,10 @@ export async function listGuideImageDrafts(): Promise<GuideImageDraft[]> {
   return drafts;
 }
 
-export async function removeGuideImageDraft(stepId: string): Promise<void> {
+export async function removeGuideImageDraft(draftId: string): Promise<void> {
   const database = await openDraftDatabase();
   const transaction = database.transaction(storeName, "readwrite");
-  transaction.objectStore(storeName).delete(stepId);
+  transaction.objectStore(storeName).delete(draftId);
   await waitForTransaction(transaction);
   database.close();
 }

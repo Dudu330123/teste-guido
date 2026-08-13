@@ -37,6 +37,11 @@ validados e guardados como `Blob` no IndexedDB do próprio navegador. Esse fluxo
 permite revisar proporção e associação com cada passo sem criar uma porta pública
 de upload.
 
+Cada rascunho usa uma identidade composta por guia, aplicativo quando aplicável,
+sistema operacional e passo. Essa separação impede que um print da Caixa, por
+exemplo, substitua o print correspondente do Banco do Brasil. A coleção local
+anterior foi preservada para evitar exclusão silenciosa de arquivos já escolhidos.
+
 Após autenticação e autorização por `team_members`, os arquivos migrarão para o
 bucket privado do Supabase Storage. O PostgreSQL guardará somente metadados e a
 chave do objeto; o HTML nunca incorporará o conteúdo binário. A apresentação usa

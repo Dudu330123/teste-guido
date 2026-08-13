@@ -76,7 +76,8 @@ serão sincronizadas com a `main` pela integração oficial entre Supabase e Git
 - conteúdo de WhatsApp, Gov.br e instituições financeiras permanece em preparação;
 - progresso fica local para visitantes e sincroniza diretamente com PostgreSQL para sessões validadas pelo Supabase;
 - autenticação chama Supabase Auth quando configurada, mas autorização administrativa ainda não está ativa;
-- não há upload, painel administrativo, OCR, integração bancária ou offline completo.
+- o painel `/admin` aceita rascunhos locais de prints, mas ainda não os publica nem os envia ao Supabase;
+- não há upload remoto, autorização administrativa, OCR, integração bancária ou offline completo.
 
 Consulte [arquitetura](docs/ARQUITETURA.md), [API](docs/API.md), [banco](docs/DATABASE.md), [segurança](docs/SEGURANCA.md) e [testes](docs/TESTING.md).
 

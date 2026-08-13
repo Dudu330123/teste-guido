@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import type { GuideStep, OperatingSystem } from "@/types/content";
 import {
+  buildGuideImageDraftId,
   listGuideImageDrafts,
   removeGuideImageDraft,
   saveGuideImageDraft,
@@ -15,8 +16,21 @@ import {
   validateGuideImageFile,
 } from "./guide-image-validation";
 
-interface GuideAdminProps {
+export interface AdminGuideOption {
+  slug: string;
+  title: string;
+  category: "bank" | "other";
   stepsByOperatingSystem: Record<OperatingSystem, GuideStep[]>;
+}
+
+export interface AdminApplicationOption {
+  slug: string;
+  name: string;
+}
+
+interface GuideAdminProps {
+  guides: AdminGuideOption[];
+  bankApplications: AdminApplicationOption[];
 }
 
 interface DraftPreview extends GuideImageDraft {
@@ -27,7 +41,9 @@ function formatFileSize(bytes: number) {
   return `${(bytes / 1024 / 1024).toFixed(2).replace(".", ",")} MB`;
 }
 
-export function GuideAdmin({ stepsByOperatingSystem }: GuideAdminProps) {
+export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
+  const [guideSlug, setGuideSlug] = useState("");
+  const [applicationSlug, setApplicationSlug] = useState("");
   const [operatingSystem, setOperatingSystem] = useState<OperatingSystem>("android");
   const [drafts, setDrafts] = useState<Record<string, DraftPreview>>({});
   const [message, setMessage] = useState("Carregando rascunhos locais…");
@@ -42,7 +58,7 @@ export function GuideAdmin({ stepsByOperatingSystem }: GuideAdminProps) {
         const mapped = Object.fromEntries(storedDrafts.map((draft) => {
           const url = URL.createObjectURL(draft.file);
           urls.push(url);
-          return [draft.stepId, { ...draft, url }];
+          return [draft.draftId, { ...draft, url }];
         }));
         setDrafts(mapped);
         setMessage(storedDrafts.length ? "Rascunhos locais recuperados." : "Nenhum print foi enviado neste navegador.");
@@ -54,10 +70,24 @@ export function GuideAdmin({ stepsByOperatingSystem }: GuideAdminProps) {
     };
   }, []);
 
-  const steps = useMemo(() => stepsByOperatingSystem[operatingSystem], [operatingSystem, stepsByOperatingSystem]);
+  const selectedGuide = guides.find((guide) => guide.slug === guideSlug);
+  const needsApplication = selectedGuide?.category === "bank";
+  const selectionComplete = Boolean(selectedGuide && (!needsApplication || applicationSlug));
+  const steps = useMemo(
+    () => selectedGuide?.stepsByOperatingSystem[operatingSystem] ?? [],
+    [operatingSystem, selectedGuide],
+  );
+
+  const getDraftId = (step: GuideStep) => buildGuideImageDraftId({
+    guideSlug,
+    applicationSlug: needsApplication ? applicationSlug : null,
+    operatingSystem,
+    stepId: step.id,
+  });
 
   const upload = async (step: GuideStep, file: File | undefined) => {
     if (!file) return;
+    const draftId = getDraftId(step);
     const fileError = validateGuideImageFile(file);
     if (fileError) {
       setMessage(`Passo ${step.order}: ${fileError}`);
@@ -72,6 +102,10 @@ export function GuideAdmin({ stepsByOperatingSystem }: GuideAdminProps) {
         return;
       }
       const draft: GuideImageDraft = {
+        draftId,
+        guideSlug,
+        applicationSlug: needsApplication ? applicationSlug : null,
+        operatingSystem,
         stepId: step.id,
         file,
         filename: file.name,
@@ -82,9 +116,9 @@ export function GuideAdmin({ stepsByOperatingSystem }: GuideAdminProps) {
       };
       await saveGuideImageDraft(draft);
       setDrafts((current) => {
-        const previous = current[step.id];
+        const previous = current[draftId];
         if (previous) URL.revokeObjectURL(previous.url);
-        return { ...current, [step.id]: { ...draft, url: URL.createObjectURL(file) } };
+        return { ...current, [draftId]: { ...draft, url: URL.createObjectURL(file) } };
       });
       setMessage(`Print do passo ${step.order} salvo somente neste navegador.`);
     } catch {
@@ -95,13 +129,14 @@ export function GuideAdmin({ stepsByOperatingSystem }: GuideAdminProps) {
   };
 
   const remove = async (step: GuideStep) => {
+    const draftId = getDraftId(step);
     setBusyStepId(step.id);
     try {
-      await removeGuideImageDraft(step.id);
+      await removeGuideImageDraft(draftId);
       setDrafts((current) => {
         const next = { ...current };
-        if (next[step.id]) URL.revokeObjectURL(next[step.id].url);
-        delete next[step.id];
+        if (next[draftId]) URL.revokeObjectURL(next[draftId].url);
+        delete next[draftId];
         return next;
       });
       setMessage(`Print do passo ${step.order} removido deste navegador.`);
@@ -119,8 +154,38 @@ export function GuideAdmin({ stepsByOperatingSystem }: GuideAdminProps) {
         <p className="mt-1">Os prints ficam apenas neste navegador. Eles ainda não aparecem no guia público nem são enviados ao Supabase.</p>
       </div>
 
-      <fieldset className="glass-panel mt-6 p-5">
-        <legend className="px-2 text-xl font-bold">Versão do guia</legend>
+      <section className="glass-panel mt-6 p-5" aria-labelledby="admin-selection-title">
+        <h2 id="admin-selection-title" className="text-xl font-bold">Escolha o conteúdo do print</h2>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <label className="font-bold">
+            1. Guia
+            <select
+              value={guideSlug}
+              onChange={(event) => {
+                setGuideSlug(event.target.value);
+                setApplicationSlug("");
+              }}
+              className="glass-control mt-2 min-h-14 w-full rounded-xl px-4"
+            >
+              <option value="">Selecione um guia</option>
+              {guides.map((guide) => <option key={guide.slug} value={guide.slug}>{guide.title}</option>)}
+            </select>
+          </label>
+
+          {needsApplication && (
+            <label className="font-bold">
+              2. Aplicativo do banco
+              <select value={applicationSlug} onChange={(event) => setApplicationSlug(event.target.value)} className="glass-control mt-2 min-h-14 w-full rounded-xl px-4">
+                <option value="">Selecione o aplicativo</option>
+                {bankApplications.map((application) => <option key={application.slug} value={application.slug}>{application.name}</option>)}
+              </select>
+            </label>
+          )}
+        </div>
+      </section>
+
+      {selectionComplete && <fieldset className="glass-panel mt-6 p-5">
+        <legend className="px-2 text-xl font-bold">{needsApplication ? "3" : "2"}. Celular usado no guia</legend>
         <div className="grid gap-3 sm:grid-cols-2">
           {(["android", "ios"] as const).map((value) => (
             <label key={value} className="glass-control flex min-h-14 cursor-pointer items-center gap-3 rounded-xl px-4 font-bold">
@@ -129,14 +194,21 @@ export function GuideAdmin({ stepsByOperatingSystem }: GuideAdminProps) {
             </label>
           ))}
         </div>
-      </fieldset>
+      </fieldset>}
 
       <p className="notice-info mt-5 rounded-xl p-4 font-semibold" role="status" aria-live="polite">{message}</p>
 
-      <div className="mt-6 space-y-6">
+      {!selectionComplete && (
+        <p className="mt-6 text-center text-lg font-semibold text-[var(--muted)]">
+          {selectedGuide ? "Selecione o aplicativo para liberar os passos e o upload." : "Selecione um guia para começar."}
+        </p>
+      )}
+
+      {selectionComplete && <div className="mt-6 space-y-6">
         {steps.map((step) => {
-          const preview = drafts[step.id];
-          const inputId = `print-${step.id}`;
+          const draftId = getDraftId(step);
+          const preview = drafts[draftId];
+          const inputId = `print-${draftId}`;
           return (
             <article key={step.id} className="glass-panel grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(16rem,0.8fr)_1.2fr]">
               <div>
@@ -177,7 +249,7 @@ export function GuideAdmin({ stepsByOperatingSystem }: GuideAdminProps) {
             </article>
           );
         })}
-      </div>
+      </div>}
     </div>
   );
 }
