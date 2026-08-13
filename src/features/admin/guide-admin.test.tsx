@@ -19,6 +19,11 @@ describe("administração local dos prints", () => {
           android: getStepsForGuide(androidGuide.id),
           ios: getStepsForGuide(iosGuide.id),
         },
+      }, {
+        slug: "fazer-pix",
+        title: "Fazer Pix",
+        category: "bank",
+        stepsByOperatingSystem: { android: [], ios: [] },
       }]}
       bankApplications={[{ slug: "caixa", name: "Caixa" }]}
     />);
@@ -37,5 +42,10 @@ describe("administração local dos prints", () => {
     await user.click(screen.getByRole("radio", { name: "iPhone" }));
     expect(screen.getByRole("radio", { name: "iPhone" })).toBeChecked();
     expect(screen.getAllByText("Escolher print")).toHaveLength(6);
+
+    await user.selectOptions(screen.getByRole("combobox", { name: "1. Guia" }), "fazer-pix");
+    await user.selectOptions(screen.getByRole("combobox", { name: "2. Aplicativo do banco" }), "caixa");
+    expect(screen.getByText("Passos ainda não cadastrados")).toBeVisible();
+    expect(screen.queryByText("Escolher print")).not.toBeInTheDocument();
   });
 });

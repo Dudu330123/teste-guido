@@ -168,7 +168,10 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
               className="glass-control mt-2 min-h-14 w-full rounded-xl px-4"
             >
               <option value="">Selecione um guia</option>
-              {guides.map((guide) => <option key={guide.slug} value={guide.slug}>{guide.title}</option>)}
+              {guides.map((guide) => {
+                const hasSteps = Object.values(guide.stepsByOperatingSystem).some((guideSteps) => guideSteps.length > 0);
+                return <option key={guide.slug} value={guide.slug}>{guide.title}{hasSteps ? "" : " — passos em preparação"}</option>;
+              })}
             </select>
           </label>
 
@@ -204,7 +207,14 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
         </p>
       )}
 
-      {selectionComplete && <div className="mt-6 space-y-6">
+      {selectionComplete && steps.length === 0 && (
+        <div className="notice-warning mt-6 rounded-2xl border-2 p-5" role="note">
+          <h2 className="text-xl font-bold">Passos ainda não cadastrados</h2>
+          <p className="mt-2">Este guia já está no catálogo, mas ainda precisa ter seu roteiro revisado e dividido em passos antes de receber prints.</p>
+        </div>
+      )}
+
+      {selectionComplete && steps.length > 0 && <div className="mt-6 space-y-6">
         {steps.map((step) => {
           const draftId = getDraftId(step);
           const preview = drafts[draftId];
