@@ -50,11 +50,12 @@ jobs:
           PGPASSWORD: postgres
         run: |
           psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -c "create schema auth; create table auth.users (id uuid primary key, raw_user_meta_data jsonb not null default '{}'::jsonb); create function auth.uid() returns uuid language sql stable as 'select null::uuid'; create role anon nologin; create role authenticated nologin; create schema storage; create table storage.buckets (id text primary key, name text not null, public boolean not null default false, file_size_limit bigint, allowed_mime_types text[]); create table storage.objects (id uuid, bucket_id text not null, name text not null); alter table storage.objects enable row level security; grant usage on schema storage to anon, authenticated; grant select on storage.objects to anon, authenticated;"
-          psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -f database/migrations/001_initial_schema.sql
-          psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -f database/migrations/002_row_level_security.sql
-          psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -f database/migrations/003_profiles_trigger.sql
-          psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -f database/migrations/004_supabase_public_access.sql
-          psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -f database/seeds/development.sql
+          psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -f supabase/migrations/001_initial_schema.sql
+          psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -f supabase/migrations/002_row_level_security.sql
+          psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -f supabase/migrations/003_profiles_trigger.sql
+          psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -f supabase/migrations/004_supabase_public_access.sql
+          psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -f supabase/migrations/005_restrict_auth_trigger_execution.sql
+          psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -f supabase/seed.sql
       - name: Validar isolamento e demonstração
         env:
           PGPASSWORD: postgres

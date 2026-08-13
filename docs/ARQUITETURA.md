@@ -24,8 +24,8 @@ O Next.js apresenta a interface e contém somente a coordenação necessária. P
 - `src/features`: pesquisa, guias, progresso, histórico, tema e autenticação;
 - `src/lib/supabase`: clientes, consultas tipadas e validação das respostas;
 - `src/data`: fallback temporário exclusivo da demonstração fictícia;
-- `database/migrations`: schema e políticas RLS versionados, aplicados manualmente;
-- `database/seeds`: somente dados demonstrativos sem informações pessoais.
+- `supabase/migrations`: schema e políticas RLS versionados, aplicados manualmente;
+- `supabase/seed.sql`: somente dados demonstrativos sem informações pessoais.
 
 O diretório `backend/` está congelado como referência da implementação anterior. Não participa da execução nem da CI e será removido somente depois da validação completa da migração.
 

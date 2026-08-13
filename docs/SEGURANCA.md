@@ -44,6 +44,7 @@ Aceitar apenas formatos e tamanhos permitidos, verificar MIME e conteúdo, usar 
 
 - somente URL e chave publishable (`sb_publishable_...`) no cliente;
 - nunca expor `service_role`, senha do banco ou token administrativo;
+- manter as chaves legadas `anon` e `service_role` desativadas quando nenhuma integração depender delas;
 - habilitar RLS em toda tabela acessível pela API;
 - validar a sessão com `auth.getUser()` no servidor antes de usar o `user.id`;
 - renovar cookies com o `proxy.ts` do Next.js;

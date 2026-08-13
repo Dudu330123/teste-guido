@@ -63,13 +63,15 @@ npm run build
 
 ## Banco de dados
 
-As migrations estão em `database/migrations`, mas não são aplicadas automaticamente. Antes de executá-las, crie manualmente o projeto Supabase, revise o schema/RLS e configure credenciais fora do Git. `database/seeds/development.sql` contém apenas a demonstração fictícia em status `draft`.
+As migrations estão em `supabase/migrations`, foram aplicadas ao projeto remoto e
+serão sincronizadas com a `main` pela integração oficial entre Supabase e GitHub.
+`supabase/seed.sql` contém apenas a demonstração fictícia em status `draft`.
 
 ## Estado atual e limitações
 
 - catálogo e guias lidos diretamente do Supabase com validação e fallback local da demonstração;
 - visualizador dinâmico por tarefa e plataforma;
-- schema PostgreSQL, RLS e OpenAPI versionados e validados em banco efêmero, ainda não aplicados remotamente;
+- schema PostgreSQL e RLS versionados, validados em banco efêmero e aplicados ao Supabase remoto;
 - somente “Pagar um boleto” é navegável e usa telas fictícias;
 - conteúdo de WhatsApp, Gov.br e instituições financeiras permanece em preparação;
 - progresso fica local para visitantes e sincroniza diretamente com PostgreSQL para sessões validadas pelo Supabase;
