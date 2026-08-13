@@ -50,7 +50,7 @@ jobs:
           sudo apt-get install -y \
             cmake ninja-build libdrogon-dev libpq-dev postgresql-client \
             libjsoncpp-dev default-libmysqlclient-dev libhiredis-dev libyaml-cpp-dev \
-            uuid-dev
+            uuid-dev libbrotli-dev
       - name: Preparar banco efêmero
         env:
           PGPASSWORD: postgres
