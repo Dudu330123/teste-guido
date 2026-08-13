@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { OperatingSystem } from "@/types/content";
 import type { ProgressStatus } from "@/types/progress";
 
 const remoteProgressSchema = z.object({
@@ -16,6 +17,28 @@ export interface RemoteProgress {
   currentStep: number;
   status: ProgressStatus;
   lastAccessedAt: string;
+}
+
+const remoteHistorySchema = z.object({
+  data: z.array(z.object({
+    guideId: z.string().uuid(),
+    currentStep: z.number().int().min(0).max(499),
+    status: z.enum(["not_started", "in_progress", "completed"]),
+    lastAccessedAt: z.string().datetime(),
+    guideVersion: z.string().min(1),
+    operatingSystem: z.enum(["android", "ios"]),
+    taskSlug: z.string().min(1),
+    taskTitle: z.string().min(1),
+    applicationName: z.string().min(1),
+  })),
+});
+
+export interface RemoteHistoryItem extends RemoteProgress {
+  guideVersion: string;
+  operatingSystem: OperatingSystem;
+  taskSlug: string;
+  taskTitle: string;
+  applicationName: string;
 }
 
 export async function loadRemoteProgress(guideId: string): Promise<RemoteProgress | null> {
@@ -51,5 +74,19 @@ export async function saveRemoteProgress(
     return response.ok;
   } catch {
     return false;
+  }
+}
+
+export async function loadRemoteHistory(): Promise<RemoteHistoryItem[]> {
+  try {
+    const response = await fetch("/api/progress", {
+      cache: "no-store",
+      headers: { Accept: "application/json" },
+    });
+    if (!response.ok) return [];
+    const parsed = remoteHistorySchema.safeParse(await response.json());
+    return parsed.success ? parsed.data.data : [];
+  } catch {
+    return [];
   }
 }

@@ -2,57 +2,42 @@
 
 ## Visão geral
 
-O Guido evolui para duas aplicações em um monólito modular por processo: frontend Next.js e backend C++20/Drogon. A separação é intencional e registrada no ADR-001.
+O Guido é um monólito modular Next.js conectado aos serviços gerenciados do Supabase. A mudança substitui a API C++ separada e está registrada no ADR-002.
 
 ```text
 Navegador
-   │ HTTPS/JSON
+   │
    ▼
-Next.js ───────────────► API C++ / Drogon
-                            │
-              ┌─────────────┴─────────────┐
-              ▼                           ▼
-      PostgreSQL / Supabase       Supabase Storage
-              │
-              ▼
-        Supabase Auth
+Next.js / Netlify
+   │ sessão, consultas e Route Handlers
+   ▼
+Supabase ── Auth
+   ├─────── PostgreSQL + RLS
+   └─────── Storage privado
 ```
 
-O Next.js apresenta e mantém apenas estado visual. O C++ valida, autoriza e coordena. PostgreSQL garante integridade. Storage guarda mídia. Supabase Auth permanece a autoridade de identidade.
+O Next.js apresenta a interface e contém somente a coordenação necessária. PostgreSQL preserva integridade e autorização por linha, Storage guarda imagens e áudios e Supabase Auth é a autoridade de identidade. Não existe chave administrativa no navegador.
 
-## Backend
+## Módulos
 
-```text
-HTTP/controllers
-        ↓
-application/use cases
-        ↓
-domain + repository interfaces
-        ↓
-infrastructure adapters
-        ↓
-PostgreSQL / Storage / Auth
-```
+- `src/app`: rotas, Route Handlers, layout, metadados e manifesto;
+- `src/features`: pesquisa, guias, progresso, histórico, tema e autenticação;
+- `src/lib/supabase`: clientes, consultas tipadas e validação das respostas;
+- `src/data`: fallback temporário exclusivo da demonstração fictícia;
+- `database/migrations`: schema e políticas RLS versionados, aplicados manualmente;
+- `database/seeds`: somente dados demonstrativos sem informações pessoais.
 
-- `backend/include/guido/domain`: entidades e contratos independentes de HTTP;
-- `backend/include/guido/application`: casos de uso e limites de entrada;
-- `backend/src/http`: rotas, JSON e erros públicos;
-- `backend/src/infrastructure`: adaptadores substituíveis;
-- `backend/tests`: testes sem rede;
-- `database/migrations`: schema versionado, nunca aplicado automaticamente;
-- `docs/api/openapi.yaml`: contrato da API.
+O diretório `backend/` está congelado como referência da implementação anterior. Não participa da execução nem da CI e será removido somente depois da validação completa da migração.
 
-O adaptador em memória é transitório e permite validar o primeiro corte vertical. Ele não é fonte de verdade de produção. O adaptador PostgreSQL usa coroutines, pool explícito de 1 a 20 conexões e queries parametrizadas. Readiness consulta o banco e produção não inicia sem PostgreSQL e Supabase Auth.
+## Fluxo público
 
-## Frontend
+Catálogo e guias são consultados no servidor Next.js com a chave publicável. RLS permite apenas conteúdo `published` e o `draft` explicitamente marcado como `is_demo`. Respostas são validadas antes de chegar aos componentes. Imagens e áudios permanecem em bucket privado e são entregues por URLs temporárias.
 
-- `src/app`: rotas, layout, metadados e manifesto;
-- `src/features`: pesquisa, guias, progresso, tema e autenticação;
-- `src/lib/api`: cliente server-side e validação de respostas da API;
-- `src/data`: fallback temporário do MVP;
-- `src/lib/supabase`: Supabase Auth opcional.
+Sem configuração ou durante indisponibilidade, somente “Pagar um boleto” pode usar o fallback local identificado como demonstração. Guias reais nunca são inventados pelo frontend.
 
-O guia de boleto tenta a API configurada em `GUIDO_API_URL`. Falha, timeout ou payload inválido voltam ao conteúdo local sem quebrar o usuário. O progresso continua local para visitantes e também é sincronizado, quando há sessão, por um proxy Next.js sem regra de negócio. Essa tolerância é apenas de migração; produção exige PostgreSQL e não serve rascunhos pela memória.
+## Fluxo autenticado
+
+O cookie da sessão é renovado pelo proxy do Next.js. Route Handlers chamam `auth.getUser()` antes de ler ou gravar progresso. As tabelas `profiles`, `user_progress` e `favorites` também usam RLS com `auth.uid()`, fornecendo defesa em profundidade. Visitantes continuam com progresso local sem dados sensíveis.
 
 ## Fluxo de conteúdo
 
@@ -67,7 +52,7 @@ Nenhum guia pesquisado, importado ou gerado automaticamente é publicado.
 
 ## Evolução controlada
 
-Renovação completa da sessão, Storage e administração ainda entram como módulos do mesmo backend. Catálogo PostgreSQL e progresso remoto já possuem adaptadores iniciais. Redis, workers, filas, IA e microsserviços permanecem fora até uma métrica ou caso de uso concreto justificá-los. Python poderá existir futuramente apenas como processamento isolado de imagem/OCR, nunca como requisito do backend principal.
+Operações administrativas futuras permanecem em Route Handlers ou Edge Functions pequenas, sempre com autorização explícita. Redis, workers, filas, IA e microsserviços ficam fora até existir necessidade mensurável. Python poderá existir futuramente apenas como processamento isolado de imagem/OCR, nunca como requisito da aplicação principal.
 
 ## Fora do escopo
 

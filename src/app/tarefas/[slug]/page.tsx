@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { applications } from "@/data/applications";
 import { tasks } from "@/data/guides";
 import { OsSelector } from "@/features/guides/os-selector";
+import { getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/supabase/catalog";
 
 interface TaskPageProps {
   params: Promise<{ slug: string }>;
@@ -14,9 +15,11 @@ export const metadata: Metadata = { title: "Escolha seu celular" };
 
 export default async function TaskPage({ params }: TaskPageProps) {
   const { slug } = await params;
-  const task = tasks.find((item) => item.slug === slug);
+  const remoteCatalog = await getCatalogFromSupabase();
+  const catalog = mergeCatalogWithFallback(remoteCatalog, { applications, tasks });
+  const task = catalog.tasks.find((item) => item.slug === slug);
   if (!task) notFound();
-  const application = applications.find((item) => item.id === task.applicationId);
+  const application = catalog.applications.find((item) => item.id === task.applicationId);
   if (!application) notFound();
 
   return (
@@ -27,8 +30,8 @@ export default async function TaskPage({ params }: TaskPageProps) {
         <p className="mt-8 font-semibold text-[var(--primary)]">Guia educativo</p>
         <h1 className="text-4xl font-bold">{task.title}</h1>
         <p className="mt-3 text-xl">{task.description}</p>
-        {task.availability === "demo" ? (
-          <OsSelector />
+        {task.availability !== "preparing" ? (
+          <OsSelector taskSlug={task.slug} />
         ) : (
           <div className="glass-panel mt-7 rounded-2xl p-6">
             <h2 className="text-2xl font-bold">Guia em preparação</h2>

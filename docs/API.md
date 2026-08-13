@@ -1,4 +1,6 @@
-# API C++
+# API C++ arquivada
+
+> Este documento descreve a implementação anterior, substituída pelo ADR-002. Os endpoints abaixo não participam mais do runtime ou da publicação do Guido.
 
 O contrato executável está em [`docs/api/openapi.yaml`](api/openapi.yaml). A versão inicial expõe leitura pública do catálogo, health checks e progresso autenticado.
 

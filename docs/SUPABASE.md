@@ -18,22 +18,15 @@ As migrations locais foram criadas e validadas apenas em PostgreSQL efêmero. Ne
 1. Abrir o projeto `GUIDO` no painel oficial do Supabase.
 2. Em **Connect** ou **Settings > API Keys**, copiar somente a Project URL e a
    chave **Publishable** (`sb_publishable_...`) para `.env.local`.
-3. Repetir esses dois valores em `.env.backend.local`; a chave publishable não
-   concede privilégios administrativos e é usada para validar sessões no Auth.
-4. Em **Connect**, copiar a conexão PostgreSQL **Session pooler**, porta `5432`,
-   para `GUIDO_DATABASE_URL` em `.env.backend.local`. Ela é apropriada ao backend
-   persistente e funciona em redes IPv4. Cole a URL inteira sem aspas; o
-   inicializador lê o valor literalmente, inclusive caracteres especiais da senha.
-5. Em **Authentication > URL Configuration**, definir Site URL como
+3. Em **Authentication > URL Configuration**, definir Site URL como
    `http://localhost:3000` e adicionar `http://localhost:3000/**` às Redirect URLs.
-6. Revisar as migrations versionadas em `database/migrations`.
-7. Aplicar RLS primeiro em ambiente de desenvolvimento e repetir os testes negativos.
-8. Configurar Storage privado e limites antes de qualquer upload.
+4. Revisar as migrations versionadas em `database/migrations`, incluindo as políticas da demonstração e do Storage.
+5. Aplicar as migrations manualmente, em ordem, primeiro em ambiente de desenvolvimento.
+6. Aplicar `database/seeds/development.sql` somente se desejar a demonstração fictícia.
+7. Repetir os testes negativos de RLS antes de publicar.
+8. Adicionar a URL de produção às Redirect URLs antes do deploy.
 
 Nunca copie para o projeto ou para o navegador `service_role`, `sb_secret_...`
-ou tokens administrativos. A senha PostgreSQL pertence somente a
-`.env.backend.local`, que está ignorado pelo Git e usa permissão local restrita.
+ou tokens administrativos. O frontend e os Route Handlers usam somente a chave publicável e as permissões da sessão.
 
-O cliente de servidor em `src/lib/supabase/server.ts` aceita cookies e o proxy de
-progresso retransmite o access token à API C++, que o valida novamente no
-Supabase Auth. `src/proxy.ts` mantém a renovação da sessão no Next.js.
+O cliente de servidor em `src/lib/supabase/server.ts` aceita cookies e valida o usuário com `auth.getUser()` antes de operações privadas. `src/proxy.ts` mantém a renovação da sessão no Next.js. Catálogo e guias são lidos diretamente com RLS; progresso e histórico passam por Route Handlers sem chave administrativa.

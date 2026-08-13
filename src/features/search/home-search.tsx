@@ -18,7 +18,7 @@ const searchExamples = [
 ] as const;
 
 function getTaskHref(task: Task, applications: Application[]) {
-  if (task.availability === "demo") return `/tarefas/${task.slug}`;
+  if (task.availability !== "preparing") return `/tarefas/${task.slug}`;
   if (task.applicationId === "app-demo-bancos" && task.actionId) return `/acoes/${task.actionId}`;
   const application = applications.find((item) => item.id === task.applicationId);
   return `/aplicativos/${application?.slug ?? ""}`;
@@ -105,7 +105,7 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
               >
                 <span className="block text-sm font-bold uppercase tracking-wide text-[var(--primary)]">{category}</span>
                 <span className="mt-1 block font-semibold text-[var(--foreground)]">{task.title}</span>
-                <span className="mt-1 block text-sm text-[var(--muted)]">{task.availability === "demo" ? "Demonstração disponível" : "Em preparação"}</span>
+                <span className="mt-1 block text-sm text-[var(--muted)]">{task.availability === "demo" ? "Demonstração disponível" : task.availability === "available" ? "Guia disponível" : "Em preparação"}</span>
               </Link>
             );
           }) : (

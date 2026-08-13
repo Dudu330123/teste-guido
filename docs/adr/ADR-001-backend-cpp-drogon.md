@@ -1,5 +1,7 @@
 # ADR-001 — Backend C++20 com Drogon
 
+> **Substituído pelo ADR-002.** Mantido apenas como registro histórico da decisão anterior.
+
 **Status:** aceito em 10 de agosto de 2026.
 
 ## Contexto
@@ -25,4 +27,3 @@ O backend separa HTTP, casos de uso, domínio, repositórios e infraestrutura. O
 - o desenvolvimento local exige CMake, Drogon e PostgreSQL/libpq;
 - C++ demanda sanitizers, warnings fortes, ownership explícito e testes de entrada maliciosa;
 - o frontend preserva fallback local apenas durante a migração; produção deverá exigir a API.
-

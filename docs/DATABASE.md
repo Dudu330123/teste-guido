@@ -21,14 +21,15 @@ PostgreSQL atende ao modelo relacional, constraints, transações, busca textual
 - `001_initial_schema.sql`: tipos, tabelas, constraints, índices e gatilhos;
 - `002_row_level_security.sql`: RLS com leitura pública somente de conteúdo publicado e isolamento de dados de usuário.
 - `003_profiles_trigger.sql`: criação segura do perfil mínimo após cadastro no Supabase Auth.
+- `004_supabase_public_access.sql`: leitura de conteúdo publicado, demonstração explicitamente marcada e bucket privado de mídia.
 
 As migrations foram verificadas em PostgreSQL 18 efêmero, mas não foram executadas em Supabase remoto. Aplicá-las remotamente exige um projeto escolhido pelo responsável, revisão e credenciais locais fora do Git. O seed de desenvolvimento permanece `draft` e não publica nada.
 
-## Acesso do backend
+## Acesso da aplicação
 
-Produção deve usar uma role PostgreSQL própria e de menor privilégio, nunca superusuário. A role e a string de conexão são configuradas fora das migrations e do repositório. Operações administrativas passam pelo backend e por autorização baseada em identidade validada.
+O Next.js usa a chave publicável e o JWT da sessão. Grants definem quais tabelas cada papel alcança e RLS restringe as linhas. Chaves `service_role` e `sb_secret_...` não são usadas no navegador nem necessárias para a jornada pública e de usuário do MVP.
 
-`user_progress.current_step` é zero-based para coincidir com o visualizador: primeiro passo é `0`. O backend valida o valor contra a quantidade real de etapas antes do upsert.
+`user_progress.current_step` é zero-based para coincidir com o visualizador: primeiro passo é `0`. O Route Handler valida o valor contra a quantidade real de etapas antes do upsert.
 
 ## Busca
 

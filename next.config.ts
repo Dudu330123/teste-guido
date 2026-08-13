@@ -21,6 +21,9 @@ const contentSecurityPolicy = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
+  images: {
+    remotePatterns: [{ protocol: "https", hostname: "**.supabase.co" }],
+  },
   async headers() {
     return [{
       source: "/(.*)",

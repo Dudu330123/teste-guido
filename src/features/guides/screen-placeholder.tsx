@@ -4,6 +4,26 @@ import type { GuideStep } from "@/types/content";
 const demoBankIconPath = "/guide-placeholders/banco-demonstracao-icon.png";
 
 export function ScreenPlaceholder({ step }: { step: GuideStep }) {
+  if (step.imagePath.startsWith("https://")) {
+    return (
+      <figure className="mx-auto w-full max-w-[28rem]">
+        <div className="glass-panel relative aspect-[9/18] overflow-hidden rounded-[2.75rem] border-[10px] border-[#152238] bg-white shadow-2xl">
+          <Image
+            src={step.imagePath}
+            alt={step.imageAlt}
+            fill
+            sizes="(max-width: 1024px) 90vw, 28rem"
+            className="object-contain"
+            priority={step.order === 1}
+          />
+        </div>
+        <figcaption className="mt-3 text-center font-semibold text-[var(--muted)]">
+          Imagem educativa revisada para este passo.
+        </figcaption>
+      </figure>
+    );
+  }
+
   return (
     <div role="img" aria-label={step.imageAlt} className="mock-phone mx-auto aspect-[9/18] w-full max-w-[22rem] rounded-[2.75rem] border-[11px] p-2 shadow-2xl">
       <div className="relative flex h-full flex-col overflow-hidden rounded-[2rem] bg-[#f7fbff]" aria-hidden="true">

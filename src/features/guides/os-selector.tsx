@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import type { OperatingSystem } from "@/types/content";
 import { detectOperatingSystem, readOperatingSystem, saveOperatingSystem } from "./device";
 
-export function OsSelector() {
+export function OsSelector({ taskSlug }: { taskSlug: string }) {
   const router = useRouter();
   const [operatingSystem, setOperatingSystem] = useState<OperatingSystem>("android");
 
@@ -28,7 +28,7 @@ export function OsSelector() {
       onSubmit={(event) => {
         event.preventDefault();
         saveOperatingSystem(window.localStorage, operatingSystem);
-        router.push(`/guias/pagar-boleto?os=${operatingSystem}`);
+        router.push(`/guias/${encodeURIComponent(taskSlug)}?os=${operatingSystem}`);
       }}
     >
       <fieldset>

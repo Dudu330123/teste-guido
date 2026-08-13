@@ -11,7 +11,7 @@ describe("seletor de celular", () => {
 
   it("oferece controles nomeados e confirma a escolha do iPhone", async () => {
     const user = userEvent.setup();
-    render(<OsSelector />);
+    render(<OsSelector taskSlug="pagar-boleto" />);
     const other = screen.getByRole("radio", { name: /outro/i });
     const ios = screen.getByRole("radio", { name: /iphone/i });
     expect(other).toBeChecked();

@@ -1,12 +1,12 @@
 # Decisões técnicas
 
-## Backend C++
+## Backend integrado ao Next.js e Supabase
 
-O backend é um processo separado em C++20 com Drogon e CMake por decisão explícita do produto. A motivação, alternativas e custos estão em [`ADR-001`](adr/ADR-001-backend-cpp-drogon.md). A antiga decisão que excluía C++ foi substituída.
+O produto ativo usa Next.js com PostgreSQL, Auth e Storage do Supabase. A decisão reduz hospedagem e integração duplicadas e está registrada no [`ADR-002`](adr/ADR-002-nextjs-supabase.md). O ADR-001 e o diretório C++ permanecem temporariamente apenas como histórico.
 
 ## Monólito modular
 
-Há um frontend e uma API, mas não há microsserviços. O backend separa controllers, casos de uso, domínio, repositórios e infraestrutura para evitar regras em handlers e SQL espalhado.
+Há uma aplicação Next.js modular e serviços gerenciados do Supabase, sem microsserviços próprios. Consultas ficam centralizadas em `src/lib/supabase`, políticas em migrations e coordenação HTTP em Route Handlers pequenos.
 
 ## PostgreSQL e Supabase
 
@@ -14,7 +14,7 @@ PostgreSQL foi confirmado pelo modelo relacional, constraints, transações, bus
 
 ## Progresso durante a migração
 
-O progresso local validado permanece funcionando para visitantes. A persistência remota será adicionada para usuários autenticados com upsert idempotente e isolamento por usuário; o fallback não armazena dados financeiros.
+O progresso local validado permanece funcionando para visitantes. Usuários autenticados sincronizam por Route Handlers com sessão validada, upsert idempotente e RLS por usuário; o fallback não armazena dados financeiros.
 
 ## Android e iOS
 
@@ -27,4 +27,3 @@ Somente conteúdo `published` pode representar guia real. Demonstrações mantê
 ## Tecnologias adiadas
 
 Python continua fora do runtime principal e só será considerado para processamento especializado. Redis, Kafka, RabbitMQ, Kubernetes, Elasticsearch, vector database, CQRS e event sourcing não possuem justificativa atual.
-

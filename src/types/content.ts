@@ -1,7 +1,7 @@
 export type OperatingSystem = "android" | "ios";
 export type ContentStatus = "draft" | "under_review" | "published" | "outdated";
 export type ApplicationAvailability = "available" | "preparing";
-export type TaskAvailability = "demo" | "preparing";
+export type TaskAvailability = "available" | "demo" | "preparing";
 
 export interface Action {
   id: string;

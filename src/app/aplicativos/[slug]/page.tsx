@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
-import { getApplicationBySlug } from "@/data/applications";
+import { applications, getApplicationBySlug } from "@/data/applications";
 import { tasks } from "@/data/guides";
+import { getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/supabase/catalog";
 
 interface ApplicationPageProps {
   params: Promise<{ slug: string }>;
@@ -13,9 +14,11 @@ export const metadata: Metadata = { title: "Tarefas do aplicativo" };
 
 export default async function ApplicationPage({ params }: ApplicationPageProps) {
   const { slug } = await params;
-  const application = getApplicationBySlug(slug);
+  const remoteCatalog = await getCatalogFromSupabase();
+  const catalog = mergeCatalogWithFallback(remoteCatalog, { applications, tasks });
+  const application = catalog.applications.find((item) => item.slug === slug) ?? getApplicationBySlug(slug);
   if (!application) notFound();
-  const applicationTasks = tasks.filter((task) => task.applicationId === application.id);
+  const applicationTasks = catalog.tasks.filter((task) => task.applicationId === application.id);
 
   return (
     <>
@@ -35,7 +38,7 @@ export default async function ApplicationPage({ params }: ApplicationPageProps) 
                   <h3 className="text-2xl font-bold">{task.title}</h3>
                   <p className="mt-2">{task.description}</p>
                   <p className="notice-info mt-3 rounded-xl p-4 font-semibold">{task.safetyWarning}</p>
-                  {task.availability === "demo" ? (
+                  {task.availability !== "preparing" ? (
                     <Link href={`/tarefas/${task.slug}`} className="primary-action mt-5 inline-block min-h-12 px-6 py-3 font-bold">
                       Escolher meu celular
                     </Link>

@@ -6,11 +6,7 @@ automática e suporta App Router, SSR, Route Handlers e Middleware.
 
 ## Escopo da primeira publicação
 
-A primeira URL pública é uma prévia funcional do frontend com o guia fictício
-local. Login, sincronização e conteúdo PostgreSQL permanecem indisponíveis até a
-configuração das variáveis do Supabase. A API C++ não é executada pelo Netlify e
-será hospedada separadamente; enquanto `GUIDO_API_URL` estiver ausente, o
-frontend usa o fallback demonstrativo já validado.
+A URL pública executa o Next.js e seus Route Handlers. Login, sincronização e conteúdo PostgreSQL são ativados pelas variáveis do Supabase; enquanto estiverem ausentes, o frontend usa somente o fallback demonstrativo identificado como fictício.
 
 Projeto Netlify atual:
 
@@ -35,18 +31,14 @@ configuration > Environment variables**, nunca gravadas no repositório:
 ```text
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
-GUIDO_API_URL=
 ```
 
-Para a primeira prévia, deixe as três ausentes. Após a configuração dos serviços:
+Para uma prévia apenas local, deixe as duas ausentes. Para ativar os serviços:
 
 - `NEXT_PUBLIC_SUPABASE_URL`: URL pública do projeto Supabase;
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`: somente `sb_publishable_...`;
-- `GUIDO_API_URL`: URL HTTPS pública da API C++.
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`: somente `sb_publishable_...`.
 
-Nunca configure no Netlify senha PostgreSQL, `service_role`, `sb_secret_...` ou
-`GUIDO_DATABASE_URL`: essas credenciais pertencem exclusivamente à hospedagem da
-API C++.
+Nunca configure no código ou no navegador senha PostgreSQL, `service_role` ou `sb_secret_...`. A jornada atual não necessita dessas credenciais.
 
 ## Autenticação
 

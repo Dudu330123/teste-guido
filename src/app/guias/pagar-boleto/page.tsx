@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { applications } from "@/data/applications";
 import { getGuide, getStepsForGuide, tasks } from "@/data/guides";
 import { GuideViewer } from "@/features/guides/guide-viewer";
-import { getGuideFromApi } from "@/lib/api/catalog";
+import { getGuideFromSupabase } from "@/lib/supabase/catalog";
 
 interface GuidePageProps {
   searchParams: Promise<{ os?: string }>;
@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "Guia: Pagar um boleto" };
 export default async function GuidePage({ searchParams }: GuidePageProps) {
   const { os } = await searchParams;
   if (os !== "android" && os !== "ios") redirect("/tarefas/pagar-boleto");
-  const remoteContent = await getGuideFromApi("pagar-boleto", os);
+  const remoteContent = await getGuideFromSupabase("pagar-boleto", os);
   if (remoteContent) {
     return <GuideViewer {...remoteContent} />;
   }

@@ -45,7 +45,7 @@ Aceitar apenas formatos e tamanhos permitidos, verificar MIME e conteúdo, usar 
 - somente URL e chave publishable (`sb_publishable_...`) no cliente;
 - nunca expor `service_role`, senha do banco ou token administrativo;
 - habilitar RLS em toda tabela acessível pela API;
-- validar sessão no Supabase e novamente no backend C++ antes de usar o `user.id`;
+- validar a sessão com `auth.getUser()` no servidor antes de usar o `user.id`;
 - renovar cookies com o `proxy.ts` do Next.js;
 - políticas separadas para leitura publicada, autoria, revisão e administração;
 - Storage privado para rascunhos e políticas por equipe;

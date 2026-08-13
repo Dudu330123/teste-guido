@@ -9,7 +9,7 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { getSupabaseConfig } from "@/lib/validation/env";
 import type { UserProgress } from "@/types/progress";
 import { listProgress } from "./progress-storage";
-import { loadRemoteProgress } from "./remote-progress";
+import { loadRemoteHistory } from "./remote-progress";
 
 type HistoryState = "loading" | "unconfigured" | "signed_out" | "ready";
 
@@ -43,30 +43,29 @@ function buildHistoryItems(progressEntries: UserProgress[]): HistoryItem[] {
 }
 
 async function loadAvailableHistory() {
-  const localEntries = listProgress(window.localStorage);
-  // Enquanto a API ainda não oferece uma consulta agregada, buscamos apenas os
-  // poucos guias conhecidos pelo MVP. O registro mais recente vence, mantendo
-  // o histórico útil também quando o usuário alterna entre dispositivos.
-  const remoteEntries = await Promise.all(guides.map(async (guide): Promise<UserProgress | null> => {
-    const remote = await loadRemoteProgress(guide.id);
-    if (!remote) return null;
-    return {
+  const localItems = buildHistoryItems(listProgress(window.localStorage));
+  const remoteItems: HistoryItem[] = (await loadRemoteHistory()).map((remote) => ({
+    applicationName: remote.applicationName,
+    href: `/guias/${remote.taskSlug}?os=${remote.operatingSystem}`,
+    taskTitle: remote.taskTitle,
+    progress: {
       guideId: remote.guideId,
       currentStep: remote.currentStep,
       status: remote.status,
       lastAccessedAt: remote.lastAccessedAt,
-      guideVersion: guide.guideVersion,
-      operatingSystem: guide.operatingSystem,
-    };
+      guideVersion: remote.guideVersion,
+      operatingSystem: remote.operatingSystem,
+    },
   }));
-  const newestByGuide = new Map<string, UserProgress>();
-  [...localEntries, ...remoteEntries.filter((entry): entry is UserProgress => entry !== null)]
-    .forEach((entry) => {
-      const current = newestByGuide.get(entry.guideId);
-      if (!current || entry.lastAccessedAt > current.lastAccessedAt) newestByGuide.set(entry.guideId, entry);
+  const newestByGuide = new Map<string, HistoryItem>();
+  [...localItems, ...remoteItems].forEach((item) => {
+      const current = newestByGuide.get(item.progress.guideId);
+      if (!current || item.progress.lastAccessedAt > current.progress.lastAccessedAt) {
+        newestByGuide.set(item.progress.guideId, item);
+      }
     });
   return [...newestByGuide.values()].sort((first, second) =>
-    second.lastAccessedAt.localeCompare(first.lastAccessedAt),
+    second.progress.lastAccessedAt.localeCompare(first.progress.lastAccessedAt),
   );
 }
 
@@ -88,7 +87,7 @@ export function HistoryPanel() {
       }
 
       setUser(data.user);
-      setItems(buildHistoryItems(await loadAvailableHistory()));
+      setItems(await loadAvailableHistory());
       setState("ready");
     });
   }, []);
