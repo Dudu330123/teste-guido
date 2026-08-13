@@ -1,35 +1,30 @@
 # Decisões técnicas
 
-## Next.js e monólito modular
+## Backend C++
 
-Next.js com App Router reúne páginas, renderização e futuras rotas de backend em uma implantação simples. A organização por `features` mantém limites de domínio sem criar microsserviços ou abstrações prematuras.
+O backend é um processo separado em C++20 com Drogon e CMake por decisão explícita do produto. A motivação, alternativas e custos estão em [`ADR-001`](adr/ADR-001-backend-cpp-drogon.md). A antiga decisão que excluía C++ foi substituída.
 
-## Supabase
+## Monólito modular
 
-Supabase foi escolhido para PostgreSQL, Auth e Storage gerenciados. Os clientes estão preparados, mas retornam `null` quando faltam variáveis. O projeto remoto e as migrations devem ser criados manualmente somente após revisão de segurança e dados.
+Há um frontend e uma API, mas não há microsserviços. O backend separa controllers, casos de uso, domínio, repositórios e infraestrutura para evitar regras em handlers e SQL espalhado.
 
-## Progresso local no MVP
+## PostgreSQL e Supabase
 
-O progresso usa `localStorage`, validado por schema e isolado da UI. Isso evita dependência de conta e permite migrar a persistência futuramente. Nada digitado, financeiro ou pessoal é armazenado.
+PostgreSQL foi confirmado pelo modelo relacional, constraints, transações, busca textual e auditoria. Supabase fornece hospedagem, Auth e Storage. Nenhum projeto é criado automaticamente e nenhuma chave administrativa é exposta no frontend.
 
-## Android e iOS separados
+## Progresso durante a migração
 
-Cada sistema possui um `Guide` próprio, mesmo enquanto os passos fictícios coincidem. Interfaces reais divergem por plataforma e devem ser pesquisadas e revisadas separadamente.
+O progresso local validado permanece funcionando para visitantes. A persistência remota será adicionada para usuários autenticados com upsert idempotente e isolamento por usuário; o fallback não armazena dados financeiros.
 
-## Revisão humana obrigatória
+## Android e iOS
 
-Pesquisa, OCR ou automação futura nunca publica um guia. Uma pessoa autorizada precisa verificar origem, versão, segurança, acessibilidade e fidelidade antes do status `published`.
+Cada versão de guia possui plataforma explícita. Etapas e mídias podem ser reaproveitadas apenas quando a revisão confirmar que a interface é igual; não se presume equivalência.
 
-## Tecnologias excluídas
+## Revisão humana
 
-C++ não se aplica ao produto web e fica excluído. Python não é necessário nesta fase; poderá ser avaliado apenas para processamento especializado futuro. Não há backend separado, Docker ou microsserviços.
+Somente conteúdo `published` pode representar guia real. Demonstrações mantêm `draft` e `is_demo=true`. Pesquisa, OCR ou IA futura nunca alteram o status para publicado.
 
-## Migração aperfeiçoada do MVP Vite anterior
+## Tecnologias adiadas
 
-O MVP anterior foi analisado em 28 de julho de 2026. A base Next.js foi preservada e suas funcionalidades foram reimplementadas: identidade azul, mockup visual mais detalhado, sugestões rápidas, termos alternativos, seis ações, dez aplicativos financeiros e o fluxo ação → aplicativo. Não foram importados Vite, arquivos compilados, dependências antigas, código sem uso ou marcas aproximadas.
+Python continua fora do runtime principal e só será considerado para processamento especializado. Redis, Kafka, RabbitMQ, Kubernetes, Elasticsearch, vector database, CQRS e event sourcing não possuem justificativa atual.
 
-As 60 combinações financeiras são geradas por dados normalizados, em vez de manter cópias iguais por banco. Todas permanecem `draft` e `preparing`; nenhuma abre guia até possuir pesquisa oficial e revisão humana. Tarefas recuperadas para WhatsApp, Gov.br, segurança e atendimento seguem a mesma regra. Passos antigos que mencionavam senha, biometria, inserção de códigos, envio de Pix ou confirmação financeira foram descartados.
-
-### Disponibilidade por tarefa
-
-O campo `availability` diferencia `demo` de `preparing`. O status do aplicativo não determina mais, sozinho, se uma tarefa abre um guia. Isso impede que rascunhos se tornem navegáveis quando um mesmo aplicativo também possuir uma demonstração.

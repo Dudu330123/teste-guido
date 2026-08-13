@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Instalar toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build libdrogon-dev libpq-dev postgresql-client
+      - name: Preparar banco efêmero
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -c "create schema auth; create table auth.users (id uuid primary key, raw_user_meta_data jsonb not null default '{}'::jsonb); create function auth.uid() returns uuid language sql stable as 'select null::uuid'; create role anon nologin; create role authenticated nologin;"
+          psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -f database/migrations/001_initial_schema.sql
+          psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -f database/migrations/002_row_level_security.sql
+          psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -f database/migrations/003_profiles_trigger.sql
+          psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -f database/seeds/development.sql
+      - name: Compilar e testar
+        env:
+          GUIDO_TEST_DATABASE_URL: host=127.0.0.1 port=5432 dbname=postgres user=postgres password=postgres connect_timeout=2
+        run: |
+          cmake -S backend -B backend/build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON
+          cmake --build backend/build --parallel
+          ctest --test-dir backend/build --output-on-failure
+      - name: Sanitizers
+        run: |
+          cmake -S backend -B backend/build-asan -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON -DGUIDO_ENABLE_SANITIZERS=ON
+          cmake --build backend/build-asan --parallel
+          ctest --test-dir backend/build-asan --output-on-failure -R guido_core_tests

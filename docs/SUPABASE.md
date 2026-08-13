@@ -1,6 +1,6 @@
-# Modelo inicial do Supabase — sujeito a revisão
+# Integração inicial do Supabase — sujeita a revisão
 
-Nenhuma migration foi criada. As entidades abaixo são uma proposta conceitual para discussão de produto, LGPD, RLS e auditoria antes de qualquer SQL.
+As migrations locais foram criadas e validadas apenas em PostgreSQL efêmero. Nenhuma migration foi executada em projeto Supabase remoto. O modelo ainda precisa de revisão de produto, LGPD e permissões antes dessa aplicação.
 
 - `profiles`: dados mínimos do usuário e preferência de sistema; relacionado a `auth.users`;
 - `team_members`: vínculo entre usuários internos, equipe e papel;
@@ -13,14 +13,27 @@ Nenhuma migration foi criada. As entidades abaixo são uma proposta conceitual p
 - `guide_reviews`: revisões humanas, parecer e status;
 - `audit_logs`: eventos administrativos mínimos, sem conteúdo sensível.
 
-## Configuração manual futura
+## Configuração do projeto de desenvolvimento
 
-1. Criar o projeto no painel oficial do Supabase.
-2. Definir região e regras de acesso aprovadas pela equipe.
-3. Copiar apenas Project URL e chave pública/anon para `.env.local`.
-4. Configurar URLs locais e de produção no Supabase Auth.
-5. Revisar o modelo e criar migrations versionadas localmente.
-6. Aplicar RLS e testar negações antes de conectar dados reais.
-7. Configurar Storage privado e limites antes de qualquer upload.
+1. Abrir o projeto `GUIDO` no painel oficial do Supabase.
+2. Em **Connect** ou **Settings > API Keys**, copiar somente a Project URL e a
+   chave **Publishable** (`sb_publishable_...`) para `.env.local`.
+3. Repetir esses dois valores em `.env.backend.local`; a chave publishable não
+   concede privilégios administrativos e é usada para validar sessões no Auth.
+4. Em **Connect**, copiar a conexão PostgreSQL **Session pooler**, porta `5432`,
+   para `GUIDO_DATABASE_URL` em `.env.backend.local`. Ela é apropriada ao backend
+   persistente e funciona em redes IPv4. Cole a URL inteira sem aspas; o
+   inicializador lê o valor literalmente, inclusive caracteres especiais da senha.
+5. Em **Authentication > URL Configuration**, definir Site URL como
+   `http://localhost:3000` e adicionar `http://localhost:3000/**` às Redirect URLs.
+6. Revisar as migrations versionadas em `database/migrations`.
+7. Aplicar RLS primeiro em ambiente de desenvolvimento e repetir os testes negativos.
+8. Configurar Storage privado e limites antes de qualquer upload.
 
-O cliente de servidor em `src/lib/supabase/server.ts` já aceita cookies, mas a renovação completa de sessão exigirá middleware quando autenticação passar a integrar rotas protegidas.
+Nunca copie para o projeto ou para o navegador `service_role`, `sb_secret_...`
+ou tokens administrativos. A senha PostgreSQL pertence somente a
+`.env.backend.local`, que está ignorado pelo Git e usa permissão local restrita.
+
+O cliente de servidor em `src/lib/supabase/server.ts` aceita cookies e o proxy de
+progresso retransmite o access token à API C++, que o valida novamente no
+Supabase Auth. `src/proxy.ts` mantém a renovação da sessão no Next.js.

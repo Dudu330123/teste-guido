@@ -7,6 +7,6 @@ let client: SupabaseClient | null = null;
 export function getSupabaseBrowserClient(): SupabaseClient | null {
   const config = getSupabaseConfig();
   if (!config.configured) return null;
-  if (!client) client = createBrowserClient(config.url, config.anonKey);
+  if (!client) client = createBrowserClient(config.url, config.publishableKey);
   return client;
 }

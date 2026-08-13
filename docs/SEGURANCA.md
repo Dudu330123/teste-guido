@@ -9,6 +9,20 @@
 - exposição de dados pessoais em imagens, logs ou uploads;
 - dependências vulneráveis e configuração incorreta do Supabase.
 
+## Priorização atual
+
+| Risco | Prioridade | Controle atual |
+| --- | --- | --- |
+| Publicar guia financeiro falso ou sem revisão | Crítica | estados, `is_demo`, RLS e fluxo de revisão modelado; painel de publicação ainda não existe |
+| Usuário acessar progresso de outra pessoa | Alta | identidade vem do Supabase Auth e `user_id` nunca vem do payload; RLS isola por `auth.uid()` |
+| SQL injection | Alta | queries C++ parametrizadas e validações de fronteira |
+| Vazamento de token | Alta | Bearer não é logado; proxy server-side; mensagens ocultam detalhes |
+| Print com dado pessoal | Alta | mídia não está ativa; schema bloqueia publicação marcada com dado pessoal e exige revisão |
+| XSS em conteúdo editorial | Média | React escapa texto, não há HTML arbitrário e CSP está ativa |
+| CSRF | Média | mutação C++ usa Bearer; endpoints baseados em cookies devem continuar restritos ao BFF same-origin |
+| Abuso e brute force | Média | Auth é delegado ao Supabase; rate limiting específico ainda precisa ser configurado antes de produção |
+| Supply-chain | Média | CI usa Actions fixadas por commit, lockfile npm, warnings e sanitizers C++ |
+
 ## Dados proibidos
 
 O Guido não deve coletar ou armazenar senha bancária, CPF usado numa operação, valor, beneficiário, linha digitável, código de barras, token, imagem pessoal de boleto ou conteúdo digitado em aplicativo financeiro. Senhas de conta Guido são enviadas diretamente ao Supabase Auth e nunca registradas em logs ou tabelas próprias.
@@ -28,15 +42,15 @@ Aceitar apenas formatos e tamanhos permitidos, verificar MIME e conteúdo, usar 
 
 ## Supabase
 
-- somente URL e chave pública/anon no cliente;
+- somente URL e chave publishable (`sb_publishable_...`) no cliente;
 - nunca expor `service_role`, senha do banco ou token administrativo;
 - habilitar RLS em toda tabela acessível pela API;
-- validar sessão no servidor e autorização por recurso;
-- usar cookies seguros e middleware para renovação quando Auth for ativado;
+- validar sessão no Supabase e novamente no backend C++ antes de usar o `user.id`;
+- renovar cookies com o `proxy.ts` do Next.js;
 - políticas separadas para leitura publicada, autoria, revisão e administração;
 - Storage privado para rascunhos e políticas por equipe;
 - logs e auditoria sem segredos ou dados financeiros.
 
 ## Controles futuros
 
-Rate limiting em Auth e mutações, proteção CSRF para endpoints baseados em cookie, CSP, cabeçalhos de segurança, exclusão/exportação de conta conforme LGPD, retenção mínima, auditoria administrativa imutável e resposta a incidentes. Mensagens públicas devem ocultar stack traces e detalhes internos.
+Rate limiting em mutações, políticas reais do bucket Storage, exclusão/exportação de conta conforme LGPD, retenção mínima, auditoria administrativa imutável e resposta a incidentes. CSP, proteção contra framing, política de permissões, `nosniff` e referrer policy já são emitidos. Mensagens públicas ocultam stack traces e detalhes internos.

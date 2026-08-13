@@ -1,70 +1,123 @@
 # Guido
 
-O Guido é uma plataforma de inclusão digital para pessoas idosas e quem tem pouca familiaridade com tecnologia. Este repositório contém um MVP navegável com busca local, catálogo por tarefa e aplicativo, escolha entre Android e iPhone e um guia educativo fictício de pagamento de boleto.
+O Guido é uma plataforma de inclusão digital para pessoas idosas e quem tem pouca familiaridade com tecnologia. O projeto contém um frontend Next.js navegável e a fundação funcional de uma API C++20/Drogon para catálogo e guias.
 
-> **Aviso:** o guia financeiro é demonstrativo, não oficial e pendente de validação humana. O Guido não acessa bancos, não coleta dados bancários e não realiza nem confirma pagamentos.
+> **Aviso:** o guia financeiro é fictício, não oficial e pendente de validação humana. O Guido não acessa bancos, não coleta dados bancários e não realiza nem confirma pagamentos.
 
 ## Stack
 
-- Next.js com App Router, React e TypeScript estrito;
-- Tailwind CSS e ESLint;
-- Supabase JS/SSR para futura conexão com PostgreSQL, Auth e Storage;
-- Zod para validar formulários, ambiente e progresso local;
-- Vitest, jsdom e Testing Library para testes.
-
-O backend futuro continuará integrado ao Next.js. Não há Python, backend separado, Docker, migration ou projeto remoto nesta versão. O manifesto web oferece a fundação para uma futura PWA, ainda sem service worker ou instalação offline.
+- Next.js App Router, React, TypeScript estrito e Tailwind CSS;
+- C++20, Drogon, CMake e Ninja;
+- PostgreSQL pelo Supabase;
+- Supabase Auth e Storage;
+- Zod para validação nas fronteiras do frontend;
+- Vitest/Testing Library e CTest.
 
 ## Requisitos
 
-- Node.js 20.9 ou superior (desenvolvido com 22.23.1);
-- npm 10 ou superior.
+- Node.js 20.9 ou superior e npm 10 ou superior;
+- compilador C++20;
+- CMake, Ninja, Drogon e libpq.
 
-## Instalação e execução
+No Ubuntu:
+
+```bash
+sudo apt-get update
+sudo apt-get install -y cmake ninja-build libdrogon-dev libpq-dev postgresql-client \
+  libjsoncpp-dev default-libmysqlclient-dev libhiredis-dev libyaml-cpp-dev
+```
+
+## Instalação
 
 ```bash
 npm install
 cp .env.example .env.local
+cmake -S backend -B backend/build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON
+cmake --build backend/build --parallel
+```
+
+Não é necessário preencher credenciais para usar a demonstração local. Sem Supabase, Auth exibe uma mensagem amigável; sem API C++, o frontend usa temporariamente seus dados locais.
+
+## Execução local
+
+Terminal 1 — API C++:
+
+```bash
+./scripts/dev-backend
+```
+
+Terminal 2 — frontend:
+
+```bash
 npm run dev
 ```
 
-Abra `http://localhost:3000`. As variáveis podem permanecer vazias: catálogo, busca e guia funcionarão normalmente; apenas autenticação ficará indisponível.
+Abra `http://localhost:3000`. A API responde em `http://127.0.0.1:8080/healthz`.
 
 ## Variáveis de ambiente
 
+Frontend (`.env.local`):
+
 ```text
 NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+GUIDO_API_URL=http://127.0.0.1:8080
 ```
 
-Para habilitar Auth, crie manualmente um projeto no painel do Supabase, copie a URL e a chave pública/anon para `.env.local` e configure os URLs de redirecionamento no Auth. Nunca use `service_role` no navegador. Consulte [docs/SUPABASE.md](docs/SUPABASE.md).
+Backend (`.env.backend.local`, ignorado pelo Git):
 
-## Comandos
+```text
+GUIDO_ENV=development
+GUIDO_API_HOST=127.0.0.1
+GUIDO_API_PORT=8080
+GUIDO_DATABASE_URL=
+GUIDO_DATABASE_POOL_SIZE=4
+GUIDO_SUPABASE_URL=
+GUIDO_SUPABASE_PUBLISHABLE_KEY=
+GUIDO_STORAGE_BUCKET=guide-media
+```
 
-| Comando | Finalidade |
-| --- | --- |
-| `npm run dev` | servidor local de desenvolvimento |
-| `npm run build` | build de produção |
-| `npm start` | executar o build |
-| `npm run lint` | ESLint |
-| `npm run typecheck` | TypeScript sem emissão |
-| `npm test` | suíte Vitest |
-| `npm run test:watch` | testes em modo interativo |
+Use a chave pública `sb_publishable_...` nos dois arquivos. Nunca use
+`service_role`, `sb_secret_...`, senha do banco ou token administrativo no navegador.
 
-## Limitações do MVP
+## Validação
 
-- dados de catálogo e guias são locais;
-- somente “Pagar um boleto” é navegável e suas telas são placeholders;
-- tarefas de áudio, chamada e bloqueio no WhatsApp e acesso/recuperação no Gov.br aparecem somente como conteúdo em preparação;
-- seis ações e dez aplicativos financeiros recuperados do protótipo anterior aparecem como rascunhos, sem passos navegáveis;
-- a busca reconhece sugestões e algumas variações de escrita, mas ainda não é um mecanismo de busca completo;
-- o guia é genérico, não corresponde a um banco ou versão de aplicativo;
-- autenticação exige configuração manual do Supabase e ainda não possui middleware de renovação de sessão;
-- progresso fica apenas no navegador atual;
-- não há painel administrativo, upload, offline, analytics, OCR ou integração bancária;
-- logos oficiais não foram incluídos; cartões usam abreviações textuais.
+```bash
+./scripts/check
+```
 
-## Conteúdo recuperado do protótipo anterior
+O comando executa lint, tipos, testes e build do frontend, seguido por build e testes do backend. Comandos individuais:
 
-Foram adaptados o fluxo tarefa → aplicativo, identidade visual azul, mockups genéricos, sugestões rápidas, termos alternativos e conceitos de manuais. As 60 combinações entre seis ações e dez aplicativos financeiros são geradas por uma fonte única e permanecem `draft`/“em preparação”. Não foram importados arquivos compilados, dependências antigas, marcas aproximadas, credenciais, passos de autenticação ou etapas de confirmação financeira.
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run build
+cmake --build backend/build --parallel
+ctest --test-dir backend/build --output-on-failure
+```
 
-Leia também [arquitetura](docs/ARQUITETURA.md), [decisões](docs/DECISOES.md), [pesquisa](docs/PESQUISA_GUIAS.md) e [segurança](docs/SEGURANCA.md).
+## Banco de dados
+
+As migrations estão em `database/migrations`, mas não são aplicadas automaticamente. Antes de executá-las, crie manualmente o projeto Supabase, revise o schema/RLS e configure credenciais fora do Git. `database/seeds/development.sql` contém apenas a demonstração fictícia em status `draft`.
+
+## Estado atual e limitações
+
+- API pública de leitura, health, readiness e busca com adaptadores em memória e PostgreSQL assíncrono;
+- visualizador de boleto integrado à API com fallback local;
+- schema PostgreSQL, RLS e OpenAPI versionados e validados em banco efêmero, ainda não aplicados remotamente;
+- somente “Pagar um boleto” é navegável e usa telas fictícias;
+- conteúdo de WhatsApp, Gov.br e instituições financeiras permanece em preparação;
+- progresso fica local para visitantes e sincroniza com PostgreSQL para sessões validadas pelo Supabase;
+- autenticação chama Supabase Auth quando configurada, mas autorização administrativa ainda não está ativa;
+- não há upload, painel administrativo, OCR, integração bancária ou offline completo.
+
+Consulte [arquitetura](docs/ARQUITETURA.md), [API](docs/API.md), [banco](docs/DATABASE.md), [segurança](docs/SEGURANCA.md) e [testes](docs/TESTING.md).
+
+## Publicação do frontend
+
+O frontend está preparado para Netlify por `netlify.toml`. A API C++ precisa de
+hospedagem própria e será conectada posteriormente por uma URL HTTPS. Consulte
+[a documentação de publicação](docs/PUBLICACAO_NETLIFY.md).
+
+Prévia publicada: `https://guido-ajuda-digital.netlify.app`.

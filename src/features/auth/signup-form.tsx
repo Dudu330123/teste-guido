@@ -9,6 +9,7 @@ import { FormMessage } from "./form-message";
 export function SignupForm() {
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   return (
     <form className="mt-7 space-y-5" onSubmit={async (event) => {
@@ -22,7 +23,16 @@ export function SignupForm() {
       const supabase = getSupabaseBrowserClient();
       if (!supabase) { setSuccess(false); setMessage("O cadastro ainda não está conectado ao Supabase. A aplicação pode ser usada sem conta."); return; }
       const { name, email, password, preferredOperatingSystem } = parsed.data;
-      const { error } = await supabase.auth.signUp({ email, password, options: { data: { name, preferred_operating_system: preferredOperatingSystem } } });
+      setSubmitting(true);
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { name, preferred_operating_system: preferredOperatingSystem },
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/conta")}`,
+        },
+      });
+      setSubmitting(false);
       setSuccess(!error);
       setMessage(error ? "Não foi possível criar a conta. Revise os dados e tente novamente." : "Cadastro recebido. Verifique seu e-mail para continuar.");
     }}>
@@ -33,11 +43,13 @@ export function SignupForm() {
       <fieldset>
         <legend className="font-bold">Celular preferido</legend>
         <div className="mt-2 flex flex-col gap-3 sm:flex-row">
-          <label className="glass-control flex min-h-12 items-center gap-3 rounded-xl px-4"><input type="radio" name="preferredOperatingSystem" value="android" defaultChecked className="size-5" /> Android</label>
           <label className="glass-control flex min-h-12 items-center gap-3 rounded-xl px-4"><input type="radio" name="preferredOperatingSystem" value="ios" className="size-5" /> iPhone</label>
+          <label className="glass-control flex min-h-12 items-center gap-3 rounded-xl px-4"><input type="radio" name="preferredOperatingSystem" value="android" defaultChecked className="size-5" /> Outro</label>
         </div>
       </fieldset>
-      <button type="submit" className="primary-action min-h-14 w-full px-5 py-3 text-xl font-bold">Criar conta</button>
+      <button type="submit" disabled={submitting} className="primary-action min-h-14 w-full px-5 py-3 text-xl font-bold">
+        {submitting ? "Criando conta…" : "Criar conta"}
+      </button>
       <FormMessage message={message} type={success ? "success" : "error"} />
       <Link href="/entrar" className="block font-bold underline">Já tenho uma conta</Link>
     </form>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SessionNavigation } from "@/features/auth/session-navigation";
 
 export function SiteHeader() {
   return (
@@ -11,9 +12,7 @@ export function SiteHeader() {
           <Link href="/#ajuda" className="quiet-action min-h-12 px-4 py-2 font-semibold underline decoration-2 underline-offset-4">
             Preciso de ajuda
           </Link>
-          <Link href="/entrar" className="secondary-action min-h-12 px-4 py-2 font-semibold">
-            Entrar ou criar conta
-          </Link>
+          <SessionNavigation />
         </nav>
       </div>
     </header>

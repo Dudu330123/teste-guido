@@ -2,6 +2,9 @@
 
 - Analise o ambiente, este arquivo e o estado do projeto antes de alterar qualquer coisa.
 - Faça mudanças pequenas, verificáveis e preserve funcionalidades existentes.
+- Comente contratos públicos e decisões não óbvias de arquitetura, segurança e
+  regras de negócio. Explique o motivo da decisão, não apenas o que a linha faz,
+  e mantenha os comentários atualizados junto com o código.
 - Não adicione dependências sem necessidade e justificativa registradas.
 - Nunca execute comandos destrutivos ou apague arquivos sem autorização explícita.
 - Não faça commit, push, deploy nem crie repositório remoto.

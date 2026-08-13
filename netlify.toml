@@ -1,0 +1,14 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  # A versão LTS torna o build reproduzível e evita depender da versão instalada
+  # na máquina de desenvolvimento. O adaptador Next.js é gerenciado pelo Netlify.
+  NODE_VERSION = "22"
+
+[dev]
+  command = "npm run dev"
+  targetPort = 3000
+  port = 8888
+

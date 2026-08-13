@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+project_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$project_dir"
+
+npm run lint
+npm run typecheck
+npm test
+npm run build
+
+if ! command -v cmake >/dev/null 2>&1; then
+  echo "Erro: cmake não está instalado. Consulte README.md." >&2
+  exit 1
+fi
+
+# Algumas distribuições fornecem DrogonConfig.cmake, mas não drogon.pc. O CMake
+# é a fonte de verdade usada pelo projeto e emitirá uma mensagem adequada se a
+# biblioteca realmente estiver ausente. Um diretório exclusivo também impede
+# que caches de compilações manuais contaminem a validação automatizada.
+backend_check_dir="backend/build-check"
+cmake -S backend -B "$backend_check_dir" -G Ninja -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON
+cmake --build "$backend_check_dir" --parallel
+ctest --test-dir "$backend_check_dir" --output-on-failure
+
+if command -v clang-format >/dev/null 2>&1; then
+  find backend/include backend/src backend/tests -type f \( -name '*.h' -o -name '*.cc' \) -print0 \
+    | xargs -0 clang-format --dry-run --Werror
+fi

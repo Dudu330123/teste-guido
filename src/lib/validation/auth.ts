@@ -19,3 +19,16 @@ export const signUpSchema = loginSchema
 export const recoverySchema = z.object({
   email: z.string().trim().email("Informe um e-mail válido."),
 });
+
+export const resetPasswordSchema = z.object({
+  password: z.string().min(8, "A senha deve ter pelo menos 8 caracteres."),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "As senhas não são iguais.",
+  path: ["confirmPassword"],
+});
+
+export const profileSchema = z.object({
+  displayName: z.string().trim().min(2, "Informe seu nome.").max(100, "Use no máximo 100 caracteres."),
+  preferredPlatform: z.enum(["android", "ios"]),
+});

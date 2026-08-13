@@ -19,3 +19,17 @@
 
 # TypeScript
 *.tsbuildinfo
+
+# C++ / CMake
+/backend/build/
+/backend/build-*/
+/backend/compile_commands.json
+
+# Local Netlify folder
+.netlify
+/deno.lock
+
+# local agent and temporary upload state
+/.agents/
+/.codex/
+/uploads/tmp/

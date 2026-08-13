@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Application, Guide, GuideStep, Task } from "@/types/content";
 import { clearProgress, loadProgress, saveProgress } from "@/features/progress/progress-storage";
 import { nextStep, previousStep, restartGuide } from "@/features/progress/guide-navigation";
+import { loadRemoteProgress, saveRemoteProgress } from "@/features/progress/remote-progress";
 import { ScreenPlaceholder } from "./screen-placeholder";
 
 interface GuideViewerProps {
@@ -26,17 +27,15 @@ export function GuideViewer({ application, guide, steps, task }: GuideViewerProp
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
-      const progress = loadProgress(window.localStorage, guide.id);
-      if (
-        progress &&
-        progress.guideVersion === guide.guideVersion &&
-        progress.currentStep > 0 &&
-        progress.currentStep < steps.length &&
-        progress.status === "in_progress"
-      ) {
-        setResumeStep(progress.currentStep);
-      }
-      setReady(true);
+      const localProgress = loadProgress(window.localStorage, guide.id);
+      void loadRemoteProgress(guide.id).then((remoteProgress) => {
+        const candidates = [localProgress, remoteProgress]
+          .filter((progress): progress is NonNullable<typeof progress> => Boolean(progress))
+          .filter((progress) => progress.currentStep > 0 && progress.currentStep < steps.length && progress.status === "in_progress")
+          .sort((first, second) => second.lastAccessedAt.localeCompare(first.lastAccessedAt));
+        if (candidates[0]) setResumeStep(candidates[0].currentStep);
+        setReady(true);
+      });
     }, 0);
     return () => window.clearTimeout(timer);
   }, [guide.guideVersion, guide.id, steps.length]);
@@ -51,6 +50,7 @@ export function GuideViewer({ application, guide, steps, task }: GuideViewerProp
       status: completed ? "completed" : "in_progress",
       operatingSystem: guide.operatingSystem,
     });
+    void saveRemoteProgress(guide.id, currentStep, completed ? "completed" : "in_progress");
   }, [completed, currentStep, guide, ready, resumeStep]);
 
   useEffect(() => {
@@ -111,6 +111,7 @@ export function GuideViewer({ application, guide, steps, task }: GuideViewerProp
 
   const restart = () => {
     clearProgress(window.localStorage, guide.id);
+    void saveRemoteProgress(guide.id, 0, "in_progress");
     setCurrentStep(restartGuide());
     setCompleted(false);
     setSpeechMessage("");

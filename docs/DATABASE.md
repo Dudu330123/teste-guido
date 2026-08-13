@@ -1,0 +1,39 @@
+# Banco de dados
+
+## Escolha
+
+PostgreSQL atende ao modelo relacional, constraints, transações, busca textual, concorrência e auditoria do Guido. A hospedagem prevista é Supabase, mas o schema evita usar o navegador como camada de autorização administrativa.
+
+## Entidades implementadas no schema inicial
+
+- `profiles` e `team_members` complementam as identidades de `auth.users`;
+- `categories`, `applications` e `tutorials` formam o catálogo;
+- `tutorial_search_terms` mantém sinônimos controlados;
+- `guide_versions` separa plataforma e versão;
+- `steps`, `media_assets` e `step_media` representam o conteúdo ordenado;
+- `guide_reviews` sustenta revisão humana;
+- `user_progress` e `favorites` pertencem ao usuário;
+- `guide_reports` registra problemas;
+- `audit_logs` registra operações críticas sem conteúdo sensível.
+
+## Migrations
+
+- `001_initial_schema.sql`: tipos, tabelas, constraints, índices e gatilhos;
+- `002_row_level_security.sql`: RLS com leitura pública somente de conteúdo publicado e isolamento de dados de usuário.
+- `003_profiles_trigger.sql`: criação segura do perfil mínimo após cadastro no Supabase Auth.
+
+As migrations foram verificadas em PostgreSQL 18 efêmero, mas não foram executadas em Supabase remoto. Aplicá-las remotamente exige um projeto escolhido pelo responsável, revisão e credenciais locais fora do Git. O seed de desenvolvimento permanece `draft` e não publica nada.
+
+## Acesso do backend
+
+Produção deve usar uma role PostgreSQL própria e de menor privilégio, nunca superusuário. A role e a string de conexão são configuradas fora das migrations e do repositório. Operações administrativas passam pelo backend e por autorização baseada em identidade validada.
+
+`user_progress.current_step` é zero-based para coincidir com o visualizador: primeiro passo é `0`. O backend valida o valor contra a quantidade real de etapas antes do upsert.
+
+## Busca
+
+`tutorials.search_document` usa `tsvector` em português e índice GIN. Termos controlados têm índice próprio. Ranking, paginação e `EXPLAIN ANALYZE` serão ajustados com dados reais; nenhum banco vetorial foi introduzido.
+
+## Backup e recuperação
+
+Antes de produção: configurar backup automático, retenção aprovada, PITR conforme o plano contratado e ensaio documentado de restauração. Backup sem teste de restauração não será considerado validado.

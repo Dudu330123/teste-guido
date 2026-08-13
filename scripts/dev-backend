@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+project_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+environment_file="$project_dir/.env.backend.local"
+binary="$project_dir/backend/build-local/guido_api"
+
+if [[ ! -f "$environment_file" ]]; then
+  echo "Erro: crie .env.backend.local a partir de backend/config/backend.env.example." >&2
+  exit 1
+fi
+
+# O arquivo não é executado pelo shell: cada linha precisa ser uma atribuição
+# simples e é exportada literalmente. Isso permite senhas com caracteres
+# especiais e impede que conteúdo acidental seja interpretado como comando.
+while IFS= read -r line || [[ -n "$line" ]]; do
+  [[ -z "$line" || "$line" == \#* ]] && continue
+  if [[ ! "$line" =~ ^[A-Za-z_][A-Za-z0-9_]*=.*$ ]]; then
+    echo "Erro: linha inválida em .env.backend.local." >&2
+    exit 1
+  fi
+  export "$line"
+done < "$environment_file"
+
+# Reconfigurar e compilar incrementalmente evita executar um binário antigo após
+# mudanças no C++ e costuma terminar sem recompilar quando nada foi alterado.
+cmake -S "$project_dir/backend" -B "$project_dir/backend/build-local" -G Ninja \
+  -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTING=ON
+cmake --build "$project_dir/backend/build-local" --parallel
+
+exec "$binary"

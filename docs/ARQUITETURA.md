@@ -2,52 +2,73 @@
 
 ## Visão geral
 
-O MVP é um monólito modular em Next.js. Rotas do App Router compõem módulos de interface e dados locais. Componentes de cliente são usados somente quando há interação com navegador, como pesquisa, síntese de voz, seleção de aparelho, Auth e `localStorage`.
+O Guido evolui para duas aplicações em um monólito modular por processo: frontend Next.js e backend C++20/Drogon. A separação é intencional e registrada no ADR-001.
 
 ```text
-App Router → features/components → actions + applications + tasks + types
-                         ├──────→ progress storage (localStorage)
-                         └──────→ Supabase client (opcional)
+Navegador
+   │ HTTPS/JSON
+   ▼
+Next.js ───────────────► API C++ / Drogon
+                            │
+              ┌─────────────┴─────────────┐
+              ▼                           ▼
+      PostgreSQL / Supabase       Supabase Storage
+              │
+              ▼
+        Supabase Auth
 ```
 
-## Módulos
+O Next.js apresenta e mantém apenas estado visual. O C++ valida, autoriza e coordena. PostgreSQL garante integridade. Storage guarda mídia. Supabase Auth permanece a autoridade de identidade.
 
-- `src/app`: rotas, layout, metadados e manifesto PWA inicial;
-- `src/components`: cabeçalho compartilhado;
-- `src/features/applications`: apresentação do catálogo;
-- `src/features/actions`: entrada no catálogo pela tarefa desejada;
-- `src/features/search`: busca local demonstrativa;
-- `src/features/guides`: seleção de sistema, placeholder e visualizador;
-- `src/features/progress`: navegação pura e adaptador de armazenamento;
-- `src/features/auth`: formulários e mensagens de autenticação;
-- `src/lib/supabase`: clientes browser/server opcionais;
-- `src/lib/validation`: schemas de fronteira;
-- `src/data`: catálogo e guia fictício;
-- `src/types`: contratos mínimos de conteúdo e progresso.
+## Backend
 
-## Fluxos de dados
+```text
+HTTP/controllers
+        ↓
+application/use cases
+        ↓
+domain + repository interfaces
+        ↓
+infrastructure adapters
+        ↓
+PostgreSQL / Storage / Auth
+```
 
-Na busca, dados estáticos chegam do Server Component, recebem pontuação local e são limitados antes da apresentação. O catálogo permite começar por ação ou aplicativo. As combinações ação/aplicativo são geradas como tarefas `draft`, sem gerar guias. No guia, a rota valida o sistema operacional, resolve guia e passos locais e entrega os dados ao visualizador. O visualizador valida todo progresso lido antes de usá-lo e persiste somente campos permitidos. Formulários validam entradas antes de chamar Supabase Auth; sem configuração, exibem mensagem amigável.
+- `backend/include/guido/domain`: entidades e contratos independentes de HTTP;
+- `backend/include/guido/application`: casos de uso e limites de entrada;
+- `backend/src/http`: rotas, JSON e erros públicos;
+- `backend/src/infrastructure`: adaptadores substituíveis;
+- `backend/tests`: testes sem rede;
+- `database/migrations`: schema versionado, nunca aplicado automaticamente;
+- `docs/api/openapi.yaml`: contrato da API.
 
-## Responsabilidades e limites
+O adaptador em memória é transitório e permite validar o primeiro corte vertical. Ele não é fonte de verdade de produção. O adaptador PostgreSQL usa coroutines, pool explícito de 1 a 20 conexões e queries parametrizadas. Readiness consulta o banco e produção não inicia sem PostgreSQL e Supabase Auth.
 
-O Next.js concentra interface e futuro backend. Supabase será responsável por identidade, PostgreSQL e Storage. O navegador é responsável por síntese de voz e progresso temporário. Conteúdo de guias precisa de autoria e revisão humana; pesquisa não publica conteúdo automaticamente.
+## Frontend
 
-## Decisões arquiteturais
+- `src/app`: rotas, layout, metadados e manifesto;
+- `src/features`: pesquisa, guias, progresso, tema e autenticação;
+- `src/lib/api`: cliente server-side e validação de respostas da API;
+- `src/data`: fallback temporário do MVP;
+- `src/lib/supabase`: Supabase Auth opcional.
 
-- Server Components por padrão e Client Components nas fronteiras interativas;
-- tipos de domínio independentes de Supabase;
-- adaptador de progresso separado para futura troca por repositório remoto;
-- dados demonstrativos explícitos e sem HTML arbitrário;
-- disponibilidade explícita por tarefa, separando demonstração de conteúdo em preparação;
-- combinações de catálogo geradas por composição, sem duplicar passos ou alegar especificidade;
-- versões Android e iOS representadas como guias separados;
-- dependências pequenas e com finalidade direta.
+O guia de boleto tenta a API configurada em `GUIDO_API_URL`. Falha, timeout ou payload inválido voltam ao conteúdo local sem quebrar o usuário. O progresso continua local para visitantes e também é sincronizado, quando há sessão, por um proxy Next.js sem regra de negócio. Essa tolerância é apenas de migração; produção exige PostgreSQL e não serve rascunhos pela memória.
 
-## Evolução prevista
+## Fluxo de conteúdo
 
-Após revisão do modelo, Supabase poderá persistir conteúdo, progresso autenticado e imagens revisadas, com RLS e trilha de auditoria. Uma PWA poderá adicionar ícones, service worker, estratégia offline e testes de atualização. Python poderá surgir futuramente em processamento assíncrono isolado para anonimização, OCR ou comparação, mas não está instalado nem pertence ao MVP atual.
+1. editor cria um rascunho;
+2. mídia permanece privada e passa por inspeção de formato, metadados e dados pessoais;
+3. revisor humano compara origem, plataforma e versão;
+4. aprovação e publicação são transacionais e auditadas;
+5. API pública lê somente `published`;
+6. conteúdo desatualizado é marcado sem apagar histórico necessário.
+
+Nenhum guia pesquisado, importado ou gerado automaticamente é publicado.
+
+## Evolução controlada
+
+Renovação completa da sessão, Storage e administração ainda entram como módulos do mesmo backend. Catálogo PostgreSQL e progresso remoto já possuem adaptadores iniciais. Redis, workers, filas, IA e microsserviços permanecem fora até uma métrica ou caso de uso concreto justificá-los. Python poderá existir futuramente apenas como processamento isolado de imagem/OCR, nunca como requisito do backend principal.
 
 ## Fora do escopo
 
-Pagamentos, integrações bancárias, leitura de código, OCR, automação de toque, dados financeiros, painel administrativo completo, migrations definitivas, aplicativos nativos, sobreposição de tela, agentes e publicação automática.
+Integração bancária, pagamento, leitura real de código, OCR, ações automáticas, credenciais bancárias, dados de boletos pessoais, aplicativos nativos, sobreposição de tela e publicação automática.
