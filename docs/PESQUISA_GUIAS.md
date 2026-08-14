@@ -76,6 +76,31 @@ Consultas realizadas em **28 de julho e 14 de agosto de 2026**. Somente páginas
 - uso no Guido: fundamenta a etapa de conferência e a orientação de parar quando houver divergência;
 - status: orientação institucional geral; as telas dos aplicativos continuam **pendentes de validação humana**.
 
+### Banco Central — Pix e suspeita de fraude
+
+- tarefas: enviar, receber e conferir Pix; agir após suspeita de golpe;
+- fonte oficial: [Segurança no Pix](https://www.bcb.gov.br/estabilidadefinanceira/pix-seguranca);
+- encontrado: o Pix deve ser iniciado no ambiente seguro da instituição; antes de confirmar, é necessário conferir o beneficiário e avaliar sinais de golpe; em fraude, a instituição deve ser acionada rapidamente e pode orientar sobre o Mecanismo Especial de Devolução;
+- uso no Guido: fundamenta os roteiros editoriais de Pix, prevenção e reação a golpe;
+- não confirmado: menus e posições de controles de cada instituição;
+- status: **pendente de validação humana por aplicativo e sistema**.
+
+### WhatsApp — áudio, chamada e bloqueio
+
+- tarefas: enviar áudio, fazer chamada e bloquear contato;
+- fontes oficiais: [recursos de mensagens de voz](https://about.fb.com/news/2022/03/new-voice-message-features-on-whatsapp/), [recursos de chamadas](https://about.fb.com/news/2026/07/whatsapp-web-calling-new-features/) e [vídeo oficial sobre bloquear e denunciar](https://www.youtube.com/watch?v=T9FKDjg4Ib0);
+- encontrado: o WhatsApp oferece mensagens de voz, chamadas e bloqueio/denúncia de contatos;
+- não confirmado: posição atual dos controles, diferenças entre Android e iPhone, permissões e variações graduais de versão;
+- status: **roteiro editorial preparado, pendente de validação humana**.
+
+### Gov.br — acesso e recuperação
+
+- tarefas: acessar a conta e recuperar senha;
+- fontes oficiais: [Conta gov.br](https://www.gov.br/governodigital/pt-br/identidade/conta-gov-br), [recuperar senha](https://www.gov.br/governodigital/pt-br/acessibilidade-e-usuario/atendimento-gov.br/duvidas-na-conta-gov.br/recuperar-senha-da-conta-gov.br) e [segurança da conta](https://www.gov.br/governodigital/pt-br/identidade/conta-gov-br/seguranca-da-conta/seguranca-da-conta);
+- encontrado: o acesso começa no canal oficial; a recuperação parte do CPF e de `Esqueci minha senha`, podendo oferecer reconhecimento facial, banco, e-mail, celular ou atendimento; códigos de verificação devem ser usados somente no ambiente oficial;
+- não confirmado: aparência atual em todos os aparelhos e ordem exata dos métodos oferecidos a cada pessoa;
+- status: **roteiro editorial preparado, pendente de validação humana**.
+
 ## Conteúdo demonstrativo do MVP
 
 Os seis passos existentes em `src/data/guides.ts` foram revisados com o núcleo comum confirmado pelas fontes acima: abrir o app oficial, localizar a área de pagamento, escolher boleto, ler ou digitar o código e conferir os dados. Eles não representam a posição exata dos controles de nenhum banco, usam placeholders fictícios, têm status `draft` e versão `0.2-research`. O fluxo termina antes de senha, autorização ou confirmação.
@@ -100,5 +125,12 @@ Para cada item, a equipe deve verificar separadamente Android e iOS, registrar v
 - C6 Bank: Pix, boleto, comprovante, cartão, saldo e limite.
 
 Os registros acima podem aparecer no catálogo como “em preparação”, mas isso não significa que seus passos tenham sido pesquisados ou aprovados.
+
+O painel administrativo possui roteiros editoriais para organizar a coleta de
+prints dos 20 guias listados. Esses roteiros usam linguagem deliberadamente
+genérica quando as fontes não confirmam a posição de um controle. Ter passos e
+receber um print **não equivale a aprovação**: a equipe ainda deve comparar cada
+passo com Android e iPhone, registrar a versão do aplicativo e emitir revisão
+humana antes de mudar o status para `published`.
 
 Também falta confirmar fontes oficiais e autorização de uso para todos os logos. Até isso ocorrer, a interface usa placeholders textuais sem alterar ou reproduzir marcas.

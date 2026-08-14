@@ -143,8 +143,22 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
     <div className="mt-8">
       <div className="notice-warning rounded-2xl border-2 p-5" role="note">
         <p className="font-bold">Publicação imediata</p>
-        <p className="mt-1">Somente administradores podem enviar. Assim que o upload terminar, o print passa a aparecer no guia demonstrativo para todos os usuários.</p>
+        <p className="mt-1">Somente administradores podem enviar. Em guias já navegáveis, o print aparece para todos assim que o upload termina. Nos demais, ele fica preparado até a liberação do guia.</p>
+        <p className="mt-2 font-semibold">Os roteiros estão preparados para revisão. O upload de uma imagem não transforma o conteúdo em guia oficial ou validado.</p>
       </div>
+
+      <section className="glass-panel mt-6 p-5" aria-labelledby="upload-help-title">
+        <h2 id="upload-help-title" className="text-xl font-bold">Como preparar e enviar o print</h2>
+        <ol className="mt-4 list-decimal space-y-2 pl-6">
+          <li>Escolha o guia, o aplicativo e o tipo de celular.</li>
+          <li>Capture a tela inteira, na posição vertical e sem cortar ou esticar a imagem.</li>
+          <li>Remova ou oculte nomes, CPF, saldo, valores, códigos, boletos e qualquer dado real.</li>
+          <li>Use <strong>PNG, JPEG ou WebP</strong>, com até <strong>10 MB</strong> e no máximo <strong>8192 × 8192 pixels</strong>.</li>
+          <li>Marque a confirmação de segurança e use o botão <strong>Fazer upload do print</strong> no passo correspondente.</li>
+          <li>Confira a prévia. O Guido preserva a proporção original e adapta a imagem à tela do usuário.</li>
+        </ol>
+        <p className="notice-info mt-4 rounded-xl p-4 font-semibold">Recomendado: print vertical na resolução original do celular, com no mínimo 720 pixels de largura. Não adicione moldura, marca d’água ou efeito visual.</p>
+      </section>
 
       <section className="glass-panel mt-6 p-5" aria-labelledby="admin-selection-title">
         <h2 id="admin-selection-title" className="text-xl font-bold">Escolha o conteúdo do print</h2>
@@ -157,6 +171,7 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
                 setGuideSlug(event.target.value);
                 setApplicationSlug("");
                 setDrafts({});
+                setConfirmedSafe(false);
                 setMessage("Selecione as opções para carregar as imagens públicas.");
               }}
               className="glass-control mt-2 min-h-14 w-full rounded-xl px-4"
@@ -164,7 +179,7 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
               <option value="">Selecione um guia</option>
               {guides.map((guide) => {
                 const hasSteps = Object.values(guide.stepsByOperatingSystem).some((guideSteps) => guideSteps.length > 0);
-                return <option key={guide.slug} value={guide.slug}>{guide.title}{hasSteps ? "" : " — passos em preparação"}</option>;
+                return <option key={guide.slug} value={guide.slug}>{guide.title}{hasSteps ? " — roteiro em revisão" : " — passos em preparação"}</option>;
               })}
             </select>
           </label>
@@ -177,6 +192,7 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
                 onChange={(event) => {
                   setApplicationSlug(event.target.value);
                   setDrafts({});
+                  setConfirmedSafe(false);
                   setMessage("Carregando imagens públicas…");
                 }}
                 className="glass-control mt-2 min-h-14 w-full rounded-xl px-4"
@@ -202,6 +218,7 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
                 onChange={() => {
                   setOperatingSystem(value);
                   setDrafts({});
+                  setConfirmedSafe(false);
                   setMessage("Carregando imagens públicas…");
                 }}
                 className="size-5"
@@ -223,7 +240,7 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
       {selectionComplete && steps.length === 0 && (
         <div className="notice-warning mt-6 rounded-2xl border-2 p-5" role="note">
           <h2 className="text-xl font-bold">Passos ainda não cadastrados</h2>
-          <p className="mt-2">Este guia já está no catálogo, mas ainda precisa ter seu roteiro revisado e dividido em passos antes de receber prints.</p>
+          <p className="mt-2">Este item ainda não possui roteiro editorial. Não envie prints até que os passos sejam definidos.</p>
         </div>
       )}
 
@@ -250,7 +267,7 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
                   aria-disabled={busyStepId === step.id || !confirmedSafe}
                   className="primary-action mt-5 inline-flex min-h-12 cursor-pointer items-center justify-center rounded-xl px-5 py-2 font-bold aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
                 >
-                  {preview ? "Substituir print" : "Escolher print"}
+                  {preview ? "Substituir print" : "Fazer upload do print"}
                 </label>
                 <input
                   id={inputId}

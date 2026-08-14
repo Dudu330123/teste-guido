@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SiteHeader } from "@/components/site-header";
 import { actions } from "@/data/actions";
+import { getAdminScriptSteps } from "@/data/admin-guide-scripts";
 import { financialApplications } from "@/data/applications";
 import { getGuide, getStepsForGuide, tasks } from "@/data/guides";
 import { GuideAdmin, type AdminGuideOption } from "@/features/admin/guide-admin";
@@ -14,6 +15,11 @@ export default function AdminPage() {
   const genericBankTasks = tasks.filter(({ applicationId }) => applicationId === "app-demo-bancos");
   const representedActionIds = new Set(genericBankTasks.map(({ actionId }) => actionId));
 
+  const editorialSteps = (slug: string) => ({
+    android: getAdminScriptSteps(slug, "android"),
+    ios: getAdminScriptSteps(slug, "ios"),
+  });
+
   // Guias bancários específicos por instituição são agrupados por tarefa. O
   // aplicativo é escolhido na etapa seguinte, evitando dezenas de duplicatas.
   const guideOptions: AdminGuideOption[] = [
@@ -26,7 +32,7 @@ export default function AdminPage() {
             android: getStepsForGuide(androidGuide.id),
             ios: getStepsForGuide(iosGuide.id),
           }
-        : { android: [], ios: [] },
+        : editorialSteps(task.slug),
     })),
     ...actions
       .filter(({ id }) => !representedActionIds.has(id))
@@ -34,7 +40,7 @@ export default function AdminPage() {
         slug: action.slug,
         title: action.taskTitle,
         category: "bank" as const,
-        stepsByOperatingSystem: { android: [], ios: [] },
+        stepsByOperatingSystem: editorialSteps(action.slug),
       })),
     ...tasks
       .filter(({ applicationId }) => applicationId !== "app-demo-bancos" && !financialApplicationIds.has(applicationId))
@@ -42,7 +48,7 @@ export default function AdminPage() {
         slug: task.slug,
         title: task.title,
         category: "other" as const,
-        stepsByOperatingSystem: { android: [], ios: [] },
+        stepsByOperatingSystem: editorialSteps(task.slug),
       })),
   ];
 
