@@ -3,13 +3,7 @@
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import type { GuideStep, OperatingSystem } from "@/types/content";
-import {
-  buildGuideImageDraftId,
-  listGuideImageDrafts,
-  removeGuideImageDraft,
-  saveGuideImageDraft,
-  type GuideImageDraft,
-} from "./guide-image-storage";
+import type { SharedGuideImageDraft } from "./shared-guide-image";
 import {
   readImageDimensions,
   validateGuideImageDimensions,
@@ -33,10 +27,6 @@ interface GuideAdminProps {
   bankApplications: AdminApplicationOption[];
 }
 
-interface DraftPreview extends GuideImageDraft {
-  url: string;
-}
-
 function formatFileSize(bytes: number) {
   return `${(bytes / 1024 / 1024).toFixed(2).replace(".", ",")} MB`;
 }
@@ -45,30 +35,10 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
   const [guideSlug, setGuideSlug] = useState("");
   const [applicationSlug, setApplicationSlug] = useState("");
   const [operatingSystem, setOperatingSystem] = useState<OperatingSystem>("android");
-  const [drafts, setDrafts] = useState<Record<string, DraftPreview>>({});
-  const [message, setMessage] = useState("Carregando rascunhos locais…");
+  const [drafts, setDrafts] = useState<Record<string, SharedGuideImageDraft>>({});
+  const [message, setMessage] = useState("Selecione um guia para carregar os prints compartilhados.");
   const [busyStepId, setBusyStepId] = useState<string | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    const urls: string[] = [];
-    listGuideImageDrafts()
-      .then((storedDrafts) => {
-        if (!active) return;
-        const mapped = Object.fromEntries(storedDrafts.map((draft) => {
-          const url = URL.createObjectURL(draft.file);
-          urls.push(url);
-          return [draft.draftId, { ...draft, url }];
-        }));
-        setDrafts(mapped);
-        setMessage(storedDrafts.length ? "Rascunhos locais recuperados." : "Nenhum print foi enviado neste navegador.");
-      })
-      .catch(() => active && setMessage("Este navegador não permitiu abrir o armazenamento local."));
-    return () => {
-      active = false;
-      urls.forEach((url) => URL.revokeObjectURL(url));
-    };
-  }, []);
+  const [confirmedSafe, setConfirmedSafe] = useState(false);
 
   const selectedGuide = guides.find((guide) => guide.slug === guideSlug);
   const needsApplication = selectedGuide?.category === "bank";
@@ -78,16 +48,33 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
     [operatingSystem, selectedGuide],
   );
 
-  const getDraftId = (step: GuideStep) => buildGuideImageDraftId({
-    guideSlug,
-    applicationSlug: needsApplication ? applicationSlug : null,
-    operatingSystem,
-    stepId: step.id,
-  });
+  useEffect(() => {
+    if (!selectionComplete || steps.length === 0) return;
+    const controller = new AbortController();
+    const search = new URLSearchParams({ guideSlug, operatingSystem });
+    if (needsApplication) search.set("applicationSlug", applicationSlug);
+    fetch(`/api/admin/guide-images?${search}`, { signal: controller.signal, cache: "no-store" })
+      .then(async (response) => {
+        const payload = await response.json() as { data?: SharedGuideImageDraft[]; error?: { message?: string } };
+        if (!response.ok) throw new Error(payload.error?.message ?? "Não foi possível carregar os prints.");
+        const shared = payload.data ?? [];
+        setDrafts(Object.fromEntries(shared.map((draft) => [draft.stepId, draft])));
+        setMessage(shared.length ? "Prints compartilhados carregados." : "Nenhum print compartilhado para esta seleção.");
+      })
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setDrafts({});
+        setMessage(error instanceof Error ? error.message : "Não foi possível carregar os prints.");
+      });
+    return () => controller.abort();
+  }, [applicationSlug, guideSlug, needsApplication, operatingSystem, selectionComplete, steps.length]);
 
   const upload = async (step: GuideStep, file: File | undefined) => {
     if (!file) return;
-    const draftId = getDraftId(step);
+    if (!confirmedSafe) {
+      setMessage("Confirme primeiro que o print não contém dados pessoais ou bancários.");
+      return;
+    }
     const fileError = validateGuideImageFile(file);
     if (fileError) {
       setMessage(`Passo ${step.order}: ${fileError}`);
@@ -101,47 +88,52 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
         setMessage(`Passo ${step.order}: ${dimensionError}`);
         return;
       }
-      const draft: GuideImageDraft = {
-        draftId,
-        guideSlug,
-        applicationSlug: needsApplication ? applicationSlug : null,
-        operatingSystem,
-        stepId: step.id,
-        file,
-        filename: file.name,
-        mimeType: file.type,
-        byteSize: file.size,
-        updatedAt: new Date().toISOString(),
-        ...dimensions,
-      };
-      await saveGuideImageDraft(draft);
-      setDrafts((current) => {
-        const previous = current[draftId];
-        if (previous) URL.revokeObjectURL(previous.url);
-        return { ...current, [draftId]: { ...draft, url: URL.createObjectURL(file) } };
-      });
-      setMessage(`Print do passo ${step.order} salvo somente neste navegador.`);
+      const form = new FormData();
+      form.set("file", file);
+      form.set("guideSlug", guideSlug);
+      form.set("applicationSlug", needsApplication ? applicationSlug : "");
+      form.set("operatingSystem", operatingSystem);
+      form.set("stepId", step.id);
+      form.set("stepOrder", String(step.order));
+      form.set("width", String(dimensions.width));
+      form.set("height", String(dimensions.height));
+      form.set("confirmedSafe", "true");
+      const response = await fetch("/api/admin/guide-images", { method: "POST", body: form });
+      const payload = await response.json() as { data?: SharedGuideImageDraft; error?: { message?: string } };
+      if (!response.ok || !payload.data) throw new Error(payload.error?.message ?? "Não foi possível salvar o print.");
+      const savedDraft = payload.data;
+      setDrafts((current) => ({ ...current, [step.id]: savedDraft }));
+      setMessage(`Print do passo ${step.order} compartilhado com a equipe.`);
     } catch {
-      setMessage(`Não foi possível ler ou salvar o print do passo ${step.order}.`);
+      setMessage(`Não foi possível enviar o print do passo ${step.order}. Confira seu acesso e tente novamente.`);
     } finally {
       setBusyStepId(null);
     }
   };
 
   const remove = async (step: GuideStep) => {
-    const draftId = getDraftId(step);
     setBusyStepId(step.id);
     try {
-      await removeGuideImageDraft(draftId);
+      const response = await fetch("/api/admin/guide-images", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          guideSlug,
+          applicationSlug: needsApplication ? applicationSlug : null,
+          operatingSystem,
+          stepId: step.id,
+          stepOrder: step.order,
+        }),
+      });
+      if (!response.ok) throw new Error("Falha ao remover");
       setDrafts((current) => {
         const next = { ...current };
-        if (next[draftId]) URL.revokeObjectURL(next[draftId].url);
-        delete next[draftId];
+        delete next[step.id];
         return next;
       });
-      setMessage(`Print do passo ${step.order} removido deste navegador.`);
+      setMessage(`Print do passo ${step.order} removido para toda a equipe.`);
     } catch {
-      setMessage("Não foi possível remover o print local.");
+      setMessage("Não foi possível remover o print compartilhado.");
     } finally {
       setBusyStepId(null);
     }
@@ -150,8 +142,8 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
   return (
     <div className="mt-8">
       <div className="notice-warning rounded-2xl border-2 p-5" role="note">
-        <p className="font-bold">Protótipo administrativo sem login</p>
-        <p className="mt-1">Os prints ficam apenas neste navegador. Eles ainda não aparecem no guia público nem são enviados ao Supabase.</p>
+        <p className="font-bold">Área privada de rascunhos</p>
+        <p className="mt-1">Os prints são compartilhados somente entre membros autorizados da equipe. Eles não aparecem no guia público antes da revisão.</p>
       </div>
 
       <section className="glass-panel mt-6 p-5" aria-labelledby="admin-selection-title">
@@ -164,6 +156,8 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
               onChange={(event) => {
                 setGuideSlug(event.target.value);
                 setApplicationSlug("");
+                setDrafts({});
+                setMessage("Selecione as opções para carregar os prints compartilhados.");
               }}
               className="glass-control mt-2 min-h-14 w-full rounded-xl px-4"
             >
@@ -178,7 +172,15 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
           {needsApplication && (
             <label className="font-bold">
               2. Aplicativo do banco
-              <select value={applicationSlug} onChange={(event) => setApplicationSlug(event.target.value)} className="glass-control mt-2 min-h-14 w-full rounded-xl px-4">
+              <select
+                value={applicationSlug}
+                onChange={(event) => {
+                  setApplicationSlug(event.target.value);
+                  setDrafts({});
+                  setMessage("Carregando prints compartilhados…");
+                }}
+                className="glass-control mt-2 min-h-14 w-full rounded-xl px-4"
+              >
                 <option value="">Selecione o aplicativo</option>
                 {bankApplications.map((application) => <option key={application.slug} value={application.slug}>{application.name}</option>)}
               </select>
@@ -192,7 +194,18 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
         <div className="grid gap-3 sm:grid-cols-2">
           {(["android", "ios"] as const).map((value) => (
             <label key={value} className="glass-control flex min-h-14 cursor-pointer items-center gap-3 rounded-xl px-4 font-bold">
-              <input type="radio" name="admin-os" value={value} checked={operatingSystem === value} onChange={() => setOperatingSystem(value)} className="size-5" />
+              <input
+                type="radio"
+                name="admin-os"
+                value={value}
+                checked={operatingSystem === value}
+                onChange={() => {
+                  setOperatingSystem(value);
+                  setDrafts({});
+                  setMessage("Carregando prints compartilhados…");
+                }}
+                className="size-5"
+              />
               {value === "ios" ? "iPhone" : "Outro celular"}
             </label>
           ))}
@@ -214,11 +227,17 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
         </div>
       )}
 
+      {selectionComplete && steps.length > 0 && (
+        <label className="notice-warning mt-6 flex min-h-14 cursor-pointer items-start gap-3 rounded-xl border-2 p-4 font-semibold">
+          <input type="checkbox" checked={confirmedSafe} onChange={(event) => setConfirmedSafe(event.target.checked)} className="mt-1 size-5 shrink-0" />
+          Confirmo que os prints não contêm nome, CPF, saldo, valor, beneficiário, senha, boleto ou qualquer dado pessoal real.
+        </label>
+      )}
+
       {selectionComplete && steps.length > 0 && <div className="mt-6 space-y-6">
         {steps.map((step) => {
-          const draftId = getDraftId(step);
-          const preview = drafts[draftId];
-          const inputId = `print-${draftId}`;
+          const preview = drafts[step.id];
+          const inputId = `print-${guideSlug}-${applicationSlug || "sem-aplicativo"}-${operatingSystem}-${step.id}`;
           return (
             <article key={step.id} className="glass-panel grid gap-6 p-5 sm:p-6 lg:grid-cols-[minmax(16rem,0.8fr)_1.2fr]">
               <div>
@@ -226,7 +245,11 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
                 <h2 className="mt-1 text-2xl font-bold">{step.title}</h2>
                 <p className="mt-3">{step.instruction}</p>
                 <p className="mt-3 text-sm text-[var(--muted)]"><strong>Texto alternativo:</strong> {step.imageAlt}</p>
-                <label htmlFor={inputId} className="primary-action mt-5 inline-flex min-h-12 cursor-pointer items-center justify-center rounded-xl px-5 py-2 font-bold">
+                <label
+                  htmlFor={inputId}
+                  aria-disabled={busyStepId === step.id || !confirmedSafe}
+                  className="primary-action mt-5 inline-flex min-h-12 cursor-pointer items-center justify-center rounded-xl px-5 py-2 font-bold aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
+                >
                   {preview ? "Substituir print" : "Escolher print"}
                 </label>
                 <input
@@ -234,7 +257,7 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
                   type="file"
                   accept="image/png,image/jpeg,image/webp"
                   className="sr-only"
-                  disabled={busyStepId === step.id}
+                  disabled={busyStepId === step.id || !confirmedSafe}
                   onChange={(event) => void upload(step, event.target.files?.[0])}
                 />
                 {preview && (
@@ -247,7 +270,7 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
               <div className="flex min-h-80 items-center justify-center overflow-hidden rounded-2xl border-2 border-[var(--border)] bg-[var(--surface-solid)] p-3">
                 {preview ? (
                   <div className="relative h-[32rem] w-full">
-                    <Image src={preview.url} alt={`Prévia administrativa: ${step.imageAlt}`} fill unoptimized sizes="(max-width: 1024px) 100vw, 45vw" className="object-contain" />
+                    <Image src={preview.previewUrl} alt={`Prévia administrativa: ${step.imageAlt}`} fill unoptimized sizes="(max-width: 1024px) 100vw, 45vw" className="object-contain" />
                     <span className="absolute bottom-2 left-2 rounded-lg bg-black/80 px-3 py-1 text-sm font-bold text-white">
                       {preview.width} × {preview.height} · {formatFileSize(preview.byteSize)}
                     </span>

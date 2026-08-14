@@ -22,8 +22,12 @@ PostgreSQL atende ao modelo relacional, constraints, transações, busca textual
 - `002_row_level_security.sql`: RLS com leitura pública somente de conteúdo publicado e isolamento de dados de usuário.
 - `003_profiles_trigger.sql`: criação segura do perfil mínimo após cadastro no Supabase Auth.
 - `004_supabase_public_access.sql`: leitura de conteúdo publicado, demonstração explicitamente marcada e bucket privado de mídia.
+- `005_restrict_auth_trigger_execution.sql` e `006_document_auth_profile_trigger.sql`: endurecimento e documentação do cadastro.
+- `007_shared_guide_image_drafts.sql`: rascunhos compartilhados, autorização da equipe e bucket privado.
 
-As migrations foram verificadas em PostgreSQL 18 efêmero, mas não foram executadas em Supabase remoto. Aplicá-las remotamente exige um projeto escolhido pelo responsável, revisão e credenciais locais fora do Git. O seed de desenvolvimento permanece `draft` e não publica nada.
+As migrations são verificadas em PostgreSQL efêmero pela CI. A aplicação remota
+ocorre somente no projeto escolhido pelo responsável e sem credenciais no Git.
+O seed de desenvolvimento permanece `draft` e não publica nada.
 
 ## Acesso da aplicação
 

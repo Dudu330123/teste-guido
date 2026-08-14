@@ -17,7 +17,7 @@
 | Usuário acessar progresso de outra pessoa | Alta | identidade vem do Supabase Auth e `user_id` nunca vem do payload; RLS isola por `auth.uid()` |
 | SQL injection | Alta | queries C++ parametrizadas e validações de fronteira |
 | Vazamento de token | Alta | Bearer não é logado; proxy server-side; mensagens ocultam detalhes |
-| Print com dado pessoal | Alta | mídia não está ativa; schema bloqueia publicação marcada com dado pessoal e exige revisão |
+| Print com dado pessoal | Alta | confirmação explícita, tipos/dimensões limitados, bucket privado e revisão humana obrigatória; inspeção automática ainda falta |
 | XSS em conteúdo editorial | Média | React escapa texto, não há HTML arbitrário e CSP está ativa |
 | CSRF | Média | mutação C++ usa Bearer; endpoints baseados em cookies devem continuar restritos ao BFF same-origin |
 | Abuso e brute force | Média | Auth é delegado ao Supabase; rate limiting específico ainda precisa ser configurado antes de produção |
@@ -40,10 +40,16 @@ O Guido não deve coletar ou armazenar senha bancária, CPF usado numa operaçã
 
 Aceitar apenas formatos e tamanhos permitidos, verificar MIME e conteúdo, usar nomes não controlados pelo usuário, remover metadados, procurar dados pessoais, armazenar em bucket privado durante revisão e liberar por URLs temporárias. Nunca reutilizar captura de cliente. Logos precisam de fonte oficial e não podem ter cor ou proporção alterada.
 
-O painel experimental `/admin` não envia arquivos ao servidor enquanto estiver
-sem login. PNG, JPEG e WebP de até 10 MB ficam apenas no IndexedDB do navegador.
-Antes de liberar Storage, será obrigatório validar sessão, papel em `team_members`,
-dimensões, assinatura real do arquivo, metadados e revisão de dados pessoais.
+O painel `/admin` aceita PNG, JPEG e WebP de até 10 MB somente para membros ativos
+de `team_members`. O Route Handler valida sessão, contexto, MIME, tamanho e
+dimensões; o bucket `guide-drafts` é privado e usa políticas RLS. URLs de prévia
+expiram em uma hora. Mutações rejeitam origem externa e o nome enviado pelo
+usuário nunca define a chave do objeto.
+
+A confirmação humana antes do upload é uma barreira operacional, não uma inspeção
+do conteúdo. Validação de assinatura real, remoção de metadados, varredura de
+malware e detecção de dados pessoais continuam obrigatórias antes de permitir
+publicação de imagens reais.
 
 ## Supabase
 

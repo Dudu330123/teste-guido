@@ -1,7 +1,8 @@
 # Integração do Supabase — sujeita a revisão de produto
 
-As migrations `001` a `006` foram validadas em PostgreSQL efêmero e aplicadas ao
-projeto Supabase remoto. A auditoria de segurança da CLI não apresentou alertas
+As migrations `001` a `007` são validadas em PostgreSQL efêmero; a `007` adiciona
+rascunhos compartilhados e deve ser aplicada ao projeto Supabase remoto. A
+auditoria de segurança da CLI não apresentou alertas
 depois da migration `005`. O conteúdo demonstrativo continua pendente de revisão
 humana e não deve ser promovido a oficial.
 
@@ -33,6 +34,23 @@ Nunca copie para o projeto ou para o navegador `service_role`, `sb_secret_...`
 ou tokens administrativos. O frontend e os Route Handlers usam somente a chave publicável e as permissões da sessão.
 
 O cliente de servidor em `src/lib/supabase/server.ts` aceita cookies e valida o usuário com `auth.getUser()` antes de operações privadas. `src/proxy.ts` mantém a renovação da sessão no Next.js. Catálogo e guias são lidos diretamente com RLS; progresso e histórico passam por Route Handlers sem chave administrativa.
+
+## Primeiro membro da equipe
+
+O cadastro no Auth não concede acesso administrativo. Depois que a migration
+`007` estiver aplicada, um responsável deve inserir explicitamente o primeiro
+usuário em `team_members` pelo SQL Editor, usando o UUID existente em
+`Authentication > Users`. Não use e-mail ou senha no código:
+
+```sql
+insert into public.team_members (user_id, role)
+values ('UUID_DO_USUARIO', 'superadmin')
+on conflict (user_id) do update
+set role = excluded.role, active = true;
+```
+
+Depois desse bootstrap, outros membros devem ser cadastrados por um fluxo
+administrativo auditado, ainda pendente.
 
 ## Integração com GitHub
 

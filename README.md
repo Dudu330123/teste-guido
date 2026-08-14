@@ -75,9 +75,10 @@ serão sincronizadas com a `main` pela integração oficial entre Supabase e Git
 - somente “Pagar um boleto” é navegável e usa telas fictícias;
 - conteúdo de WhatsApp, Gov.br e instituições financeiras permanece em preparação;
 - progresso fica local para visitantes e sincroniza diretamente com PostgreSQL para sessões validadas pelo Supabase;
-- autenticação chama Supabase Auth quando configurada, mas autorização administrativa ainda não está ativa;
-- o painel `/admin` aceita rascunhos locais de prints, mas ainda não os publica nem os envia ao Supabase;
-- não há upload remoto, autorização administrativa, OCR, integração bancária ou offline completo.
+- autenticação usa Supabase Auth e o painel `/admin` exige vínculo ativo em `team_members`;
+- rascunhos de prints são compartilhados pela equipe em bucket privado, com metadados no PostgreSQL e URLs temporárias;
+- o painel não publica rascunhos no guia público; revisão e publicação ainda serão implementadas;
+- não há OCR, integração bancária ou offline completo.
 
 Consulte [arquitetura](docs/ARQUITETURA.md), [API](docs/API.md), [banco](docs/DATABASE.md), [segurança](docs/SEGURANCA.md) e [testes](docs/TESTING.md).
 

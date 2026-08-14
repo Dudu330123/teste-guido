@@ -8,7 +8,7 @@ O Guido é um monólito modular Next.js conectado aos serviços gerenciados do S
 Navegador
    │
    ▼
-Next.js / Netlify
+Next.js / Vercel
    │ sessão, consultas e Route Handlers
    ▼
 Supabase ── Auth
@@ -29,23 +29,24 @@ O Next.js apresenta a interface e contém somente a coordenação necessária. P
 
 O diretório `backend/` está congelado como referência da implementação anterior. Não participa da execução nem da CI e será removido somente depois da validação completa da migração.
 
-### Rascunhos de prints no painel experimental
+### Rascunhos de prints no painel administrativo
 
-A rota `/admin` permanece temporariamente sem autenticação a pedido do produto,
-por isso não possui permissão de escrita remota. Os arquivos escolhidos são
-validados e guardados como `Blob` no IndexedDB do próprio navegador. Esse fluxo
-permite revisar proporção e associação com cada passo sem criar uma porta pública
-de upload.
+A rota `/admin` pode ser aberta no navegador, mas leitura, envio e remoção de
+prints exigem uma sessão válida e um vínculo ativo em `team_members`. O Route
+Handler valida novamente a sessão; PostgreSQL e Storage aplicam RLS como segunda
+camada. Não existe chave administrativa no processo.
 
 Cada rascunho usa uma identidade composta por guia, aplicativo quando aplicável,
 sistema operacional e passo. Essa separação impede que um print da Caixa, por
-exemplo, substitua o print correspondente do Banco do Brasil. A coleção local
-anterior foi preservada para evitar exclusão silenciosa de arquivos já escolhidos.
+exemplo, substitua o print correspondente do Banco do Brasil. A coleção IndexedDB
+anterior foi preservada no código para evitar uma exclusão silenciosa, mas não é
+mais lida pelo painel e não é migrada automaticamente.
 
-Após autenticação e autorização por `team_members`, os arquivos migrarão para o
-bucket privado do Supabase Storage. O PostgreSQL guardará somente metadados e a
-chave do objeto; o HTML nunca incorporará o conteúdo binário. A apresentação usa
-contenção proporcional para adaptar prints verticais ou horizontais sem corte.
+Os arquivos ficam no bucket privado `guide-drafts`; `guide_image_drafts` guarda
+somente contexto, dimensões, autoria e chave do objeto. O HTML recebe uma URL
+assinada por uma hora. A apresentação usa contenção proporcional para adaptar
+prints verticais ou horizontais sem corte. Esses registros são rascunhos e não
+entram no fluxo público sem revisão separada.
 
 ## Fluxo público
 
