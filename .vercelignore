@@ -1,0 +1,9 @@
+# O backend C++ está congelado como histórico e não participa do Next.js.
+backend/
+
+# Artefatos locais de outras plataformas e ferramentas.
+.netlify/
+.next/
+node_modules/
+coverage/
+uploads/tmp/

@@ -83,9 +83,10 @@ Consulte [arquitetura](docs/ARQUITETURA.md), [API](docs/API.md), [banco](docs/DA
 
 ## Publicação do frontend
 
-O frontend e seus Route Handlers estão preparados para Netlify por `netlify.toml`; PostgreSQL, Auth e Storage são fornecidos pelo Supabase. Consulte
-[a documentação de publicação](docs/PUBLICACAO_NETLIFY.md).
+O frontend e seus Route Handlers estão publicados na Vercel; PostgreSQL, Auth e
+Storage continuam no Supabase. Consulte [a documentação da Vercel](docs/PUBLICACAO_VERCEL.md).
+O Netlify permanece apenas como publicação anterior durante a transição.
 
 O diretório `backend/` contém a implementação C++ anterior, congelada apenas como referência durante a migração. Ela não participa mais do build, da CI ou da execução do Guido.
 
-Site publicado: `https://guido-assistente-digital.netlify.app`.
+Site publicado: `https://guido-orpin.vercel.app`.

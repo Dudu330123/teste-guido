@@ -29,6 +29,9 @@
 .netlify
 /deno.lock
 
+# Vínculo local da Vercel; contém metadados específicos da conta.
+.vercel
+
 # local agent and temporary upload state
 /.agents/
 /.codex/
