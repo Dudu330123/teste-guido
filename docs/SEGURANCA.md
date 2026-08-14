@@ -13,11 +13,11 @@
 
 | Risco | Prioridade | Controle atual |
 | --- | --- | --- |
-| Publicar guia financeiro falso ou sem revisão | Crítica | estados, `is_demo`, RLS e fluxo de revisão modelado; painel de publicação ainda não existe |
+| Publicar guia financeiro falso ou sem revisão | Crítica | guias continuam `is_demo`; o painel publica apenas imagens por administrador e não promove conteúdo a oficial |
 | Usuário acessar progresso de outra pessoa | Alta | identidade vem do Supabase Auth e `user_id` nunca vem do payload; RLS isola por `auth.uid()` |
 | SQL injection | Alta | queries C++ parametrizadas e validações de fronteira |
 | Vazamento de token | Alta | Bearer não é logado; proxy server-side; mensagens ocultam detalhes |
-| Print com dado pessoal | Alta | confirmação explícita, tipos/dimensões limitados, bucket privado e revisão humana obrigatória; inspeção automática ainda falta |
+| Print com dado pessoal | Alta | upload público restrito a administradores, confirmação explícita e tipos/dimensões limitados; inspeção automática ainda falta |
 | XSS em conteúdo editorial | Média | React escapa texto, não há HTML arbitrário e CSP está ativa |
 | CSRF | Média | mutação C++ usa Bearer; endpoints baseados em cookies devem continuar restritos ao BFF same-origin |
 | Abuso e brute force | Média | Auth é delegado ao Supabase; rate limiting específico ainda precisa ser configurado antes de produção |
@@ -50,6 +50,13 @@ A confirmação humana antes do upload é uma barreira operacional, não uma ins
 do conteúdo. Validação de assinatura real, remoção de metadados, varredura de
 malware e detecção de dados pessoais continuam obrigatórias antes de permitir
 publicação de imagens reais.
+
+Por decisão do produto, uploads realizados por `admin` ou `superadmin` no painel
+ativo são publicados imediatamente no guia demonstrativo. Contas `editor`,
+visitantes e usuários comuns não podem enviar ou remover arquivos. A confirmação
+de ausência de dados pessoais permanece obrigatória, mas ainda é um controle
+humano; por isso administradores não devem usar capturas de clientes ou contas
+reais. O frontend identifica a imagem como demonstração e não como tela oficial.
 
 ## Supabase
 

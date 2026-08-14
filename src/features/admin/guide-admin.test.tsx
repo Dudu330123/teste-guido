@@ -34,7 +34,7 @@ describe("administração compartilhada dos prints", () => {
       bankApplications={[{ slug: "caixa", name: "Caixa" }]}
     />);
 
-    expect(screen.getByText("Área privada de rascunhos")).toBeVisible();
+    expect(screen.getByText("Publicação imediata")).toBeVisible();
     expect(screen.getByText("Selecione um guia para começar.")).toBeVisible();
     expect(screen.queryByText("Passo 1 de 6")).not.toBeInTheDocument();
 

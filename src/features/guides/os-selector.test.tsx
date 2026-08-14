@@ -21,4 +21,15 @@ describe("seletor de celular", () => {
     expect(localStorage.getItem("guido:preferred-os")).toBe("ios");
     expect(push).toHaveBeenCalledWith("/guias/pagar-boleto?os=ios");
   });
+
+  it("mantém o aplicativo escolhido na abertura do guia", async () => {
+    const user = userEvent.setup();
+    render(<OsSelector taskSlug="pagar-boleto" applicationOptions={[
+      { slug: "caixa", name: "Caixa" },
+      { slug: "nubank", name: "Nubank" },
+    ]} />);
+    await user.selectOptions(screen.getByRole("combobox", { name: "Qual aplicativo você usa?" }), "nubank");
+    await user.click(screen.getByRole("button", { name: /próximo/i }));
+    expect(push).toHaveBeenCalledWith("/guias/pagar-boleto?os=android&app=nubank");
+  });
 });

@@ -1,7 +1,8 @@
 # Integração do Supabase — sujeita a revisão de produto
 
-As migrations `001` a `007` são validadas em PostgreSQL efêmero; a `007` adiciona
-rascunhos compartilhados e deve ser aplicada ao projeto Supabase remoto. A
+As migrations `001` a `008` são validadas em PostgreSQL efêmero; a `007` adiciona
+rascunhos privados e a `008` adiciona publicação imediata restrita a
+administradores. Elas devem ser aplicadas ao projeto Supabase remoto. A
 auditoria de segurança da CLI não apresentou alertas
 depois da migration `005`. O conteúdo demonstrativo continua pendente de revisão
 humana e não deve ser promovido a oficial.
@@ -51,6 +52,10 @@ set role = excluded.role, active = true;
 
 Depois desse bootstrap, outros membros devem ser cadastrados por um fluxo
 administrativo auditado, ainda pendente.
+
+`editor` não publica imagens. Use `admin` apenas para quem pode alterar os prints
+vistos por todos os usuários e mantenha `superadmin` reservado ao responsável
+principal.
 
 ## Integração com GitHub
 

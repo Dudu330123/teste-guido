@@ -4,12 +4,11 @@ import { guideImageRules, validateGuideImageDimensions, validateGuideImageFile }
 import { extensionForGuideImage, guideImageContextSchema } from "@/features/admin/shared-guide-image";
 import { getAdminAccess } from "@/lib/supabase/admin";
 
-const bucket = "guide-drafts";
+const bucket = "guide-public";
 const storedRowSchema = z.object({
   id: z.string().uuid(),
   step_id: z.string(),
   storage_key: z.string(),
-  original_filename: z.string(),
   mime_type: z.enum(guideImageRules.acceptedTypes),
   byte_size: z.number().int().positive(),
   width: z.number().int().positive(),
@@ -19,9 +18,13 @@ const storedRowSchema = z.object({
 
 function accessError() {
   return NextResponse.json(
-    { error: { code: "forbidden", message: "Entre com uma conta autorizada da equipe." } },
+    { error: { code: "forbidden", message: "Entre com uma conta administradora autorizada." } },
     { status: 403 },
   );
+}
+
+function canPublish(role: string) {
+  return role === "admin" || role === "superadmin";
 }
 
 /** Bloqueia mutações originadas fora do próprio site, além da proteção dos cookies. */
@@ -49,24 +52,22 @@ async function rowResponse(
   supabase: NonNullable<Awaited<ReturnType<typeof getAdminAccess>>>["supabase"],
   row: z.infer<typeof storedRowSchema>,
 ) {
-  const { data } = await supabase.storage.from(bucket).createSignedUrl(row.storage_key, 60 * 60);
-  if (!data?.signedUrl) return null;
+  const { data } = supabase.storage.from(bucket).getPublicUrl(row.storage_key);
   return {
     id: row.id,
     stepId: row.step_id,
-    filename: row.original_filename,
     mimeType: row.mime_type,
     byteSize: row.byte_size,
     width: row.width,
     height: row.height,
     updatedAt: row.updated_at,
-    previewUrl: data.signedUrl,
+    previewUrl: data.publicUrl,
   };
 }
 
 export async function GET(request: Request) {
   const admin = await getAdminAccess();
-  if (!admin) return accessError();
+  if (!admin || !canPublish(admin.role)) return accessError();
   const search = new URL(request.url).searchParams;
   const context = z.object({
     guideSlug: guideImageContextSchema.shape.guideSlug,
@@ -82,8 +83,8 @@ export async function GET(request: Request) {
   }
 
   let query = admin.supabase
-    .from("guide_image_drafts")
-    .select("id, step_id, storage_key, original_filename, mime_type, byte_size, width, height, updated_at")
+    .from("guide_public_images")
+    .select("id, step_id, storage_key, mime_type, byte_size, width, height, updated_at")
     .eq("guide_slug", context.data.guideSlug)
     .eq("operating_system", context.data.operatingSystem);
   query = context.data.applicationSlug
@@ -102,7 +103,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   if (!hasTrustedOrigin(request)) return originError();
   const admin = await getAdminAccess();
-  if (!admin) return accessError();
+  if (!admin || !canPublish(admin.role)) return accessError();
   const form = await request.formData();
   const file = form.get("file");
   const context = parseContext({
@@ -135,7 +136,7 @@ export async function POST(request: Request) {
   }
 
   let previousQuery = admin.supabase
-    .from("guide_image_drafts")
+    .from("guide_public_images")
     .select("storage_key")
     .eq("guide_slug", context.data.guideSlug)
     .eq("operating_system", context.data.operatingSystem)
@@ -145,7 +146,7 @@ export async function POST(request: Request) {
     : previousQuery.is("application_slug", null);
   const { data: previous } = await previousQuery.maybeSingle();
 
-  const { data, error } = await admin.supabase.from("guide_image_drafts").upsert({
+  const { data, error } = await admin.supabase.from("guide_public_images").upsert({
     guide_slug: context.data.guideSlug,
     application_slug: context.data.applicationSlug,
     operating_system: context.data.operatingSystem,
@@ -161,7 +162,7 @@ export async function POST(request: Request) {
     created_by: admin.user.id,
     updated_by: admin.user.id,
   }, { onConflict: "guide_slug,application_scope,operating_system,step_id" })
-    .select("id, step_id, storage_key, original_filename, mime_type, byte_size, width, height, updated_at")
+    .select("id, step_id, storage_key, mime_type, byte_size, width, height, updated_at")
     .single();
   const parsed = storedRowSchema.safeParse(data);
   if (error || !parsed.success) {
@@ -181,14 +182,14 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
   if (!hasTrustedOrigin(request)) return originError();
   const admin = await getAdminAccess();
-  if (!admin) return accessError();
+  if (!admin || !canPublish(admin.role)) return accessError();
   const input = await request.json().catch(() => null);
   const context = parseContext(input ?? {});
   if (!context.success) {
     return NextResponse.json({ error: { code: "invalid_request", message: "Print inválido." } }, { status: 400 });
   }
   let query = admin.supabase
-    .from("guide_image_drafts")
+    .from("guide_public_images")
     .delete()
     .eq("guide_slug", context.data.guideSlug)
     .eq("operating_system", context.data.operatingSystem)

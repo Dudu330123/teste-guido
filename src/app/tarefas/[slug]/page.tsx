@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
-import { applications } from "@/data/applications";
+import { applications, financialApplications } from "@/data/applications";
 import { tasks } from "@/data/guides";
 import { OsSelector } from "@/features/guides/os-selector";
 import { getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/supabase/catalog";
@@ -31,7 +31,12 @@ export default async function TaskPage({ params }: TaskPageProps) {
         <h1 className="text-4xl font-bold">{task.title}</h1>
         <p className="mt-3 text-xl">{task.description}</p>
         {task.availability !== "preparing" ? (
-          <OsSelector taskSlug={task.slug} />
+          <OsSelector
+            taskSlug={task.slug}
+            applicationOptions={task.slug === "pagar-boleto"
+              ? financialApplications.map(({ slug: applicationSlug, name }) => ({ slug: applicationSlug, name }))
+              : undefined}
+          />
         ) : (
           <div className="glass-panel mt-7 rounded-2xl p-6">
             <h2 className="text-2xl font-bold">Guia em preparação</h2>

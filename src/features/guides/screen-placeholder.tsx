@@ -18,7 +18,7 @@ export function ScreenPlaceholder({ step }: { step: GuideStep }) {
           />
         </div>
         <figcaption className="mt-3 text-center font-semibold text-[var(--muted)]">
-          Imagem educativa revisada para este passo.
+          Imagem demonstrativa publicada pela administração. Confirme se a tela do aplicativo continua igual.
         </figcaption>
       </figure>
     );

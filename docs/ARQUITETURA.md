@@ -48,6 +48,19 @@ assinada por uma hora. A apresentação usa contenção proporcional para adapta
 prints verticais ou horizontais sem corte. Esses registros são rascunhos e não
 entram no fluxo público sem revisão separada.
 
+### Imagens demonstrativas publicadas pela administração
+
+O fluxo ativo do painel usa `guide_public_images` e o bucket público
+`guide-public`. Somente membros ativos com papel `admin` ou `superadmin` podem
+criar, substituir ou remover essas imagens. A publicação ocorre assim que o
+upload termina, conforme decisão do produto; o visualizador continua exibindo que
+se trata de demonstração não oficial. Aplicativo, plataforma e ordem do passo
+fazem parte da chave para impedir mistura entre bancos ou celulares.
+
+O visitante escolhe o aplicativo antes de abrir o guia. O servidor lê somente as
+colunas públicas da imagem e substitui `imagePath`; título, instrução, alerta e
+texto alternativo não são controlados pelo arquivo enviado.
+
 ## Fluxo público
 
 Catálogo e guias são consultados no servidor Next.js com a chave publicável. RLS permite apenas conteúdo `published` e o `draft` explicitamente marcado como `is_demo`. Respostas são validadas antes de chegar aos componentes. Imagens e áudios permanecem em bucket privado e são entregues por URLs temporárias.

@@ -5,9 +5,15 @@ import { useRouter } from "next/navigation";
 import type { OperatingSystem } from "@/types/content";
 import { detectOperatingSystem, readOperatingSystem, saveOperatingSystem } from "./device";
 
-export function OsSelector({ taskSlug }: { taskSlug: string }) {
+interface OsSelectorProps {
+  taskSlug: string;
+  applicationOptions?: Array<{ slug: string; name: string }>;
+}
+
+export function OsSelector({ taskSlug, applicationOptions = [] }: OsSelectorProps) {
   const router = useRouter();
   const [operatingSystem, setOperatingSystem] = useState<OperatingSystem>("android");
+  const [applicationSlug, setApplicationSlug] = useState(applicationOptions[0]?.slug ?? "");
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -28,11 +34,29 @@ export function OsSelector({ taskSlug }: { taskSlug: string }) {
       onSubmit={(event) => {
         event.preventDefault();
         saveOperatingSystem(window.localStorage, operatingSystem);
-        router.push(`/guias/${encodeURIComponent(taskSlug)}?os=${operatingSystem}`);
+        const search = new URLSearchParams({ os: operatingSystem });
+        if (applicationSlug) search.set("app", applicationSlug);
+        router.push(`/guias/${encodeURIComponent(taskSlug)}?${search}`);
       }}
     >
+      {applicationOptions.length > 0 && (
+        <label htmlFor="guide-application" className="block text-2xl font-bold">
+          Qual aplicativo você usa?
+          <select
+            id="guide-application"
+            value={applicationSlug}
+            onChange={(event) => setApplicationSlug(event.target.value)}
+            required
+            className="glass-control mt-3 min-h-14 w-full rounded-xl px-4 text-lg"
+          >
+            {applicationOptions.map((application) => (
+              <option key={application.slug} value={application.slug}>{application.name}</option>
+            ))}
+          </select>
+        </label>
+      )}
       <fieldset>
-        <legend className="text-2xl font-bold">Qual celular você usa?</legend>
+        <legend className={`${applicationOptions.length ? "mt-7" : ""} text-2xl font-bold`}>Qual celular você usa?</legend>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           {(["ios", "android"] as const).map((option) => (
             <label key={option} className={`glass-control flex min-h-20 cursor-pointer items-center gap-4 rounded-2xl p-5 text-xl font-bold ${operatingSystem === option ? "border-[var(--primary)]" : ""}`}>

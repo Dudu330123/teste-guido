@@ -57,6 +57,7 @@ jobs:
           psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -f supabase/migrations/005_restrict_auth_trigger_execution.sql
           psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -f supabase/migrations/006_document_auth_profile_trigger.sql
           psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -f supabase/migrations/007_shared_guide_image_drafts.sql
+          psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -f supabase/migrations/008_admin_published_guide_images.sql
           psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -f supabase/seed.sql
       - name: Validar isolamento e demonstração
         env:
@@ -83,3 +84,14 @@ jobs:
           fi
           psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -c "select set_config('request.jwt.claim.sub', '11111111-1111-4111-8111-111111111111', false); set role authenticated; insert into public.guide_image_drafts (guide_slug, application_slug, operating_system, step_id, step_order, storage_key, original_filename, mime_type, byte_size, width, height, created_by, updated_by) values ('pagar-boleto', 'caixa', 'android', 'passo-1', 1, '11111111-1111-4111-8111-111111111111/pagar-boleto/caixa/android/passo-1/teste.png', 'teste.png', 'image/png', 100, 1080, 1920, '11111111-1111-4111-8111-111111111111', '11111111-1111-4111-8111-111111111111');"
           test "$(psql -h 127.0.0.1 -U postgres -Atqc "select set_config('request.jwt.claim.sub', '11111111-1111-4111-8111-111111111111', false); set role authenticated; select count(*) from public.guide_image_drafts;" | tail -n 1)" = "1"
+      - name: Validar publicação imediata somente por administrador
+        env:
+          PGPASSWORD: postgres
+        run: |
+          test "$(psql -h 127.0.0.1 -U postgres -Atqc "set role anon; select count(*) from public.guide_public_images;")" = "0"
+          if psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -c "select set_config('request.jwt.claim.sub', '11111111-1111-4111-8111-111111111111', false); set role authenticated; insert into public.guide_public_images (guide_slug, application_slug, operating_system, step_id, step_order, storage_key, original_filename, mime_type, byte_size, width, height, created_by, updated_by) values ('pagar-boleto', 'caixa', 'android', 'passo-1', 1, 'editor/negado.png', 'negado.png', 'image/png', 100, 1080, 1920, '11111111-1111-4111-8111-111111111111', '11111111-1111-4111-8111-111111111111');"; then
+            echo "editor sem papel administrativo publicou uma imagem" >&2
+            exit 1
+          fi
+          psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -c "update public.team_members set role = 'superadmin' where user_id = '11111111-1111-4111-8111-111111111111'; select set_config('request.jwt.claim.sub', '11111111-1111-4111-8111-111111111111', false); set role authenticated; insert into public.guide_public_images (guide_slug, application_slug, operating_system, step_id, step_order, storage_key, original_filename, mime_type, byte_size, width, height, created_by, updated_by) values ('pagar-boleto', 'caixa', 'android', 'passo-1', 1, '11111111-1111-4111-8111-111111111111/pagar-boleto/caixa/android/passo-1/publico.png', 'publico.png', 'image/png', 100, 1080, 1920, '11111111-1111-4111-8111-111111111111', '11111111-1111-4111-8111-111111111111');"
+          test "$(psql -h 127.0.0.1 -U postgres -Atqc "set role anon; select count(*) from public.guide_public_images where guide_slug = 'pagar-boleto';")" = "1"

@@ -11,7 +11,6 @@ export const guideImageContextSchema = z.object({
 export interface SharedGuideImageDraft {
   id: string;
   stepId: string;
-  filename: string;
   mimeType: "image/png" | "image/jpeg" | "image/webp";
   byteSize: number;
   width: number;

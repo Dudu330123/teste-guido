@@ -1,27 +1,39 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { applications } from "@/data/applications";
+import { applications, financialApplications } from "@/data/applications";
 import { getGuide, getStepsForGuide, tasks } from "@/data/guides";
 import { GuideViewer } from "@/features/guides/guide-viewer";
 import { getGuideFromSupabase } from "@/lib/supabase/catalog";
+import { applyPublicGuideImages, getPublicGuideImages } from "@/lib/supabase/public-guide-images";
 
 interface GuidePageProps {
-  searchParams: Promise<{ os?: string }>;
+  searchParams: Promise<{ os?: string; app?: string }>;
 }
 
 export const metadata: Metadata = { title: "Guia: Pagar um boleto" };
 
 export default async function GuidePage({ searchParams }: GuidePageProps) {
-  const { os } = await searchParams;
+  const { os, app } = await searchParams;
   if (os !== "android" && os !== "ios") redirect("/tarefas/pagar-boleto");
+  const selectedApplication = financialApplications.find((application) => application.slug === app);
+  const publicImages = await getPublicGuideImages("pagar-boleto", selectedApplication?.slug ?? null, os);
   const remoteContent = await getGuideFromSupabase("pagar-boleto", os);
   if (remoteContent) {
-    return <GuideViewer {...remoteContent} />;
+    return <GuideViewer
+      {...remoteContent}
+      application={selectedApplication ?? remoteContent.application}
+      steps={applyPublicGuideImages(remoteContent.steps, publicImages)}
+    />;
   }
   const guide = getGuide(os);
   const task = tasks.find((item) => item.id === guide?.taskId);
   const application = applications.find((item) => item.id === task?.applicationId);
   if (!guide || !task || !application) redirect("/tarefas/pagar-boleto");
 
-  return <GuideViewer application={application} guide={guide} steps={getStepsForGuide(guide.id)} task={task} />;
+  return <GuideViewer
+    application={selectedApplication ?? application}
+    guide={guide}
+    steps={applyPublicGuideImages(getStepsForGuide(guide.id), publicImages)}
+    task={task}
+  />;
 }

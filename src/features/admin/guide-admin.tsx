@@ -36,7 +36,7 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
   const [applicationSlug, setApplicationSlug] = useState("");
   const [operatingSystem, setOperatingSystem] = useState<OperatingSystem>("android");
   const [drafts, setDrafts] = useState<Record<string, SharedGuideImageDraft>>({});
-  const [message, setMessage] = useState("Selecione um guia para carregar os prints compartilhados.");
+  const [message, setMessage] = useState("Selecione um guia para carregar as imagens públicas.");
   const [busyStepId, setBusyStepId] = useState<string | null>(null);
   const [confirmedSafe, setConfirmedSafe] = useState(false);
 
@@ -59,7 +59,7 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
         if (!response.ok) throw new Error(payload.error?.message ?? "Não foi possível carregar os prints.");
         const shared = payload.data ?? [];
         setDrafts(Object.fromEntries(shared.map((draft) => [draft.stepId, draft])));
-        setMessage(shared.length ? "Prints compartilhados carregados." : "Nenhum print compartilhado para esta seleção.");
+        setMessage(shared.length ? "Imagens públicas carregadas." : "Nenhuma imagem pública para esta seleção.");
       })
       .catch((error: unknown) => {
         if (error instanceof DOMException && error.name === "AbortError") return;
@@ -103,7 +103,7 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
       if (!response.ok || !payload.data) throw new Error(payload.error?.message ?? "Não foi possível salvar o print.");
       const savedDraft = payload.data;
       setDrafts((current) => ({ ...current, [step.id]: savedDraft }));
-      setMessage(`Print do passo ${step.order} compartilhado com a equipe.`);
+      setMessage(`Print do passo ${step.order} publicado para todos os usuários.`);
     } catch {
       setMessage(`Não foi possível enviar o print do passo ${step.order}. Confira seu acesso e tente novamente.`);
     } finally {
@@ -131,9 +131,9 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
         delete next[step.id];
         return next;
       });
-      setMessage(`Print do passo ${step.order} removido para toda a equipe.`);
+      setMessage(`Print público do passo ${step.order} removido.`);
     } catch {
-      setMessage("Não foi possível remover o print compartilhado.");
+      setMessage("Não foi possível remover o print público.");
     } finally {
       setBusyStepId(null);
     }
@@ -142,8 +142,8 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
   return (
     <div className="mt-8">
       <div className="notice-warning rounded-2xl border-2 p-5" role="note">
-        <p className="font-bold">Área privada de rascunhos</p>
-        <p className="mt-1">Os prints são compartilhados somente entre membros autorizados da equipe. Eles não aparecem no guia público antes da revisão.</p>
+        <p className="font-bold">Publicação imediata</p>
+        <p className="mt-1">Somente administradores podem enviar. Assim que o upload terminar, o print passa a aparecer no guia demonstrativo para todos os usuários.</p>
       </div>
 
       <section className="glass-panel mt-6 p-5" aria-labelledby="admin-selection-title">
@@ -157,7 +157,7 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
                 setGuideSlug(event.target.value);
                 setApplicationSlug("");
                 setDrafts({});
-                setMessage("Selecione as opções para carregar os prints compartilhados.");
+                setMessage("Selecione as opções para carregar as imagens públicas.");
               }}
               className="glass-control mt-2 min-h-14 w-full rounded-xl px-4"
             >
@@ -177,7 +177,7 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
                 onChange={(event) => {
                   setApplicationSlug(event.target.value);
                   setDrafts({});
-                  setMessage("Carregando prints compartilhados…");
+                  setMessage("Carregando imagens públicas…");
                 }}
                 className="glass-control mt-2 min-h-14 w-full rounded-xl px-4"
               >
@@ -202,7 +202,7 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
                 onChange={() => {
                   setOperatingSystem(value);
                   setDrafts({});
-                  setMessage("Carregando prints compartilhados…");
+                  setMessage("Carregando imagens públicas…");
                 }}
                 className="size-5"
               />
