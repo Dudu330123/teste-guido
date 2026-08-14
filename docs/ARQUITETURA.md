@@ -51,8 +51,8 @@ entram no fluxo público sem revisão separada.
 ### Imagens demonstrativas publicadas pela administração
 
 O fluxo ativo do painel usa `guide_public_images` e o bucket público
-`guide-public`. Somente membros ativos com papel `admin` ou `superadmin` podem
-criar, substituir ou remover essas imagens. A publicação ocorre assim que o
+`guide-public`. Somente membros ativos com papel `superadmin` podem acessar o
+painel e criar, substituir ou remover essas imagens. A publicação ocorre assim que o
 upload termina, conforme decisão do produto; o visualizador continua exibindo que
 se trata de demonstração não oficial. Aplicativo, plataforma e ordem do passo
 fazem parte da chave para impedir mistura entre bancos ou celulares.

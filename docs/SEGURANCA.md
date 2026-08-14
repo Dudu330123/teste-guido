@@ -41,7 +41,7 @@ O Guido não deve coletar ou armazenar senha bancária, CPF usado numa operaçã
 Aceitar apenas formatos e tamanhos permitidos, verificar MIME e conteúdo, usar nomes não controlados pelo usuário, remover metadados, procurar dados pessoais, armazenar em bucket privado durante revisão e liberar por URLs temporárias. Nunca reutilizar captura de cliente. Logos precisam de fonte oficial e não podem ter cor ou proporção alterada.
 
 O painel `/admin` aceita PNG, JPEG e WebP de até 10 MB e 8192 × 8192 pixels
-somente para membros ativos com papel `admin` ou `superadmin`. Recomenda-se a
+somente para membros ativos com papel `superadmin`. Recomenda-se a
 captura vertical, completa, na resolução original e com pelo menos 720 pixels de
 largura. A imagem não deve ser cortada, esticada, emoldurada ou receber marca
 d'água. O Route Handler valida sessão, contexto, MIME, tamanho e dimensões;
@@ -53,10 +53,10 @@ do conteúdo. Validação de assinatura real, remoção de metadados, varredura 
 malware e detecção de dados pessoais continuam obrigatórias antes de permitir
 publicação de imagens reais.
 
-Por decisão do produto, uploads realizados por `admin` ou `superadmin` no painel
-ativo são publicados imediatamente no guia demonstrativo. Contas `editor`,
-visitantes e usuários comuns não podem enviar ou remover arquivos. A confirmação
-de ausência de dados pessoais permanece obrigatória, mas ainda é um controle
+Por decisão do produto, uploads realizados pelo `superadmin` no painel ativo são
+publicados imediatamente no guia demonstrativo. Contas `admin`, `editor`,
+visitantes e usuários comuns não podem acessar o painel, enviar ou remover
+arquivos. A confirmação de ausência de dados pessoais permanece obrigatória, mas ainda é um controle
 humano; por isso administradores não devem usar capturas de clientes ou contas
 reais. O frontend identifica a imagem como demonstração e não como tela oficial.
 Os arquivos ficam no bucket público `guide-public`; portanto a confirmação de

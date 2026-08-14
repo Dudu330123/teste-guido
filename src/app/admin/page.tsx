@@ -1,14 +1,21 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { actions } from "@/data/actions";
 import { getAdminScriptSteps } from "@/data/admin-guide-scripts";
 import { financialApplications } from "@/data/applications";
 import { getGuide, getStepsForGuide, tasks } from "@/data/guides";
 import { GuideAdmin, type AdminGuideOption } from "@/features/admin/guide-admin";
+import { getSuperadminAccess } from "@/lib/supabase/admin";
 
 export const metadata: Metadata = { title: "Administração de guias" };
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  const superadminAccess = await getSuperadminAccess();
+  // Uma resposta 404 não revela a existência do painel a visitantes ou a
+  // membros com papéis inferiores. A API e o RLS repetem esta autorização.
+  if (!superadminAccess) notFound();
+
   const androidGuide = getGuide("android")!;
   const iosGuide = getGuide("ios")!;
   const financialApplicationIds = new Set(financialApplications.map(({ id }) => id));
@@ -54,7 +61,7 @@ export default function AdminPage() {
 
   return (
     <>
-      <SiteHeader />
+      <SiteHeader showAdmin />
       <main className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8">
         <p className="font-bold text-[var(--primary)]">Área administrativa experimental</p>
         <h1 className="mt-1 text-4xl font-bold sm:text-5xl">Prints dos guias</h1>

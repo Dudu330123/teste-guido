@@ -53,9 +53,9 @@ set role = excluded.role, active = true;
 Depois desse bootstrap, outros membros devem ser cadastrados por um fluxo
 administrativo auditado, ainda pendente.
 
-`editor` não publica imagens. Use `admin` apenas para quem pode alterar os prints
-vistos por todos os usuários e mantenha `superadmin` reservado ao responsável
-principal.
+`editor`, `reviewer` e `admin` não publicam imagens. O papel `superadmin` fica
+reservado ao responsável principal e é o único autorizado a acessar o painel e
+alterar os prints vistos por todos os usuários.
 
 ## Integração com GitHub
 

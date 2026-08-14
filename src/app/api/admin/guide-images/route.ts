@@ -18,13 +18,13 @@ const storedRowSchema = z.object({
 
 function accessError() {
   return NextResponse.json(
-    { error: { code: "forbidden", message: "Entre com uma conta administradora autorizada." } },
+    { error: { code: "forbidden", message: "Entre com a conta superadministradora autorizada." } },
     { status: 403 },
   );
 }
 
 function canPublish(role: string) {
-  return role === "admin" || role === "superadmin";
+  return role === "superadmin";
 }
 
 /** Bloqueia mutações originadas fora do próprio site, além da proteção dos cookies. */

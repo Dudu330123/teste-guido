@@ -22,9 +22,14 @@ describe("controles da página inicial", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("oferece acesso direto à página de login", () => {
+  it("oferece login, mas não revela a administração ao visitante", () => {
     render(<HomeToolbar />);
     expect(screen.getByRole("link", { name: "Entrar" })).toHaveAttribute("href", "/entrar");
+    expect(screen.queryByRole("link", { name: "Admin" })).not.toBeInTheDocument();
+  });
+
+  it("mostra a administração somente quando o servidor confirma superadmin", () => {
+    render(<HomeToolbar showAdmin />);
     expect(screen.getByRole("link", { name: "Admin" })).toHaveAttribute("href", "/admin");
   });
 

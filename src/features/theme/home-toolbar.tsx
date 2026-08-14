@@ -27,7 +27,7 @@ function applyThemePreference(preference: ThemePreference, save = true) {
   if (save) window.localStorage.setItem(storageKey, preference);
 }
 
-export function HomeToolbar() {
+export function HomeToolbar({ showAdmin = false }: { showAdmin?: boolean }) {
   const [helpOpen, setHelpOpen] = useState(false);
 
   useEffect(() => {
@@ -71,9 +71,11 @@ export function HomeToolbar() {
     <>
       <div className="absolute inset-x-4 top-4 z-20 flex flex-wrap items-start justify-between gap-3 sm:inset-x-6 sm:top-6">
         <nav aria-label="Acesso à conta" className="flex flex-wrap gap-2">
-          <Link href="/admin" className="toolbar-action inline-flex min-h-12 items-center rounded-full px-4 font-bold">
-            Admin
-          </Link>
+          {showAdmin && (
+            <Link href="/admin" className="toolbar-action inline-flex min-h-12 items-center rounded-full px-4 font-bold">
+              Admin
+            </Link>
+          )}
           <SessionNavigation loginLabel="Entrar" />
         </nav>
         <nav aria-label="Ações da página inicial" className="ml-auto flex gap-2">
