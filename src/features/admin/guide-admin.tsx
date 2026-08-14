@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { GuideStep, OperatingSystem } from "@/types/content";
 import type { SharedGuideImageDraft } from "./shared-guide-image";
 import {
@@ -39,6 +39,7 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
   const [message, setMessage] = useState("Selecione um guia para carregar as imagens públicas.");
   const [busyStepId, setBusyStepId] = useState<string | null>(null);
   const [confirmedSafe, setConfirmedSafe] = useState(false);
+  const safetyConfirmationRef = useRef<HTMLInputElement>(null);
 
   const selectedGuide = guides.find((guide) => guide.slug === guideSlug);
   const needsApplication = selectedGuide?.category === "bank";
@@ -246,7 +247,7 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
 
       {selectionComplete && steps.length > 0 && (
         <label className="notice-warning mt-6 flex min-h-14 cursor-pointer items-start gap-3 rounded-xl border-2 p-4 font-semibold">
-          <input type="checkbox" checked={confirmedSafe} onChange={(event) => setConfirmedSafe(event.target.checked)} className="mt-1 size-5 shrink-0" />
+          <input ref={safetyConfirmationRef} type="checkbox" checked={confirmedSafe} onChange={(event) => setConfirmedSafe(event.target.checked)} className="mt-1 size-5 shrink-0" />
           Confirmo que os prints não contêm nome, CPF, saldo, valor, beneficiário, senha, boleto ou qualquer dado pessoal real.
         </label>
       )}
@@ -265,9 +266,16 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
                 <label
                   htmlFor={inputId}
                   aria-disabled={busyStepId === step.id || !confirmedSafe}
+                  onClick={(event) => {
+                    if (confirmedSafe) return;
+                    event.preventDefault();
+                    setMessage("Marque a confirmação de segurança acima para liberar o upload.");
+                    safetyConfirmationRef.current?.focus();
+                    safetyConfirmationRef.current?.scrollIntoView?.({ behavior: "smooth", block: "center" });
+                  }}
                   className="primary-action mt-5 inline-flex min-h-12 cursor-pointer items-center justify-center rounded-xl px-5 py-2 font-bold aria-disabled:cursor-not-allowed aria-disabled:opacity-60"
                 >
-                  {preview ? "Substituir print" : "Fazer upload do print"}
+                  {!confirmedSafe ? "Confirme a segurança para liberar" : preview ? "Substituir print" : "Fazer upload do print"}
                 </label>
                 <input
                   id={inputId}

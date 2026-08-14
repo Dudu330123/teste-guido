@@ -49,20 +49,24 @@ describe("administração compartilhada dos prints", () => {
 
     await user.selectOptions(screen.getByRole("combobox", { name: "2. Aplicativo do banco" }), "caixa");
     expect(screen.getAllByText("Passo 1 de 6")).toHaveLength(1);
-    expect(screen.getAllByLabelText("Fazer upload do print")).toHaveLength(6);
+    expect(screen.getAllByLabelText("Confirme a segurança para liberar")).toHaveLength(6);
     expect(screen.getByRole("checkbox", { name: /Confirmo que os prints não contêm/ })).not.toBeChecked();
-    expect(screen.getAllByLabelText("Fazer upload do print")[0]).toBeDisabled();
+    expect(screen.getAllByLabelText("Confirme a segurança para liberar")[0]).toBeDisabled();
+
+    await user.click(screen.getAllByText("Confirme a segurança para liberar")[0]!);
+    expect(screen.getByRole("status")).toHaveTextContent("Marque a confirmação de segurança acima");
+    expect(screen.getByRole("checkbox", { name: /Confirmo que os prints não contêm/ })).toHaveFocus();
 
     await user.click(screen.getByRole("checkbox", { name: /Confirmo que os prints não contêm/ }));
     expect(screen.getAllByLabelText("Fazer upload do print")[0]).toBeEnabled();
 
     await user.click(screen.getByRole("radio", { name: "iPhone" }));
     expect(screen.getByRole("radio", { name: "iPhone" })).toBeChecked();
-    expect(screen.getAllByLabelText("Fazer upload do print")).toHaveLength(6);
+    expect(screen.getAllByLabelText("Confirme a segurança para liberar")).toHaveLength(6);
 
     await user.selectOptions(screen.getByRole("combobox", { name: "1. Guia" }), "fazer-pix");
     await user.selectOptions(screen.getByRole("combobox", { name: "2. Aplicativo do banco" }), "caixa");
     expect(screen.getByText("Confira e pare antes de confirmar")).toBeVisible();
-    expect(screen.getAllByLabelText("Fazer upload do print")).toHaveLength(6);
+    expect(screen.getAllByLabelText("Confirme a segurança para liberar")).toHaveLength(6);
   });
 });
