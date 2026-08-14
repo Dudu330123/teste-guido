@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { actions } from "./actions";
 import { financialApplications } from "./applications";
-import { guides, tasks } from "./guides";
+import { getStepsForGuide, guides, tasks } from "./guides";
 
 describe("catálogo migrado", () => {
   it("cadastra seis ações e dez aplicativos financeiros do MVP anterior", () => {
@@ -21,5 +21,17 @@ describe("catálogo migrado", () => {
     expect(guides).toHaveLength(2);
     expect(tasks.filter((task) => task.availability === "demo")).toHaveLength(1);
     expect(guides.every((guide) => guide.taskId === "task-pagar-boleto-demo")).toBe(true);
+  });
+
+  it("mantém o guia pesquisado como rascunho e encerra antes da confirmação", () => {
+    const androidGuide = guides.find((guide) => guide.operatingSystem === "android")!;
+    const steps = getStepsForGuide(androidGuide.id);
+
+    expect(androidGuide.guideVersion).toBe("0.2-research");
+    expect(androidGuide.status).toBe("draft");
+    expect(androidGuide.lastReviewedAt).toBeNull();
+    expect(steps).toHaveLength(6);
+    expect(steps[4]?.instruction).toContain("Se algo estiver diferente, pare");
+    expect(steps[5]?.instruction).toContain("antes da senha e da confirmação");
   });
 });

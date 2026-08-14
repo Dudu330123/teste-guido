@@ -129,41 +129,44 @@ export const guides: Guide[] = (["android", "ios"] as const).map((operatingSyste
   taskId: "task-pagar-boleto-demo",
   operatingSystem,
   appVersion: "genérica",
-  guideVersion: "0.1-demo",
+  guideVersion: "0.2-research",
   lastReviewedAt: null,
   status: "draft",
   estimatedMinutes: 4,
 }));
 
+// Este fluxo reúne somente ações confirmadas em fontes institucionais. Ele continua
+// genérico porque nomes e posições de controles variam por banco, versão e sistema.
 const stepContent = [
   {
-    title: "Abra o aplicativo",
-    instruction: "Toque no aplicativo oficial do seu banco para abri-lo.",
-    imageAlt: "Tela inicial fictícia de celular com um aplicativo genérico de banco destacado.",
+    title: "Abra o aplicativo oficial",
+    instruction: "Confirme o nome do seu banco e toque no aplicativo oficial para abri-lo.",
+    imageAlt: "Tela inicial demonstrativa de celular com o aplicativo oficial do banco destacado.",
   },
   {
-    title: "Procure Pagamentos",
-    instruction: "Na tela inicial do banco, procure uma opção com o texto Pagamentos.",
-    imageAlt: "Tela bancária fictícia com a opção Pagamentos destacada.",
+    title: "Encontre a área de pagamento",
+    instruction: "Depois de entrar na sua conta, procure Pagamentos, Pagar ou Pagar e transferir.",
+    imageAlt: "Tela bancária demonstrativa com a área de pagamento destacada.",
   },
   {
-    title: "Escolha boleto",
-    instruction: "Toque na opção relacionada a pagamento de boleto.",
-    imageAlt: "Menu fictício de pagamentos com a opção Boleto destacada.",
+    title: "Escolha pagar boleto",
+    instruction: "Toque em Boleto, Código de barras ou uma opção com nome parecido.",
+    imageAlt: "Área demonstrativa de pagamentos com a opção de boleto ou código de barras destacada.",
   },
   {
-    title: "Escolha como informar o código",
-    instruction: "Escolha entre usar a câmera ou digitar o código. Não informe nenhum dado neste guia.",
-    imageAlt: "Tela fictícia oferecendo leitura por câmera ou digitação, sem dados reais.",
+    title: "Informe o código no banco",
+    instruction: "No aplicativo do banco, escolha ler o código com a câmera ou digitar os números do boleto.",
+    imageAlt: "Tela demonstrativa oferecendo leitura por câmera ou digitação do código, sem dados reais.",
   },
   {
-    title: "Confira as informações",
-    instruction: "Antes de continuar no banco, confira com calma todos os dados mostrados.",
-    imageAlt: "Tela fictícia de conferência com campos genéricos e sem valores ou pessoas reais.",
+    title: "Confira antes de pagar",
+    instruction: "Compare o nome de quem receberá, o valor e o vencimento com o boleto. Se algo estiver diferente, pare.",
+    imageAlt: "Tela demonstrativa de conferência com beneficiário, valor e vencimento fictícios.",
+    warning: "Não continue se o aplicativo mostrar um recebedor ou valor diferente do boleto.",
   },
   {
     title: "Pare antes de confirmar",
-    instruction: "O guia termina aqui. Volte ao aplicativo do banco somente se estiver seguro.",
+    instruction: "O guia termina aqui, antes da senha e da confirmação. Só continue no banco se todos os dados estiverem corretos.",
     imageAlt: "Aviso de segurança indicando que o Guido não realiza nem confirma pagamentos.",
     warning:
       "Confira cuidadosamente o nome de quem receberá, o valor e o vencimento. O Guido nunca pede sua senha e nunca confirma pagamentos por você.",

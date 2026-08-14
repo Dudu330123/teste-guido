@@ -1,6 +1,6 @@
 # Pesquisa inicial de guias
 
-Consulta realizada em **28 de julho de 2026**. Somente páginas públicas oficiais foram pesquisadas. Nenhuma conta autenticada, captura com dado pessoal, scraping ou tutorial de terceiros foi usado.
+Consultas realizadas em **28 de julho e 14 de agosto de 2026**. Somente páginas públicas oficiais foram pesquisadas. Nenhuma conta autenticada, captura com dado pessoal, scraping ou tutorial de terceiros foi usado.
 
 ## Fontes consultadas
 
@@ -9,34 +9,76 @@ Consulta realizada em **28 de julho de 2026**. Somente páginas públicas oficia
 - Aplicativo: CAIXA;
 - tarefa: pagar conta ou boleto;
 - sistema: Android e iOS, sem passos diferenciados na fonte;
-- fonte oficial: [Página “Para Você” da CAIXA](https://www.caixa.gov.br/voce/paginas/default.aspx);
-- encontrado: a instituição informa que o aplicativo permite pagar contas e boletos;
-- não confirmado: caminho de menus, câmera/digitação, telas, versões, conferência e confirmação;
+- fontes oficiais: [App CAIXA e Internet Banking](https://www.caixa.gov.br/atendimento/canais-digitais/app-caixa-internet-banking/paginas/default.aspx), [notícia sobre pagamentos no App CAIXA](https://caixanoticias.caixa.gov.br/Paginas/Not%C3%ADcias/2023/03-MARCO/caixa-lanca-versao-do-seu-aplicativo-com-visual-moderno-e-novas-funcionalidades.aspx) e [cartilha de segurança](https://www.caixa.gov.br/Downloads/seguranca/Cartilha-seguranca.pdf);
+- encontrado: o aplicativo realiza pagamentos; a CAIXA documenta digitação do código de barras e compartilhamento do boleto com o app; a cartilha orienta conferir banco, valor, vencimento e beneficiário antes da confirmação;
+- não confirmado: posição atual dos controles, diferenças entre Android e iOS e disponibilidade do compartilhamento em todos os aparelhos;
 - status: **pendente de validação humana**.
 
-### Itaú — pagamentos
+### Banco do Brasil — pagar boleto
+
+- Aplicativo: Banco do Brasil;
+- tarefa: pagar boleto;
+- sistema: Android e iOS, sem passos diferenciados na fonte;
+- fontes oficiais: [Central de Ajuda BB — Pagamentos](https://www.bb.com.br/site/central-de-ajuda-bb/ajuda-pagamentos/) e [Pagamento com código de barras](https://www.bb.com.br/site/pra-voce/solucoes-digitais/pagamento-com-codigo-de-barras/);
+- encontrado: no App BB, a pessoa abre a conta, acessa `Menu > Pagamentos`, escolhe a conta, digita ou lê o código com a câmera, avança e confere os dados;
+- não aproveitado no Guido: forma de pagamento, CVV, senha e confirmação, pois o guia educativo termina antes da autorização financeira;
+- não confirmado: aparência e posição atual dos controles em Android e iOS;
+- status: **pendente de validação humana**.
+
+### Itaú — pagar boleto
 
 - Aplicativo: Itaú;
 - tarefa: pagar contas e boletos;
 - sistema: não diferenciado na fonte;
-- fonte oficial: [Página do App Itaú](https://www.itau.com.br/app-itau);
-- encontrado: a área “Pagamentos” menciona contas e boletos;
-- não confirmado: sequência, posição de controles, diferenças Android/iOS e versão do app;
+- fonte oficial: [Atendimento Itaú — como pagar boleto](https://www.itau.com.br/atendimento-itau/para-voce/boletos/como-pagar-boleto-do-itau-ou-contas-concessionarias-agua-luz-etc);
+- encontrado: no App Itaú, a orientação é buscar `pagamentos`, usar o leitor de código de barras ou digitar os números e conferir os dados na tela seguinte;
+- não aproveitado no Guido: senha e iToken, pois o guia termina antes da confirmação;
+- não confirmado: posição atual dos controles e diferenças Android/iOS;
 - status: **pendente de validação humana**.
 
-### Banco do Brasil — resultado insuficiente
+### Bradesco — pagar boleto
 
-- Aplicativo: Banco do Brasil;
-- tarefa pesquisada: pagar boleto;
-- sistema: não diferenciado;
-- fonte oficial consultada: [BB Pay](https://www.bb.com.br/site/pra-voce/solucoes-digitais/bb-pay/);
-- encontrado: o material trata principalmente de criar cobranças e receber via link, não do fluxo de pagar boleto pretendido;
-- decisão: não aproveitar passos;
-- status: **pendente de nova pesquisa e validação humana**.
+- Aplicativo: Bradesco;
+- tarefa: pagar boleto;
+- sistema: Android e iOS, sem passos diferenciados na fonte;
+- fonte oficial: [Pagamentos de contas de consumo e boletos](https://banco.bradesco/html/classic/produtos-servicos/mais-produtos-servicos/pagamentos.shtm);
+- encontrado: a área `Pagamentos` permite escolher boleto de cobrança e informar o código digitando, usando o leitor ou compartilhando um PDF com o app; a fonte orienta revisar os dados antes de confirmar;
+- não confirmado: aparência, posição atual dos controles e disponibilidade do compartilhamento em todos os aparelhos;
+- status: **pendente de validação humana**.
+
+### Santander — pagar boleto
+
+- Aplicativo: Santander;
+- tarefa: pagar boleto;
+- sistema: Android e iOS, sem passos diferenciados na fonte;
+- fonte oficial: [Nova área de pagamentos e transferências](https://www.santander.com.br/blog/nova-area-pagamentos-transferencias/);
+- encontrado: na página inicial, a pessoa toca em `Pagar e transferir`, escolhe boleto ou leitura do código e confere os dados;
+- não aproveitado no Guido: confirmação da transação;
+- não confirmado: posição atual dos controles e diferenças Android/iOS;
+- status: **pendente de validação humana**.
+
+### Nubank — pagar boleto
+
+- Aplicativo: Nubank;
+- tarefa: pagar boleto;
+- sistema: Android e iOS, sem passos diferenciados na fonte;
+- fontes oficiais: [Como pagar boleto](https://blog.nubank.com.br/como-pagar-boleto/) e [Como saber se um boleto é falso](https://blog.nubank.com.br/como-saber-se-um-boleto-e-falso/);
+- encontrado: a pessoa toca em `Pagar`, escolhe `Pagar boleto`, lê o código com a câmera ou digita os números e confere os dados antes de escolher a forma de pagamento;
+- não aproveitado no Guido: escolha entre saldo ou cartão, parcelamento e confirmação;
+- não confirmado: posição atual dos controles e diferenças Android/iOS;
+- status: **pendente de validação humana**.
+
+### Banco Central — conferência de segurança
+
+- tarefa: conferir um boleto antes do pagamento;
+- fonte oficial: [Perguntas frequentes sobre boleto](https://www.bcb.gov.br/meubc/faqs/s/boleto);
+- encontrado: o sistema do banco informa o beneficiário real e o valor; antes de pagar, essas informações devem coincidir com a pessoa ou empresa esperada e com o valor do boleto;
+- uso no Guido: fundamenta a etapa de conferência e a orientação de parar quando houver divergência;
+- status: orientação institucional geral; as telas dos aplicativos continuam **pendentes de validação humana**.
 
 ## Conteúdo demonstrativo do MVP
 
-Os seis passos existentes em `src/data/guides.ts` são uma hipótese genérica para testar a interface. Eles não foram extraídos das fontes acima, não representam banco específico, usam placeholders fictícios e têm status `draft`. O fluxo termina antes de confirmação.
+Os seis passos existentes em `src/data/guides.ts` foram revisados com o núcleo comum confirmado pelas fontes acima: abrir o app oficial, localizar a área de pagamento, escolher boleto, ler ou digitar o código e conferir os dados. Eles não representam a posição exata dos controles de nenhum banco, usam placeholders fictícios, têm status `draft` e versão `0.2-research`. O fluxo termina antes de senha, autorização ou confirmação.
 
 O arquivo `public/guide-placeholders/banco-demonstracao-icon.png` foi gerado por IA em 9 de agosto de 2026 exclusivamente para identificar o aplicativo bancário fictício nos mockups. O símbolo é genérico, não foi obtido de terceiros, não representa instituição financeira real e não deve ser apresentado como marca oficial.
 
