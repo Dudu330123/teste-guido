@@ -382,7 +382,7 @@ html[data-theme="dark"] .guido-home::before {
 }
 
 .guido-home-content {
-  min-height: calc(100vh - 7.75rem);
+  min-height: calc(100vh - 8.75rem);
 }
 
 .home-header {
@@ -802,19 +802,18 @@ html[data-theme="dark"] .home-search-icon {
 }
 
 .home-mascot {
-  position: relative;
+  position: absolute;
+  right: clamp(3rem, 6.5vw, 6.5rem);
+  bottom: 0;
   z-index: 3;
   display: flex;
-  align-self: end;
   justify-content: center;
-  margin-bottom: 2.75rem;
 }
 
 .home-mascot img {
   width: min(56vw, 44rem);
   max-width: none;
   height: auto;
-  transform: translateX(-4rem);
   filter: drop-shadow(0 28px 24px rgba(15, 44, 78, 0.18));
 }
 
@@ -931,6 +930,9 @@ html[data-theme="dark"] .home-search-icon {
   }
 
   .home-mascot {
+    position: relative;
+    right: auto;
+    bottom: auto;
     width: 100%;
     margin-top: 1rem;
   }
