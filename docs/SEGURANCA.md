@@ -13,11 +13,11 @@
 
 | Risco | Prioridade | Controle atual |
 | --- | --- | --- |
-| Publicar guia financeiro falso ou sem revisão | Crítica | guias continuam `is_demo`; o painel publica apenas imagens por administrador e não promove conteúdo a oficial |
+| Publicar guia financeiro falso ou sem revisão | Crítica | guias continuam `is_demo`; o upload altera somente a imagem e não promove conteúdo a oficial |
 | Usuário acessar progresso de outra pessoa | Alta | identidade vem do Supabase Auth e `user_id` nunca vem do payload; RLS isola por `auth.uid()` |
 | SQL injection | Alta | queries C++ parametrizadas e validações de fronteira |
 | Vazamento de token | Alta | Bearer não é logado; proxy server-side; mensagens ocultam detalhes |
-| Print com dado pessoal | Alta | upload público restrito a administradores, confirmação explícita e tipos/dimensões limitados; inspeção automática ainda falta |
+| Print com dado pessoal | Alta | upload exige conta e confirmação explícita, com tipos/dimensões limitados; inspeção automática ainda falta |
 | XSS em conteúdo editorial | Média | React escapa texto, não há HTML arbitrário e CSP está ativa |
 | CSRF | Média | mutação C++ usa Bearer; endpoints baseados em cookies devem continuar restritos ao BFF same-origin |
 | Abuso e brute force | Média | Auth é delegado ao Supabase; rate limiting específico ainda precisa ser configurado antes de produção |
@@ -36,12 +36,13 @@ O Guido não deve coletar ou armazenar senha bancária, CPF usado numa operaçã
 - nunca preencher, clicar, abrir deep link bancário ou alegar vínculo com instituição;
 - marcar material desatualizado rapidamente.
 
-## Imagens e uploads futuros
+## Imagens e uploads
 
 Aceitar apenas formatos e tamanhos permitidos, verificar MIME e conteúdo, usar nomes não controlados pelo usuário, remover metadados, procurar dados pessoais, armazenar em bucket privado durante revisão e liberar por URLs temporárias. Nunca reutilizar captura de cliente. Logos precisam de fonte oficial e não podem ter cor ou proporção alterada.
 
-O painel `/admin` aceita PNG, JPEG e WebP de até 10 MB e 8192 × 8192 pixels
-somente para membros ativos com papel `superadmin`. Recomenda-se a
+A rota `/enviar-print` aceita upload público sem login de PNG, JPEG e WebP de até 10 MB e 8192 × 8192 pixels
+para qualquer conta autenticada; `/admin` e a remoção permanecem exclusivos do
+`superadmin`. Recomenda-se a
 captura vertical, completa, na resolução original e com pelo menos 720 pixels de
 largura. A imagem não deve ser cortada, esticada, emoldurada ou receber marca
 d'água. O Route Handler valida sessão, contexto, MIME, tamanho e dimensões;
@@ -53,15 +54,19 @@ do conteúdo. Validação de assinatura real, remoção de metadados, varredura 
 malware e detecção de dados pessoais continuam obrigatórias antes de permitir
 publicação de imagens reais.
 
-Por decisão do produto, uploads realizados pelo `superadmin` no painel ativo são
-publicados imediatamente no guia demonstrativo. Contas `admin`, `editor`,
-visitantes e usuários comuns não podem acessar o painel, enviar ou remover
-arquivos. A confirmação de ausência de dados pessoais permanece obrigatória, mas ainda é um controle
-humano; por isso administradores não devem usar capturas de clientes ou contas
+Por decisão do produto, uploads realizados por qualquer conta autenticada são
+publicados imediatamente no guia demonstrativo, sem aprovação. Visitantes sem
+sessão não podem enviar e somente o `superadmin` pode remover arquivos. A confirmação de ausência de dados pessoais permanece obrigatória, mas ainda é um controle
+humano; por isso usuários não devem usar capturas de clientes ou contas
 reais. O frontend identifica a imagem como demonstração e não como tela oficial.
 Os arquivos ficam no bucket público `guide-public`; portanto a confirmação de
 ausência de dados pessoais deve ocorrer antes do envio. Um upload não altera o
 status editorial do roteiro e não representa aprovação humana.
+
+Contas comuns não recebem permissão direta de exclusão no Storage. Ao substituir
+um print, a referência pública muda imediatamente, mas o objeto anterior pode
+ficar órfão caso a limpeza seja recusada pelo RLS. Uma rotina administrativa de
+retenção e limpeza desses objetos ainda precisa ser implementada.
 
 ## Supabase
 

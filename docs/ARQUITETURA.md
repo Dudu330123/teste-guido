@@ -48,12 +48,12 @@ assinada por uma hora. A apresentação usa contenção proporcional para adapta
 prints verticais ou horizontais sem corte. Esses registros são rascunhos e não
 entram no fluxo público sem revisão separada.
 
-### Imagens demonstrativas publicadas pela administração
+### Imagens demonstrativas publicadas por visitantes
 
 O fluxo ativo do painel usa `guide_public_images` e o bucket público
-`guide-public`. Somente membros ativos com papel `superadmin` podem acessar o
-painel e criar, substituir ou remover essas imagens. A publicação ocorre assim que o
-upload termina, conforme decisão do produto; o visualizador continua exibindo que
+`guide-public`. Qualquer visitante pode criar ou substituir essas imagens pela
+rota `/enviar-print`, mesmo sem login; somente o `superadmin` acessa `/admin` e pode
+removê-las. A publicação ocorre assim que o upload termina, conforme decisão do produto; o visualizador continua exibindo que
 se trata de demonstração não oficial. Aplicativo, plataforma e ordem do passo
 fazem parte da chave para impedir mistura entre bancos ou celulares.
 
@@ -72,6 +72,12 @@ Sem configuração ou durante indisponibilidade, somente “Pagar um boleto” p
 O cookie da sessão é renovado pelo proxy do Next.js. Route Handlers chamam `auth.getUser()` antes de ler ou gravar progresso. As tabelas `profiles`, `user_progress` e `favorites` também usam RLS com `auth.uid()`, fornecendo defesa em profundidade. Visitantes continuam com progresso local sem dados sensíveis.
 
 ## Fluxo de conteúdo
+
+O fluxo editorial abaixo continua sendo o objetivo para os roteiros oficiais.
+No MVP, os **prints demonstrativos** são uma exceção explícita: qualquer conta
+autenticada pode enviá-los ou substituí-los e a imagem fica pública
+imediatamente, sem aprovação do superadmin. Isso não muda o status editorial do
+roteiro nem transforma o guia em conteúdo oficial ou validado.
 
 1. editor cria um rascunho;
 2. mídia permanece privada e passa por inspeção de formato, metadados e dados pessoais;

@@ -24,7 +24,9 @@ PostgreSQL atende ao modelo relacional, constraints, transações, busca textual
 - `004_supabase_public_access.sql`: leitura de conteúdo publicado, demonstração explicitamente marcada e bucket privado de mídia.
 - `005_restrict_auth_trigger_execution.sql` e `006_document_auth_profile_trigger.sql`: endurecimento e documentação do cadastro.
 - `007_shared_guide_image_drafts.sql`: rascunhos compartilhados, autorização da equipe e bucket privado.
-- `008_admin_published_guide_images.sql`: imagens públicas por contexto e escrita exclusiva de administradores.
+- `008_admin_published_guide_images.sql`: estrutura inicial das imagens públicas por contexto.
+- `010_restrict_guide_publishing_to_superadmin.sql`: etapa histórica que restringiu a publicação ao superadmin.
+- `20260820055619_allow_authenticated_guide_image_uploads.sql`: permite criação e substituição por qualquer conta autenticada, preservando a remoção para o superadmin.
 
 As migrations são verificadas em PostgreSQL efêmero pela CI. A aplicação remota
 ocorre somente no projeto escolhido pelo responsável e sem credenciais no Git.

@@ -25,13 +25,14 @@ export interface AdminApplicationOption {
 interface GuideAdminProps {
   guides: AdminGuideOption[];
   bankApplications: AdminApplicationOption[];
+  canDelete?: boolean;
 }
 
 function formatFileSize(bytes: number) {
   return `${(bytes / 1024 / 1024).toFixed(2).replace(".", ",")} MB`;
 }
 
-export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
+export function GuideAdmin({ guides, bankApplications, canDelete = false }: GuideAdminProps) {
   const [guideSlug, setGuideSlug] = useState("");
   const [applicationSlug, setApplicationSlug] = useState("");
   const [operatingSystem, setOperatingSystem] = useState<OperatingSystem>("android");
@@ -144,7 +145,7 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
     <div className="mt-8">
       <div className="notice-warning rounded-2xl border-2 p-5" role="note">
         <p className="font-bold">Publicação imediata</p>
-        <p className="mt-1">Somente administradores podem enviar. Em guias já navegáveis, o print aparece para todos assim que o upload termina. Nos demais, ele fica preparado até a liberação do guia.</p>
+        <p className="mt-1">Qualquer visitante pode enviar, mesmo sem login. Em guias já navegáveis, o print aparece para todos assim que o upload termina. Nos demais, ele fica preparado até a liberação do guia.</p>
         <p className="mt-2 font-semibold">Os roteiros estão preparados para revisão. O upload de uma imagem não transforma o conteúdo em guia oficial ou validado.</p>
       </div>
 
@@ -285,7 +286,7 @@ export function GuideAdmin({ guides, bankApplications }: GuideAdminProps) {
                   disabled={busyStepId === step.id || !confirmedSafe}
                   onChange={(event) => void upload(step, event.target.files?.[0])}
                 />
-                {preview && (
+                {preview && canDelete && (
                   <button type="button" onClick={() => void remove(step)} disabled={busyStepId === step.id} className="secondary-action ml-0 mt-3 min-h-12 rounded-xl px-5 py-2 font-bold sm:ml-3">
                     Remover print
                   </button>

@@ -39,6 +39,7 @@ describe("administração compartilhada dos prints", () => {
     />);
 
     expect(screen.getByText("Publicação imediata")).toBeVisible();
+    expect(screen.getByText(/Qualquer visitante pode enviar, mesmo sem login/)).toBeVisible();
     expect(screen.getByText("Como preparar e enviar o print")).toBeVisible();
     expect(screen.getByText(/PNG, JPEG ou WebP/)).toBeVisible();
     expect(screen.getByText("Selecione um guia para começar.")).toBeVisible();
@@ -68,5 +69,81 @@ describe("administração compartilhada dos prints", () => {
     await user.selectOptions(screen.getByRole("combobox", { name: "2. Aplicativo do banco" }), "caixa");
     expect(screen.getByText("Confira e pare antes de confirmar")).toBeVisible();
     expect(screen.getAllByLabelText("Confirme a segurança para liberar")).toHaveLength(6);
+  });
+
+  it("mantém a remoção disponível somente na visualização do superadmin", async () => {
+    const firstStep = getStepsForGuide(androidGuide.id)[0]!;
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: [{
+          id: "image-1",
+          stepId: firstStep.id,
+          mimeType: "image/png",
+          byteSize: 1024,
+          width: 1080,
+          height: 1920,
+          updatedAt: "2026-08-20T00:00:00.000Z",
+          previewUrl: "https://example.com/print.png",
+        }],
+      }),
+    }));
+    const user = userEvent.setup();
+    render(<GuideAdmin
+      canDelete
+      guides={[{
+        slug: "pagar-boleto",
+        title: "Pagar um boleto",
+        category: "bank",
+        stepsByOperatingSystem: {
+          android: getStepsForGuide(androidGuide.id),
+          ios: getStepsForGuide(iosGuide.id),
+        },
+      }]}
+      bankApplications={[{ slug: "caixa", name: "Caixa" }]}
+    />);
+
+    await user.selectOptions(screen.getByRole("combobox", { name: "1. Guia" }), "pagar-boleto");
+    await user.selectOptions(screen.getByRole("combobox", { name: "2. Aplicativo do banco" }), "caixa");
+
+    expect(await screen.findByRole("button", { name: "Remover print" })).toBeVisible();
+  });
+
+  it("não oferece remoção na área de envio de uma conta comum", async () => {
+    const firstStep = getStepsForGuide(androidGuide.id)[0]!;
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: [{
+          id: "image-1",
+          stepId: firstStep.id,
+          mimeType: "image/png",
+          byteSize: 1024,
+          width: 1080,
+          height: 1920,
+          updatedAt: "2026-08-20T00:00:00.000Z",
+          previewUrl: "https://example.com/print.png",
+        }],
+      }),
+    }));
+    const user = userEvent.setup();
+    render(<GuideAdmin
+      guides={[{
+        slug: "pagar-boleto",
+        title: "Pagar um boleto",
+        category: "bank",
+        stepsByOperatingSystem: {
+          android: getStepsForGuide(androidGuide.id),
+          ios: getStepsForGuide(iosGuide.id),
+        },
+      }]}
+      bankApplications={[{ slug: "caixa", name: "Caixa" }]}
+    />);
+
+    await user.selectOptions(screen.getByRole("combobox", { name: "1. Guia" }), "pagar-boleto");
+    await user.selectOptions(screen.getByRole("combobox", { name: "2. Aplicativo do banco" }), "caixa");
+
+    expect(await screen.findByText("1080 × 1920 · 0,00 MB")).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Remover print" })).not.toBeInTheDocument();
   });
 });

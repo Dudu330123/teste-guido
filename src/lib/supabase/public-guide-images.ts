@@ -16,7 +16,7 @@ export function applyPublicGuideImages(steps: GuideStep[], imageByStep: Readonly
   });
 }
 
-/** Lê as imagens que um administrador tornou públicas para este contexto. */
+/** Lê as imagens que colaboradores, inclusive visitantes sem login, tornaram públicas. */
 export async function getPublicGuideImages(
   guideSlug: string,
   applicationSlug: string | null,

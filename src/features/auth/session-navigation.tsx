@@ -49,9 +49,14 @@ export function SessionNavigation({
 
   if (!ready || !authenticated) {
     return (
-      <Link href="/entrar" className="secondary-action min-h-12 px-4 py-2 font-semibold">
-        {loginLabel}
-      </Link>
+      <div className="flex flex-wrap items-center gap-2">
+        <Link href="/enviar-print" className="secondary-action min-h-12 px-4 py-2 font-semibold">
+          Enviar print
+        </Link>
+        <Link href="/entrar" className="secondary-action min-h-12 px-4 py-2 font-semibold">
+          {loginLabel}
+        </Link>
+      </div>
     );
   }
 
@@ -85,6 +90,9 @@ function AuthenticatedNavigation({
       </span>
       <Link href="/conta" className="secondary-action min-h-12 px-4 py-2 font-semibold">
         Minha conta
+      </Link>
+      <Link href="/enviar-print" className="secondary-action min-h-12 px-4 py-2 font-semibold">
+        Enviar print
       </Link>
       {showHistory && (
         <Link href="/historico" className="secondary-action min-h-12 px-4 py-2 font-semibold">

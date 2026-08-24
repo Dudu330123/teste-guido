@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { guideImageRules, validateGuideImageDimensions, validateGuideImageFile } from "@/features/admin/guide-image-validation";
 import { extensionForGuideImage, guideImageContextSchema } from "@/features/admin/shared-guide-image";
-import { getAdminAccess } from "@/lib/supabase/admin";
+import { getSuperadminAccess } from "@/lib/supabase/admin";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 const bucket = "guide-public";
 const storedRowSchema = z.object({
@@ -18,13 +19,16 @@ const storedRowSchema = z.object({
 
 function accessError() {
   return NextResponse.json(
-    { error: { code: "forbidden", message: "Entre com a conta superadministradora autorizada." } },
-    { status: 403 },
+    { error: { code: "service_unavailable", message: "O envio de prints ainda não está configurado." } },
+    { status: 503 },
   );
 }
 
-function canPublish(role: string) {
-  return role === "superadmin";
+function deleteAccessError() {
+  return NextResponse.json(
+    { error: { code: "forbidden", message: "Somente o superadministrador pode remover um print." } },
+    { status: 403 },
+  );
 }
 
 /** Bloqueia mutações originadas fora do próprio site, além da proteção dos cookies. */
@@ -49,7 +53,7 @@ function parseContext(values: Record<string, unknown>) {
 }
 
 async function rowResponse(
-  supabase: NonNullable<Awaited<ReturnType<typeof getAdminAccess>>>["supabase"],
+  supabase: NonNullable<Awaited<ReturnType<typeof getSupabaseServerClient>>>,
   row: z.infer<typeof storedRowSchema>,
 ) {
   const { data } = supabase.storage.from(bucket).getPublicUrl(row.storage_key);
@@ -66,8 +70,8 @@ async function rowResponse(
 }
 
 export async function GET(request: Request) {
-  const admin = await getAdminAccess();
-  if (!admin || !canPublish(admin.role)) return accessError();
+  const supabase = await getSupabaseServerClient();
+  if (!supabase) return accessError();
   const search = new URL(request.url).searchParams;
   const context = z.object({
     guideSlug: guideImageContextSchema.shape.guideSlug,
@@ -82,7 +86,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: { code: "invalid_request", message: "Seleção de guia inválida." } }, { status: 400 });
   }
 
-  let query = admin.supabase
+  let query = supabase
     .from("guide_public_images")
     .select("id, step_id, storage_key, mime_type, byte_size, width, height, updated_at")
     .eq("guide_slug", context.data.guideSlug)
@@ -95,15 +99,15 @@ export async function GET(request: Request) {
   if (error || !parsed.success) {
     return NextResponse.json({ error: { code: "service_unavailable", message: "Não foi possível carregar os prints." } }, { status: 503 });
   }
-  const drafts = (await Promise.all(parsed.data.map((row) => rowResponse(admin.supabase, row))))
+  const drafts = (await Promise.all(parsed.data.map((row) => rowResponse(supabase, row))))
     .filter((draft) => draft !== null);
   return NextResponse.json({ data: drafts }, { headers: { "Cache-Control": "no-store" } });
 }
 
 export async function POST(request: Request) {
   if (!hasTrustedOrigin(request)) return originError();
-  const admin = await getAdminAccess();
-  if (!admin || !canPublish(admin.role)) return accessError();
+  const supabase = await getSupabaseServerClient();
+  if (!supabase) return accessError();
   const form = await request.formData();
   const file = form.get("file");
   const context = parseContext({
@@ -126,8 +130,11 @@ export async function POST(request: Request) {
   }
 
   const scope = context.data.applicationSlug ?? "sem-aplicativo";
-  const storageKey = `${admin.user.id}/${context.data.guideSlug}/${scope}/${context.data.operatingSystem}/${context.data.stepId}/${crypto.randomUUID()}.${extensionForGuideImage(file.type as "image/png" | "image/jpeg" | "image/webp")}`;
-  const { error: uploadError } = await admin.supabase.storage.from(bucket).upload(storageKey, file, {
+  // Uploads sem login nao têm auth.uid(). O prefixo publico deixa a politica
+  // RLS simples e previsivel, enquanto a API continua validando origem,
+  // formato, tamanho e confirmacao de ausencia de dados sensiveis.
+  const storageKey = `public/${context.data.guideSlug}/${scope}/${context.data.operatingSystem}/${context.data.stepId}/${crypto.randomUUID()}.${extensionForGuideImage(file.type as "image/png" | "image/jpeg" | "image/webp")}`;
+  const { error: uploadError } = await supabase.storage.from(bucket).upload(storageKey, file, {
     contentType: file.type,
     upsert: false,
   });
@@ -135,7 +142,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: { code: "upload_failed", message: "Não foi possível enviar o print." } }, { status: 503 });
   }
 
-  let previousQuery = admin.supabase
+  let previousQuery = supabase
     .from("guide_public_images")
     .select("storage_key")
     .eq("guide_slug", context.data.guideSlug)
@@ -146,7 +153,7 @@ export async function POST(request: Request) {
     : previousQuery.is("application_slug", null);
   const { data: previous } = await previousQuery.maybeSingle();
 
-  const { data, error } = await admin.supabase.from("guide_public_images").upsert({
+  const { data, error } = await supabase.from("guide_public_images").upsert({
     guide_slug: context.data.guideSlug,
     application_slug: context.data.applicationSlug,
     operating_system: context.data.operatingSystem,
@@ -159,20 +166,23 @@ export async function POST(request: Request) {
     byte_size: file.size,
     width: dimensions.width,
     height: dimensions.height,
-    created_by: admin.user.id,
-    updated_by: admin.user.id,
+    created_by: null,
+    updated_by: null,
   }, { onConflict: "guide_slug,application_scope,operating_system,step_id" })
     .select("id, step_id, storage_key, mime_type, byte_size, width, height, updated_at")
     .single();
   const parsed = storedRowSchema.safeParse(data);
   if (error || !parsed.success) {
-    await admin.supabase.storage.from(bucket).remove([storageKey]);
+    await supabase.storage.from(bucket).remove([storageKey]);
     return NextResponse.json({ error: { code: "save_failed", message: "O arquivo não pôde ser associado ao passo." } }, { status: 503 });
   }
   if (previous?.storage_key && previous.storage_key !== storageKey) {
-    await admin.supabase.storage.from(bucket).remove([previous.storage_key]);
+    // Visitantes podem publicar, mas nao recebem permissao direta para apagar
+    // objetos publicos. Se a limpeza for negada pelo Storage, o arquivo antigo
+    // fica orfao para manutencao administrativa e deixa de ser exibido.
+    await supabase.storage.from(bucket).remove([previous.storage_key]);
   }
-  const response = await rowResponse(admin.supabase, parsed.data);
+  const response = await rowResponse(supabase, parsed.data);
   if (!response) {
     return NextResponse.json({ error: { code: "preview_failed", message: "O print foi salvo, mas a prévia não pôde ser criada." } }, { status: 503 });
   }
@@ -181,8 +191,8 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   if (!hasTrustedOrigin(request)) return originError();
-  const admin = await getAdminAccess();
-  if (!admin || !canPublish(admin.role)) return accessError();
+  const admin = await getSuperadminAccess();
+  if (!admin) return deleteAccessError();
   const input = await request.json().catch(() => null);
   const context = parseContext(input ?? {});
   if (!context.success) {

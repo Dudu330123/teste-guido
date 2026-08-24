@@ -76,7 +76,7 @@ serão sincronizadas com a `main` pela integração oficial entre Supabase e Git
 - conteúdo de WhatsApp, Gov.br e instituições financeiras permanece em preparação;
 - progresso fica local para visitantes e sincroniza diretamente com PostgreSQL para sessões validadas pelo Supabase;
 - autenticação usa Supabase Auth e o painel `/admin` exige vínculo ativo em `team_members`;
-- somente `superadmin` acessa o painel e publica prints demonstrativos imediatamente por banco, celular e passo;
+- qualquer visitante pode publicar prints imediatamente em `/enviar-print`, mesmo sem login; somente `superadmin` acessa `/admin` e pode removê-los;
 - imagens públicas ficam no Storage e substituem somente a tela do passo; instruções continuam controladas pelo guia;
 - não há OCR, integração bancária ou offline completo.
 
