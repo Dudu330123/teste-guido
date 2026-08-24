@@ -82,7 +82,7 @@ export function HomeToolbar({ showAdmin = false }: { showAdmin?: boolean }) {
               priority
             />
             <Image
-              src="/images/home/logo-guido-branca.png"
+              src="/images/home/logo-guido-branca-dark.png"
               alt=""
               width={1184}
               height={308}

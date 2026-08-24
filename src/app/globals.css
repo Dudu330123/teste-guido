@@ -373,7 +373,9 @@ html[data-theme="dark"] .guido-home {
   background-color: #01040c;
   background-image:
     linear-gradient(90deg, rgba(0, 5, 18, 0.88) 0%, rgba(1, 8, 24, 0.7) 56%, rgba(1, 5, 15, 0.38) 100%),
-    url("/images/night-sky-guido.webp");
+    url("/images/home/cenario-home-dark.png");
+  background-position: center;
+  background-size: cover;
 }
 
 html[data-theme="dark"] .guido-home::before {
@@ -810,6 +812,18 @@ html[data-theme="dark"] .home-search-icon {
   max-width: none;
   height: auto;
   filter: drop-shadow(0 28px 24px rgba(15, 44, 78, 0.18));
+}
+
+.home-mascot-dark {
+  display: none;
+}
+
+html[data-theme="dark"] .home-mascot-light {
+  display: none;
+}
+
+html[data-theme="dark"] .home-mascot-dark {
+  display: block;
 }
 
 .primary-action:active:not(:disabled),
