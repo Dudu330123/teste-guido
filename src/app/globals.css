@@ -436,15 +436,6 @@ html[data-theme="dark"] .home-brand-logo .home-logo-dark {
   display: block;
 }
 
-.home-brand-description {
-  color: var(--home-ink);
-  font-size: 0.82rem;
-  font-weight: 700;
-  line-height: 1.25;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
 .home-main-nav,
 .home-account-nav {
   display: flex;
@@ -872,10 +863,6 @@ html[data-theme="dark"] .home-search-icon {
   .home-brand-logo {
     width: 8.25rem;
     min-height: 3.25rem;
-  }
-
-  .home-brand-description {
-    display: none;
   }
 
   .home-account-nav {

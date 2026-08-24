@@ -90,7 +90,6 @@ export function HomeToolbar({ showAdmin = false }: { showAdmin?: boolean }) {
               priority
             />
           </span>
-          <span className="home-brand-description">Biblioteca digital<br />de manuais</span>
         </Link>
 
         <nav aria-label="Navegação principal" className="home-main-nav">
