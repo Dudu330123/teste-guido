@@ -74,10 +74,19 @@ export function HomeToolbar({ showAdmin = false }: { showAdmin?: boolean }) {
         <Link href="/" className="home-brand" aria-label="Guido, página inicial">
           <span className="home-brand-logo">
             <Image
-              src="/images/home/logo-guido-branca.png"
+              src="/images/home/logo-guido-azul-marinho.png"
               alt="Guido"
+              width={2076}
+              height={757}
+              className="home-logo-light"
+              priority
+            />
+            <Image
+              src="/images/home/logo-guido-branca.png"
+              alt=""
               width={1184}
               height={308}
+              className="home-logo-dark"
               priority
             />
           </span>
