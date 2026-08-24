@@ -9,6 +9,7 @@ import { getSupabaseConfig } from "@/lib/validation/env";
 interface SessionNavigationProps {
   loginLabel?: string;
   showHistory?: boolean;
+  showUpload?: boolean;
 }
 
 /** Limita metadados controlados pelo usuário antes de usá-los na navegação. */
@@ -23,6 +24,7 @@ export function getSessionDisplayName(metadata: unknown) {
 export function SessionNavigation({
   loginLabel = "Entrar ou criar conta",
   showHistory = true,
+  showUpload = true,
 }: SessionNavigationProps) {
   const [authenticated, setAuthenticated] = useState(false);
   const [displayName, setDisplayName] = useState<string | null>(null);
@@ -50,9 +52,11 @@ export function SessionNavigation({
   if (!ready || !authenticated) {
     return (
       <div className="flex flex-wrap items-center gap-2">
-        <Link href="/enviar-print" className="secondary-action min-h-12 px-4 py-2 font-semibold">
-          Enviar print
-        </Link>
+        {showUpload && (
+          <Link href="/enviar-print" className="secondary-action min-h-12 px-4 py-2 font-semibold">
+            Enviar print
+          </Link>
+        )}
         <Link href="/entrar" className="secondary-action min-h-12 px-4 py-2 font-semibold">
           {loginLabel}
         </Link>
@@ -64,6 +68,7 @@ export function SessionNavigation({
     <AuthenticatedNavigation
       displayName={displayName}
       showHistory={showHistory}
+      showUpload={showUpload}
       onSignedOut={() => {
         setAuthenticated(false);
         setDisplayName(null);
@@ -76,10 +81,12 @@ function AuthenticatedNavigation({
   onSignedOut,
   displayName,
   showHistory,
+  showUpload,
 }: {
   onSignedOut: () => void;
   displayName: string | null;
   showHistory: boolean;
+  showUpload: boolean;
 }) {
   const router = useRouter();
 
@@ -91,9 +98,11 @@ function AuthenticatedNavigation({
       <Link href="/conta" className="secondary-action min-h-12 px-4 py-2 font-semibold">
         Minha conta
       </Link>
-      <Link href="/enviar-print" className="secondary-action min-h-12 px-4 py-2 font-semibold">
-        Enviar print
-      </Link>
+      {showUpload && (
+        <Link href="/enviar-print" className="secondary-action min-h-12 px-4 py-2 font-semibold">
+          Enviar print
+        </Link>
+      )}
       {showHistory && (
         <Link href="/historico" className="secondary-action min-h-12 px-4 py-2 font-semibold">
           Histórico

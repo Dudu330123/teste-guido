@@ -25,12 +25,13 @@ describe("busca da página inicial", () => {
   it("mostra somente a busca antes de uma pesquisa", () => {
     render(<HomeSearch applications={applications} tasks={tasks} />);
 
-    expect(screen.getByRole("heading", { name: "Guido" })).toBeVisible();
-    expect(screen.getByText("Você pode fazer isso com calma. Vamos ajudar um passo de cada vez.")).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Encontre o manual.Siga os passos.Resolva." })).toBeVisible();
+    expect(screen.getByText(/Tutoriais práticos e passo a passo/)).toBeVisible();
     expect(screen.getByRole("searchbox", { name: "Pesquisar ajuda" })).toBeVisible();
-    expect(screen.getByRole("link", { name: "Banco: Como pagar um boleto?" })).toHaveAttribute("href", "/tarefas/pagar-boleto");
-    expect(screen.getByRole("link", { name: "WhatsApp: Como enviar um áudio?" })).toHaveAttribute("href", "/aplicativos/whatsapp");
-    expect(screen.getByRole("link", { name: "Gov.br: Como acessar minha conta?" })).toHaveAttribute("href", "/aplicativos/gov-br");
+    expect(screen.getByRole("link", { name: "Bancos: Tutoriais sobre seu banco" })).toHaveAttribute("href", "/tarefas/pagar-boleto");
+    expect(screen.getByRole("link", { name: "WhatsApp: Dicas e funções essenciais" })).toHaveAttribute("href", "/aplicativos/whatsapp");
+    expect(screen.getByRole("link", { name: "Gov.br: Serviços e acessos do governo" })).toHaveAttribute("href", "/aplicativos/gov-br");
+    expect(screen.getByRole("link", { name: "PIX: Guias sobre pagamentos Pix" })).toHaveAttribute("href", "/acoes/pix");
     expect(screen.queryByText(/Sugestões rápidas/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /Resultados para/i })).not.toBeInTheDocument();
   });
@@ -38,7 +39,7 @@ describe("busca da página inicial", () => {
   it("faz o exemplo comum de boleto abrir diretamente a próxima tela", () => {
     render(<HomeSearch applications={applications} tasks={tasks} />);
 
-    expect(screen.getByRole("link", { name: "Banco: Como pagar um boleto?" })).toHaveAttribute("href", "/tarefas/pagar-boleto");
+    expect(screen.getByRole("link", { name: "Bancos: Tutoriais sobre seu banco" })).toHaveAttribute("href", "/tarefas/pagar-boleto");
   });
 
   it("troca os exemplos por sugestões relacionadas enquanto o usuário digita", async () => {

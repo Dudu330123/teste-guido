@@ -15,7 +15,7 @@ describe("controles da página inicial", () => {
     const user = userEvent.setup();
     render(<HomeToolbar />);
 
-    await user.click(screen.getByRole("button", { name: "Ajuda" }));
+    await user.click(screen.getByRole("button", { name: "Sobre" }));
     expect(screen.getByRole("dialog", { name: "Como usar o Guido" })).toBeVisible();
 
     await user.click(screen.getByRole("button", { name: "Fechar ajuda" }));
@@ -42,7 +42,7 @@ describe("controles da página inicial", () => {
     expect(document.documentElement).toHaveAttribute("data-theme", "dark");
     expect(document.documentElement).toHaveAttribute("data-theme-preference", "dark");
     expect(window.localStorage.getItem("guido-theme")).toBe("dark");
-    expect(screen.getByText("Claro / escuro")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Alternar entre modo claro e escuro" })).toBeVisible();
   });
 
   it("volta ao modo claro no segundo clique sem abrir menu", async () => {

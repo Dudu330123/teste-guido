@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -12,10 +13,24 @@ interface HomeSearchProps {
 }
 
 const searchExamples = [
-  { category: "Banco", label: "Como pagar um boleto?", href: "/tarefas/pagar-boleto" },
-  { category: "WhatsApp", label: "Como enviar um áudio?", href: "/aplicativos/whatsapp" },
-  { category: "Gov.br", label: "Como acessar minha conta?", href: "/aplicativos/gov-br" },
+  { category: "Bancos", label: "Tutoriais sobre seu banco", href: "/tarefas/pagar-boleto", icon: "bank" },
+  { category: "Gov.br", label: "Serviços e acessos do governo", href: "/aplicativos/gov-br", icon: "government" },
+  { category: "WhatsApp", label: "Dicas e funções essenciais", href: "/aplicativos/whatsapp", icon: "message" },
+  { category: "PIX", label: "Guias sobre pagamentos Pix", href: "/acoes/pix", icon: "pix" },
 ] as const;
+
+function PopularIcon({ type }: { type: (typeof searchExamples)[number]["icon"] }) {
+  if (type === "bank") {
+    return <svg aria-hidden="true" viewBox="0 0 32 32"><path d="M16 3 3 10v3h26v-3L16 3ZM6 15v9H4v4h24v-4h-2v-9h-4v9h-4v-9h-4v9h-4v-9H6Z" /></svg>;
+  }
+  if (type === "government") {
+    return <svg aria-hidden="true" viewBox="0 0 32 32"><path d="M16 2 5 6v8c0 7.2 4.7 13.2 11 16 6.3-2.8 11-8.8 11-16V6L16 2Zm6.2 10.8-7.5 8-4-4 2.2-2.2 1.8 1.8 5.3-5.7 2.2 2.1Z" /></svg>;
+  }
+  if (type === "message") {
+    return <svg aria-hidden="true" viewBox="0 0 32 32"><path d="M4 5h24v18H13l-7 6v-6H4V5Zm7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm5 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm5 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z" /></svg>;
+  }
+  return <svg aria-hidden="true" viewBox="0 0 32 32"><path d="m10 2 6 6-6 6-6-6 6-6Zm12 0 6 6-6 6-6-6 6-6ZM10 16l6 6-6 6-6-6 6-6Zm12 0 6 6-6 6-6-6 6-6Z" /></svg>;
+}
 
 function getTaskHref(task: Task, applications: Application[]) {
   if (task.availability !== "preparing") return `/tarefas/${task.slug}`;
@@ -33,19 +48,19 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
   const liveSuggestions = liveQuery
     ? rankSearch(tasks, liveQuery, (task) => `${task.title} ${task.description} ${task.searchTerms.join(" ")}`, 40)
       .filter((task, index, rankedTasks) => rankedTasks.findIndex((candidate) => normalizeSearch(candidate.title) === normalizeSearch(task.title)) === index)
-      .slice(0, 3)
+      .slice(0, 4)
     : [];
 
   return (
-    <section aria-labelledby="search-title" className="w-full">
-      <h1 id="search-title" className="text-center text-6xl font-black tracking-tight text-[var(--primary)] sm:text-7xl">
-        Guido
-      </h1>
-      <p className="mx-auto mt-3 text-center text-base font-semibold text-[var(--muted)] sm:whitespace-nowrap sm:text-xl">
-        Você pode fazer isso com calma. Vamos ajudar um passo de cada vez.
-      </p>
+    <section aria-labelledby="search-title" className="home-hero">
+      <div className="home-hero-copy">
+        <p className="home-eyebrow">Biblioteca digital de manuais</p>
+        <h1 id="search-title" className="home-title">
+          Encontre o manual.<br />Siga os passos.<br /><strong>Resolva.</strong>
+        </h1>
+        <p className="home-subtitle">Tutoriais práticos e passo a passo<br className="hidden sm:block" /> para o que você precisa fazer.</p>
       <form
-        className="glass-control guido-search-form relative mt-7 min-h-16 overflow-hidden rounded-full border-2 focus-within:border-[var(--primary)]"
+        className="guido-search-form"
         role="search"
         onSubmit={(event) => {
           event.preventDefault();
@@ -71,17 +86,20 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
             setQuery(event.target.value);
             setSubmittedQuery("");
           }}
-          placeholder="Com o que você precisa de ajuda?"
-          className="min-h-16 w-full rounded-none border-0 bg-transparent py-3 pl-[4.5rem] pr-[4.5rem] text-lg text-[var(--foreground)] outline-none placeholder:text-[var(--muted)] sm:text-xl"
+          placeholder="Qual manual você procura?"
+          className="home-search-input"
         />
+        <svg aria-hidden="true" viewBox="0 0 24 24" className="home-search-icon fill-none" stroke="currentColor" strokeWidth="2.25">
+          <circle cx="10.5" cy="10.5" r="6.5" />
+          <path d="m15.5 15.5 5 5" strokeLinecap="round" />
+        </svg>
         <button
           type="submit"
           aria-label="Pesquisar"
           className="guido-search-button"
         >
-          <svg aria-hidden="true" viewBox="0 0 24 24" className="size-7 fill-none" stroke="currentColor" strokeWidth="2.5">
-            <circle cx="11" cy="11" r="6.5" />
-            <path d="m16 16 4.25 4.25" strokeLinecap="round" />
+          <svg aria-hidden="true" viewBox="0 0 24 24" className="size-7 fill-none" stroke="currentColor" strokeWidth="2.2">
+            <path d="M5 12h14M14 7l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
       </form>
@@ -89,7 +107,9 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
       <p className="sr-only" aria-live="polite">
         {liveQuery ? `${liveSuggestions.length} sugestões relacionadas encontradas.` : ""}
       </p>
-      <div className="mt-5 grid gap-3" aria-label={liveQuery ? "Sugestões relacionadas à pesquisa" : "Exemplos de pesquisas comuns"}>
+      <section id="mais-acessados" className="home-popular" aria-labelledby="popular-title">
+        <h2 id="popular-title">{liveQuery ? "Sugestões para você" : "Mais acessados"}</h2>
+        <div className="home-popular-grid" aria-label={liveQuery ? "Sugestões relacionadas à pesquisa" : "Exemplos de pesquisas comuns"}>
         {liveQuery ? (
           liveSuggestions.length > 0 ? liveSuggestions.map((task) => {
             const application = applications.find((item) => item.id === task.applicationId);
@@ -101,15 +121,16 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
                 key={task.id}
                 aria-label={`${category}: ${task.title}`}
                 href={getTaskHref(task, applications)}
-                className="calm-choice min-h-20 rounded-2xl px-5 py-3 text-left"
+                className="home-popular-card home-suggestion-card"
               >
-                <span className="block text-sm font-bold uppercase tracking-wide text-[var(--primary)]">{category}</span>
-                <span className="mt-1 block font-semibold text-[var(--foreground)]">{task.title}</span>
-                <span className="mt-1 block text-sm text-[var(--muted)]">{task.availability === "demo" ? "Demonstração disponível" : task.availability === "available" ? "Guia disponível" : "Em preparação"}</span>
+                <span className="home-card-category">{category}</span>
+                <span className="home-card-title">{task.title}</span>
+                <span className="home-card-description">{task.availability === "demo" ? "Demonstração disponível" : task.availability === "available" ? "Guia disponível" : "Em preparação"}</span>
+                <span aria-hidden="true" className="home-card-arrow">→</span>
               </Link>
             );
           }) : (
-            <p className="calm-choice min-h-16 rounded-2xl px-5 py-4 text-[var(--muted)]">
+            <p className="home-search-empty">
               Continue digitando ou pressione a lupa para pesquisar.
             </p>
           )
@@ -118,20 +139,34 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
               key={example.category}
               aria-label={`${example.category}: ${example.label}`}
               href={example.href}
-              className="calm-choice min-h-20 rounded-2xl px-5 py-3 text-left"
+              className="home-popular-card"
             >
-              <span className="block text-sm font-bold uppercase tracking-wide text-[var(--primary)]">{example.category}</span>
-              <span className="mt-1 block font-semibold text-[var(--foreground)]">{example.label}</span>
+              <PopularIcon type={example.icon} />
+              <span className="home-card-title">{example.category}</span>
+              <span className="home-card-description">{example.label}</span>
+              <span aria-hidden="true" className="home-card-arrow">→</span>
             </Link>
           ))}
-      </div>
+        </div>
+      </section>
 
       {normalizedQuery && (
-        <div className="glass-panel mt-8 rounded-2xl p-5 text-[var(--foreground)]" aria-live="polite">
+        <div className="home-search-error" aria-live="polite">
           <h2 className="text-2xl font-bold">Ainda não encontramos “{submittedQuery}”</h2>
           <p className="mt-2">Tente usar palavras mais curtas ou procure “pagar boleto”.</p>
         </div>
       )}
+      </div>
+
+      <div className="home-mascot" aria-hidden="true">
+        <Image
+          src="/images/home/mascote-guido-lendo.png"
+          alt=""
+          width={1207}
+          height={1303}
+          priority
+        />
+      </div>
     </section>
   );
 }

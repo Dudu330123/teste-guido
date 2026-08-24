@@ -12,9 +12,9 @@ export default async function HomePage() {
   ]);
   const catalog = mergeCatalogWithFallback(remoteCatalog, { applications, tasks });
   return (
-    <main className="guido-home relative min-h-screen px-5 text-[var(--foreground)]">
+    <main className="guido-home relative min-h-screen text-[var(--foreground)]">
       <HomeToolbar showAdmin={Boolean(superadminAccess)} />
-      <div className="mx-auto flex min-h-screen w-full max-w-3xl items-start justify-center pb-16 pt-[18vh] sm:pt-[23vh]">
+      <div className="guido-home-content mx-auto w-full">
         <HomeSearch applications={catalog.applications} tasks={catalog.tasks} />
       </div>
     </main>

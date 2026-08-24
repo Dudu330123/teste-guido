@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { SessionNavigation } from "@/features/auth/session-navigation";
@@ -69,33 +70,52 @@ export function HomeToolbar({ showAdmin = false }: { showAdmin?: boolean }) {
 
   return (
     <>
-      <div className="absolute inset-x-4 top-4 z-20 flex flex-wrap items-start justify-between gap-3 sm:inset-x-6 sm:top-6">
-        <nav aria-label="Acesso à conta" className="flex flex-wrap gap-2">
-          {showAdmin && (
-            <Link href="/admin" className="toolbar-action inline-flex min-h-12 items-center rounded-full px-4 font-bold">
-              Admin
-            </Link>
-          )}
-          <SessionNavigation loginLabel="Entrar" />
-        </nav>
-        <nav aria-label="Ações da página inicial" className="ml-auto flex gap-2">
+      <header className="home-header">
+        <Link href="/" className="home-brand" aria-label="Guido, página inicial">
+          <span className="home-brand-logo">
+            <Image
+              src="/images/home/logo-guido-branca.png"
+              alt="Guido"
+              width={1184}
+              height={308}
+              priority
+            />
+          </span>
+          <span className="home-brand-description">Biblioteca digital<br />de manuais</span>
+        </Link>
+
+        <nav aria-label="Navegação principal" className="home-main-nav">
+          <Link href="/" aria-current="page">Início</Link>
+          <Link href="#mais-acessados">Explorar</Link>
+          <Link href="/enviar-print">Enviar print</Link>
           <button
             type="button"
             onClick={() => setHelpOpen(true)}
-            className="toolbar-action min-h-12 rounded-full px-4 font-bold"
+            className="home-nav-button"
           >
-            Ajuda
+            Sobre
           </button>
+        </nav>
+
+        <nav aria-label="Acesso à conta e aparência" className="home-account-nav">
           <button
             type="button"
             onClick={toggleTheme}
             aria-label="Alternar entre modo claro e escuro"
-            className="toolbar-action min-h-12 rounded-full px-4 font-bold"
+            className="home-icon-button"
+            title="Alternar modo claro e escuro"
           >
-            Claro / escuro
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="size-6 fill-none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.64 5.64l1.42 1.42M16.94 16.94l1.42 1.42M18.36 5.64l-1.42 1.42M7.06 16.94l-1.42 1.42" strokeLinecap="round" />
+              <circle cx="12" cy="12" r="4" />
+            </svg>
           </button>
+          {showAdmin && (
+            <Link href="/admin" className="home-header-link">Admin</Link>
+          )}
+          <SessionNavigation loginLabel="Entrar" showUpload={false} />
         </nav>
-      </div>
+      </header>
 
       {helpOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-5" role="presentation">
