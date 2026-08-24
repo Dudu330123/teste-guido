@@ -347,6 +347,17 @@ button:disabled,
   color: var(--home-ink);
 }
 
+.guido-home::before {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  border: clamp(0.5rem, 1vw, 1rem) solid rgba(35, 116, 179, 0.78);
+  border-radius: clamp(1rem, 1.7vw, 1.65rem);
+  box-shadow: inset 0 0 0 1px rgba(229, 244, 255, 0.58);
+  content: "";
+  pointer-events: none;
+}
+
 .guido-home::after {
   position: absolute;
   inset: 0;
@@ -363,6 +374,11 @@ html[data-theme="dark"] .guido-home {
   background-image:
     linear-gradient(90deg, rgba(0, 5, 18, 0.88) 0%, rgba(1, 8, 24, 0.7) 56%, rgba(1, 5, 15, 0.38) 100%),
     url("/images/night-sky-guido.webp");
+}
+
+html[data-theme="dark"] .guido-home::before {
+  border-color: rgba(4, 31, 74, 0.92);
+  box-shadow: inset 0 0 0 1px rgba(92, 159, 230, 0.2);
 }
 
 .guido-home-content {
