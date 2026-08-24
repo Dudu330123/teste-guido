@@ -548,6 +548,18 @@ html[data-theme="dark"] .home-icon-button {
   background: #fff;
 }
 
+.home-theme-moon {
+  display: none;
+}
+
+html[data-theme="dark"] .home-theme-sun {
+  display: none;
+}
+
+html[data-theme="dark"] .home-theme-moon {
+  display: block;
+}
+
 .home-hero {
   position: relative;
   display: grid;

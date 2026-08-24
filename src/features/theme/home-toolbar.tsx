@@ -113,9 +113,12 @@ export function HomeToolbar({ showAdmin = false }: { showAdmin?: boolean }) {
             className="home-icon-button"
             title="Alternar modo claro e escuro"
           >
-            <svg aria-hidden="true" viewBox="0 0 24 24" className="size-6 fill-none" stroke="currentColor" strokeWidth="2">
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="home-theme-sun size-6 fill-none" stroke="currentColor" strokeWidth="2">
               <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.64 5.64l1.42 1.42M16.94 16.94l1.42 1.42M18.36 5.64l-1.42 1.42M7.06 16.94l-1.42 1.42" strokeLinecap="round" />
               <circle cx="12" cy="12" r="4" />
+            </svg>
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="home-theme-moon size-6 fill-none" stroke="currentColor" strokeWidth="2">
+              <path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5 8.5 8.5 0 1 0 20.5 14.6Z" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
           {showAdmin && (
