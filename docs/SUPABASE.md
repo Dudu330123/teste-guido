@@ -2,7 +2,8 @@
 
 As migrations versionadas são validadas em PostgreSQL efêmero; a `007` adiciona
 rascunhos privados, a `008` cria a publicação de imagens e a migration de 20 de
-agosto de 2026 abre o envio imediato a qualquer conta autenticada. Elas devem ser aplicadas ao projeto Supabase remoto. A
+agosto de 2026 abre o envio imediato e as migrations de 25 de agosto estruturam
+o catálogo, os roteiros e os vínculos dos prints existentes. Elas devem ser aplicadas ao projeto Supabase remoto. A
 auditoria de segurança da CLI não apresentou alertas
 depois da migration `005`. O conteúdo demonstrativo continua pendente de revisão
 humana e não deve ser promovido a oficial.
@@ -35,6 +36,12 @@ Nunca copie para o projeto ou para o navegador `service_role`, `sb_secret_...`
 ou tokens administrativos. O frontend e os Route Handlers usam somente a chave publicável e as permissões da sessão.
 
 O cliente de servidor em `src/lib/supabase/server.ts` aceita cookies e valida o usuário com `auth.getUser()` antes de operações privadas. `src/proxy.ts` mantém a renovação da sessão no Next.js. Catálogo e guias são lidos diretamente com RLS; progresso e histórico passam por Route Handlers sem chave administrativa.
+
+Os textos de guia agora são lidos de `guide_versions` e `steps`. O catálogo vem
+de `categories`, `applications`, `tutorials` e `tutorial_search_terms`. O código
+local continua como fallback durante a transição. Prints não ficam no HTML nem
+dentro do PostgreSQL: os arquivos permanecem no Storage `guide-public` e a tabela
+`guide_public_images` guarda a chave e o vínculo opcional com a etapa.
 
 ## Primeiro membro da equipe
 

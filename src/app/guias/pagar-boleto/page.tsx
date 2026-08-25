@@ -16,8 +16,12 @@ export default async function GuidePage({ searchParams }: GuidePageProps) {
   const { os, app } = await searchParams;
   if (os !== "android" && os !== "ios") redirect("/tarefas/pagar-boleto");
   const selectedApplication = financialApplications.find((application) => application.slug === app);
-  const publicImages = await getPublicGuideImages("pagar-boleto", selectedApplication?.slug ?? null, os);
   const remoteContent = await getGuideFromSupabase("pagar-boleto", os);
+  const publicImages = await getPublicGuideImages(
+    remoteContent?.imageContext?.guideSlug ?? "pagar-boleto",
+    selectedApplication?.slug ?? remoteContent?.imageContext?.applicationSlug ?? null,
+    os,
+  );
   if (remoteContent) {
     return <GuideViewer
       {...remoteContent}

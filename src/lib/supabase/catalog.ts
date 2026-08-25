@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Application, OperatingSystem, Task } from "@/types/content";
+import type { Application, GuideStep, OperatingSystem, Task } from "@/types/content";
 import type { RemoteGuideContent } from "@/lib/api/catalog";
 import { getSupabaseServerClient } from "./server";
 
@@ -30,6 +30,7 @@ const guideRowSchema = z.object({
     safety_warning: z.string(),
     status: publicationStatusSchema,
     is_demo: z.boolean(),
+    image_context_slug: z.string().min(1),
     tutorial_search_terms: z.array(z.object({ term: z.string().min(1) })),
     applications: z.object({
       id: z.string().uuid(),
@@ -79,12 +80,43 @@ const tutorialRowsSchema = z.array(z.object({
   safety_warning: z.string(),
   status: publicationStatusSchema,
   is_demo: z.boolean(),
+  image_context_slug: z.string().min(1),
   tutorial_search_terms: z.array(z.object({ term: z.string().min(1) })),
+  guide_versions: z.array(z.object({ status: publicationStatusSchema })),
 }));
 const popularityRowsSchema = z.array(z.object({
   tutorial_id: z.string().uuid(),
   access_count: z.number().int().nonnegative(),
 }));
+const uploadGuideRowsSchema = z.array(z.object({
+  id: z.string().uuid(),
+  platform: z.enum(["android", "ios"]),
+  public_for_upload: z.literal(true),
+  tutorials: z.object({
+    title: z.string().min(1),
+    slug: z.string().min(1),
+    applications: z.object({
+      is_demo: z.boolean(),
+      categories: z.object({ name: z.string().min(1) }),
+    }),
+  }),
+  steps: z.array(z.object({
+    position: z.number().int().positive(),
+    editorial_key: z.string().min(1),
+    title: z.string().min(1),
+    instruction: z.string().min(1),
+    image_alt: z.string().min(1),
+    warning: z.string().nullable(),
+    confirmation_message: z.string().nullable(),
+  })),
+}));
+
+export interface SupabaseUploadGuide {
+  category: "bank" | "other";
+  slug: string;
+  stepsByOperatingSystem: Record<OperatingSystem, GuideStep[]>;
+  title: string;
+}
 
 type MediaLocation = z.infer<typeof mediaSchema>;
 
@@ -138,6 +170,10 @@ export function parseSupabaseGuideRow(
       status: row.status,
       estimatedMinutes: row.estimated_minutes,
     },
+    imageContext: {
+      guideSlug: tutorial.image_context_slug,
+      applicationSlug: application.is_demo ? null : application.slug,
+    },
     steps: row.steps
       .sort((first, second) => first.position - second.position)
       .map((step) => {
@@ -168,12 +204,12 @@ export async function getGuideFromSupabase(
   const supabase = await getSupabaseServerClient();
   if (!supabase) return null;
 
-  const { data, error } = await supabase
-    .from("guide_versions")
-    .select(`
+  const loadRow = async (status: "draft" | "published") => supabase
+      .from("guide_versions")
+      .select(`
       id, tutorial_id, platform, app_version, guide_version, reviewed_at, status, estimated_minutes,
       tutorials!inner(
-        id, application_id, title, slug, description, difficulty, safety_warning, status, is_demo,
+        id, application_id, title, slug, description, difficulty, safety_warning, status, is_demo, image_context_slug,
         tutorial_search_terms(term),
         applications!inner(id, name, slug, description, status, is_demo, categories!inner(name))
       ),
@@ -182,11 +218,25 @@ export async function getGuideFromSupabase(
         step_media(purpose, sort_order, media_assets(storage_bucket, storage_key, mime_type, status, contains_personal_data))
       )
     `)
-    .eq("tutorials.slug", tutorialSlug)
-    .eq("platform", operatingSystem)
-    .order("position", { referencedTable: "steps", ascending: true })
-    .limit(1)
-    .maybeSingle();
+      .eq("tutorials.slug", tutorialSlug)
+      .eq("platform", operatingSystem)
+      .eq("status", status)
+      .order("updated_at", { ascending: false })
+      .order("position", { referencedTable: "steps", ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+  let { data, error } = await loadRow("published");
+  if (!data && !error) {
+    const draft = await loadRow("draft");
+    const parsedDraft = guideRowSchema.safeParse(draft.data);
+    // Roteiros colaborativos podem ser lidos para receber prints, mas somente
+    // uma demonstração explícita pode ser aberta antes da publicação humana.
+    if (parsedDraft.success && parsedDraft.data.tutorials.is_demo) {
+      data = draft.data;
+      error = draft.error;
+    }
+  }
   if (error || !data) return null;
 
   const parsed = guideRowSchema.safeParse(data);
@@ -242,7 +292,7 @@ export async function getCatalogFromSupabase(): Promise<SupabaseCatalog | null> 
       .order("name", { ascending: true }),
     supabase
       .from("tutorials")
-      .select("id, application_id, title, slug, description, difficulty, safety_warning, status, is_demo, tutorial_search_terms(term)")
+      .select("id, application_id, title, slug, description, difficulty, safety_warning, status, is_demo, image_context_slug, tutorial_search_terms(term), guide_versions(status)")
       .order("title", { ascending: true }),
   ]);
   if (applicationsResult.error || tutorialsResult.error) return null;
@@ -272,10 +322,59 @@ export async function getCatalogFromSupabase(): Promise<SupabaseCatalog | null> 
       difficulty: row.difficulty,
       safetyWarning: row.safety_warning,
       searchTerms: row.tutorial_search_terms.map(({ term }) => term),
-      availability: row.is_demo ? "demo" : "available",
+      availability: row.is_demo
+        ? "demo"
+        : row.guide_versions.some(({ status }) => status === "published") ? "available" : "preparing",
       status: row.status,
     })),
   };
+}
+
+/** Converte os roteiros públicos para upload mantendo a chave editorial antiga. */
+export function parseSupabaseUploadGuides(payload: unknown): SupabaseUploadGuide[] | null {
+  const parsed = uploadGuideRowsSchema.safeParse(payload);
+  if (!parsed.success) return null;
+  const guides = new Map<string, SupabaseUploadGuide>();
+  for (const row of parsed.data) {
+    const current = guides.get(row.tutorials.slug) ?? {
+      slug: row.tutorials.slug,
+      title: row.tutorials.title,
+      category: row.tutorials.applications.is_demo
+        && row.tutorials.applications.categories.name === "Serviços financeiros" ? "bank" : "other",
+      stepsByOperatingSystem: { android: [], ios: [] },
+    };
+    current.stepsByOperatingSystem[row.platform] = row.steps
+      .sort((first, second) => first.position - second.position)
+      .map((step) => ({
+        id: step.editorial_key,
+        guideId: row.id,
+        order: step.position,
+        title: step.title,
+        instruction: step.instruction,
+        imagePath: "",
+        imageAlt: step.image_alt,
+        ...(step.warning ? { warning: step.warning } : {}),
+        ...(step.confirmation_message ? { confirmationMessage: step.confirmation_message } : {}),
+      }));
+    guides.set(current.slug, current);
+  }
+  return [...guides.values()].sort((first, second) => first.title.localeCompare(second.title, "pt-BR"));
+}
+
+export async function getUploadGuidesFromSupabase(): Promise<SupabaseUploadGuide[] | null> {
+  const supabase = await getSupabaseServerClient();
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from("guide_versions")
+    .select(`
+      id, platform, public_for_upload,
+      tutorials!inner(title, slug, applications!inner(is_demo, categories!inner(name))),
+      steps(position, editorial_key, title, instruction, image_alt, warning, confirmation_message)
+    `)
+    .eq("public_for_upload", true)
+    .order("position", { referencedTable: "steps", ascending: true });
+  if (error) return null;
+  return parseSupabaseUploadGuides(data);
 }
 
 /** Retorna somente contagens agregadas; nenhuma identidade ou histórico individual sai do banco. */

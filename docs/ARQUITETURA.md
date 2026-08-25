@@ -23,7 +23,7 @@ O Next.js apresenta a interface e contém somente a coordenação necessária. P
 - `src/app`: rotas, Route Handlers, layout, metadados e manifesto;
 - `src/features`: pesquisa, guias, progresso, histórico, tema e autenticação;
 - `src/lib/supabase`: clientes, consultas tipadas e validação das respostas;
-- `src/data`: fallback temporário exclusivo da demonstração fictícia;
+- `src/data`: fallback temporário e fonte reprodutível da migração inicial; o banco é a fonte principal em execução;
 - `supabase/migrations`: schema e políticas RLS versionados, aplicados manualmente;
 - `supabase/seed.sql`: somente dados demonstrativos sem informações pessoais.
 
@@ -57,15 +57,24 @@ removê-las. A publicação ocorre assim que o upload termina, conforme decisão
 se trata de demonstração não oficial. Aplicativo, plataforma e ordem do passo
 fazem parte da chave para impedir mistura entre bancos ou celulares.
 
+Cada registro também pode apontar para `guide_versions` e `steps`. Esses vínculos
+foram adicionados sem mudar `storage_bucket` ou `storage_key`, portanto deploys e
+edições do catálogo não apagam os prints. A chave editorial do passo e o
+`image_context_slug` do tutorial preservam a associação entre conteúdo, banco e
+sistema operacional.
+
 O visitante escolhe o aplicativo antes de abrir o guia. O servidor lê somente as
 colunas públicas da imagem e substitui `imagePath`; título, instrução, alerta e
 texto alternativo não são controlados pelo arquivo enviado.
 
 ## Fluxo público
 
-Catálogo e guias são consultados no servidor Next.js com a chave publicável. RLS permite apenas conteúdo `published` e o `draft` explicitamente marcado como `is_demo`. Respostas são validadas antes de chegar aos componentes. Imagens e áudios permanecem em bucket privado e são entregues por URLs temporárias.
+Catálogo e guias são consultados no servidor Next.js com a chave publicável. RLS permite o catálogo público e somente versões `published` ou a demonstração explicitamente marcada. Roteiros em revisão podem ser lidos apenas pela ferramenta de envio quando `public_for_upload = true`; isso não os torna navegáveis. Respostas são validadas antes de chegar aos componentes.
 
-Sem configuração ou durante indisponibilidade, somente “Pagar um boleto” pode usar o fallback local identificado como demonstração. Guias reais nunca são inventados pelo frontend.
+Sem configuração ou durante indisponibilidade, o catálogo e a demonstração usam
+o fallback local identificado. O banco volta a ser preferido automaticamente
+quando disponível. Guias reais em rascunho nunca são apresentados como
+publicados pelo frontend.
 
 ## Fluxo autenticado
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mergeCatalogWithFallback, parseSupabaseGuideRow } from "./catalog";
+import { mergeCatalogWithFallback, parseSupabaseGuideRow, parseSupabaseUploadGuides } from "./catalog";
 
 const ids = {
   application: "20000000-0000-4000-8000-000000000001",
@@ -27,6 +27,7 @@ const row = {
     safety_warning: "Não informe dados reais.",
     status: "draft",
     is_demo: true,
+    image_context_slug: "pagar-boleto",
     tutorial_search_terms: [{ term: "boleto" }],
     applications: {
       id: ids.application,
@@ -56,6 +57,10 @@ describe("catálogo Supabase", () => {
     const content = parseSupabaseGuideRow(row);
     expect(content?.application.category).toBe("Serviços financeiros");
     expect(content?.guide.id).toBe(ids.guide);
+    expect(content?.imageContext).toEqual({
+      applicationSlug: null,
+      guideSlug: "pagar-boleto",
+    });
     expect(content?.task.searchTerms).toEqual(["boleto"]);
   });
 
@@ -81,5 +86,34 @@ describe("catálogo Supabase", () => {
     );
     expect(merged.applications).toEqual([remoteApplication]);
     expect(merged.tasks[0]?.applicationId).toBe(ids.application);
+  });
+
+  it("preserva a chave editorial dos passos usados pelos prints", () => {
+    const uploadGuides = parseSupabaseUploadGuides([{
+      id: ids.guide,
+      platform: "android",
+      public_for_upload: true,
+      tutorials: {
+        title: "Pagar um boleto",
+        slug: "pagar-boleto",
+        applications: {
+          is_demo: true,
+          categories: { name: "Serviços financeiros" },
+        },
+      },
+      steps: [{
+        position: 1,
+        editorial_key: "guide-pagar-boleto-android-step-1",
+        title: "Abra o aplicativo",
+        instruction: "Abra somente o aplicativo oficial.",
+        image_alt: "Tela fictícia.",
+        warning: null,
+        confirmation_message: null,
+      }],
+    }]);
+
+    expect(uploadGuides?.[0]?.category).toBe("bank");
+    expect(uploadGuides?.[0]?.stepsByOperatingSystem.android[0]?.id)
+      .toBe("guide-pagar-boleto-android-step-1");
   });
 });

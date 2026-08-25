@@ -27,10 +27,31 @@ PostgreSQL atende ao modelo relacional, constraints, transações, busca textual
 - `008_admin_published_guide_images.sql`: estrutura inicial das imagens públicas por contexto.
 - `010_restrict_guide_publishing_to_superadmin.sql`: etapa histórica que restringiu a publicação ao superadmin.
 - `20260820055619_allow_authenticated_guide_image_uploads.sql`: permite criação e substituição por qualquer conta autenticada, preservando a remoção para o superadmin.
+- `20260825225755_migrate_local_guides_to_database.sql`: importa o catálogo local e os roteiros editoriais para `categories`, `applications`, `tutorials`, `guide_versions` e `steps`, sem publicar automaticamente guias reais.
+- `20260825231732_relink_existing_guide_images.sql`: relaciona os registros já existentes de `guide_public_images` às versões e etapas estruturadas sem mover ou renomear objetos no Storage.
 
 As migrations são verificadas em PostgreSQL efêmero pela CI. A aplicação remota
 ocorre somente no projeto escolhido pelo responsável e sem credenciais no Git.
 O seed de desenvolvimento permanece `draft` e não publica nada.
+
+## Fonte do catálogo e dos roteiros
+
+PostgreSQL é a fonte principal do catálogo, das versões por sistema operacional
+e dos passos. O conteúdo em `src/data` permanece temporariamente como fallback
+de disponibilidade e como entrada reprodutível do gerador
+`scripts/generate-guide-catalog-migration.mjs`; ele não substitui alterações
+editoriais feitas no banco.
+
+`tutorials.image_context_slug` mantém a chave histórica usada pelos uploads,
+`steps.editorial_key` identifica o passo de forma estável e
+`guide_public_images.guide_version_id`/`guide_step_id` ligam a imagem ao roteiro.
+Os arquivos continuam no bucket `guide-public`: somente referências relacionais
+foram acrescentadas. Na migração inicial, 745 registros de imagem foram
+preservados e vinculados, sem alterar suas chaves de Storage.
+
+`guide_versions.public_for_upload` permite mostrar um roteiro na ferramenta de
+envio sem torná-lo um guia oficial. A navegação pública continua exigindo
+`status = 'published'`, com exceção da demonstração explicitamente marcada.
 
 ## Acesso da aplicação
 

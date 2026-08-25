@@ -17,9 +17,12 @@ export default async function DynamicGuidePage({ params, searchParams }: Dynamic
   const [{ slug }, { os, app }] = await Promise.all([params, searchParams]);
   if (os !== "android" && os !== "ios") redirect(`/tarefas/${encodeURIComponent(slug)}`);
   const selectedApplication = financialApplications.find((application) => application.slug === app);
-  const publicImages = await getPublicGuideImages(slug, selectedApplication?.slug ?? null, os);
-
   const remoteContent = await getGuideFromSupabase(slug, os);
+  const imageGuideSlug = remoteContent?.imageContext?.guideSlug ?? slug;
+  const imageApplicationSlug = selectedApplication?.slug
+    ?? remoteContent?.imageContext?.applicationSlug
+    ?? null;
+  const publicImages = await getPublicGuideImages(imageGuideSlug, imageApplicationSlug, os);
   if (remoteContent) return <GuideViewer
     {...remoteContent}
     application={selectedApplication ?? remoteContent.application}

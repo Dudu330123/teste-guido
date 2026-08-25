@@ -55,6 +55,10 @@ const guideResponseSchema = z.object({
 export interface RemoteGuideContent {
   application: Application;
   guide: Guide;
+  imageContext?: {
+    applicationSlug: string | null;
+    guideSlug: string;
+  };
   steps: GuideStep[];
   task: Task;
 }
