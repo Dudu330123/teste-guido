@@ -33,6 +33,13 @@ describe("controles da página inicial", () => {
     expect(screen.getByRole("link", { name: "Admin" })).toHaveAttribute("href", "/admin");
   });
 
+  it("liga a navegação à biblioteca e destaca a página ativa", () => {
+    render(<HomeToolbar activePage="explore" />);
+    expect(screen.getByRole("link", { name: "Explorar" })).toHaveAttribute("href", "/explorar");
+    expect(screen.getByRole("link", { name: "Explorar" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Início" })).not.toHaveAttribute("aria-current");
+  });
+
   it("alterna e salva o modo de cor", async () => {
     const user = userEvent.setup();
     render(<HomeToolbar />);

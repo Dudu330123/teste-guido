@@ -28,7 +28,12 @@ function applyThemePreference(preference: ThemePreference, save = true) {
   if (save) window.localStorage.setItem(storageKey, preference);
 }
 
-export function HomeToolbar({ showAdmin = false }: { showAdmin?: boolean }) {
+interface HomeToolbarProps {
+  activePage?: "home" | "explore";
+  showAdmin?: boolean;
+}
+
+export function HomeToolbar({ activePage = "home", showAdmin = false }: HomeToolbarProps) {
   const [helpOpen, setHelpOpen] = useState(false);
 
   useEffect(() => {
@@ -93,8 +98,8 @@ export function HomeToolbar({ showAdmin = false }: { showAdmin?: boolean }) {
         </Link>
 
         <nav aria-label="Navegação principal" className="home-main-nav">
-          <Link href="/" aria-current="page">Início</Link>
-          <Link href="#mais-acessados">Explorar</Link>
+          <Link href="/" aria-current={activePage === "home" ? "page" : undefined}>Início</Link>
+          <Link href="/explorar" aria-current={activePage === "explore" ? "page" : undefined}>Explorar</Link>
           <Link href="/enviar-print">Enviar print</Link>
           <button
             type="button"

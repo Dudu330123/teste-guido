@@ -81,6 +81,10 @@ const tutorialRowsSchema = z.array(z.object({
   is_demo: z.boolean(),
   tutorial_search_terms: z.array(z.object({ term: z.string().min(1) })),
 }));
+const popularityRowsSchema = z.array(z.object({
+  tutorial_id: z.string().uuid(),
+  access_count: z.number().int().nonnegative(),
+}));
 
 type MediaLocation = z.infer<typeof mediaSchema>;
 
@@ -272,4 +276,19 @@ export async function getCatalogFromSupabase(): Promise<SupabaseCatalog | null> 
       status: row.status,
     })),
   };
+}
+
+/** Retorna somente contagens agregadas; nenhuma identidade ou histórico individual sai do banco. */
+export async function getGuidePopularityFromSupabase() {
+  const supabase = await getSupabaseServerClient();
+  if (!supabase) return new Map<string, number>();
+  const { data, error } = await supabase
+    .from("guide_access_stats")
+    .select("tutorial_id, access_count")
+    .order("access_count", { ascending: false })
+    .limit(50);
+  if (error) return new Map<string, number>();
+  const parsed = popularityRowsSchema.safeParse(data);
+  if (!parsed.success) return new Map<string, number>();
+  return new Map(parsed.data.map((row) => [row.tutorial_id, row.access_count]));
 }

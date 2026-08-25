@@ -844,6 +844,363 @@ html[data-theme="dark"] .home-mascot-dark {
   box-shadow: none;
 }
 
+.guido-explore {
+  overflow: visible;
+  background-image:
+    linear-gradient(180deg, rgba(239, 247, 255, 0.82), rgba(226, 241, 255, 0.9)),
+    url("/images/summer-sky-guido.webp");
+  background-attachment: fixed;
+}
+
+html[data-theme="dark"] .guido-explore {
+  background-image:
+    linear-gradient(180deg, rgba(0, 5, 16, 0.72), rgba(1, 5, 14, 0.9)),
+    url("/images/home/cenario-home-dark.png");
+}
+
+.explore-content {
+  position: relative;
+  z-index: 3;
+  width: min(100% - 2rem, 88rem);
+  margin-inline: auto;
+  padding: 2.5rem 0 5rem;
+}
+
+.explore-intro {
+  max-width: 49rem;
+}
+
+.explore-intro h1 {
+  margin: 0;
+  color: var(--home-ink);
+  font-size: clamp(2.6rem, 5vw, 4.7rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+
+.explore-intro > p:last-child {
+  max-width: 43rem;
+  margin: 1rem 0 0;
+  color: var(--home-muted);
+  font-size: clamp(1.05rem, 1.7vw, 1.3rem);
+}
+
+.explore-search-form {
+  max-width: 64rem;
+  margin-top: 2rem;
+}
+
+.explore-search-form > label {
+  display: block;
+  margin-bottom: 0.55rem;
+  color: var(--home-ink);
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.explore-search-control {
+  position: relative;
+  display: flex;
+  min-height: 4.8rem;
+  align-items: center;
+  overflow: hidden;
+  border: 2px solid rgba(8, 118, 249, 0.2);
+  border-radius: 1.35rem;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 12px 30px rgba(40, 81, 128, 0.1);
+}
+
+.explore-search-control:focus-within {
+  border-color: var(--home-blue);
+  box-shadow: 0 0 0 4px rgba(8, 118, 249, 0.15);
+}
+
+.explore-search-control > svg {
+  position: absolute;
+  left: 1.35rem;
+  width: 1.9rem;
+  height: 1.9rem;
+  color: var(--home-navy);
+  pointer-events: none;
+}
+
+.explore-search-control input {
+  min-height: 4.6rem;
+  width: 100%;
+  border: 0;
+  background: transparent !important;
+  color: var(--home-navy);
+  padding: 0.8rem 10rem 0.8rem 4.35rem;
+  box-shadow: none !important;
+  font-size: 1.1rem;
+  outline: none;
+}
+
+.explore-search-control button {
+  position: absolute;
+  right: 0.55rem;
+  min-height: 3.55rem;
+  border: 0;
+  border-radius: 1rem;
+  background: var(--home-navy);
+  color: #fff;
+  padding: 0.7rem 1.45rem;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.explore-search-control button:hover {
+  background: var(--home-blue);
+}
+
+.explore-filters {
+  display: flex;
+  margin-top: 1.25rem;
+  gap: 0.65rem;
+  overflow-x: auto;
+  padding: 0.25rem 0.2rem 0.65rem;
+}
+
+.explore-filters a {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  border: 1px solid rgba(3, 22, 65, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--home-ink);
+  padding: 0.55rem 1rem;
+  font-weight: 750;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.explore-filters a[aria-current="page"] {
+  border-color: var(--home-blue);
+  background: var(--home-blue);
+  color: #fff;
+}
+
+.explore-section {
+  margin-top: 3.25rem;
+}
+
+.explore-section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.explore-section-heading h2 {
+  margin: 0;
+  color: var(--home-ink);
+  font-size: clamp(2rem, 3.3vw, 3rem);
+  line-height: 1.05;
+}
+
+.explore-section-heading > p {
+  margin: 0;
+  color: var(--home-muted);
+  font-weight: 650;
+}
+
+.explore-kicker {
+  margin: 0 0 0.35rem;
+  color: var(--home-blue);
+  font-size: 0.85rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.explore-guide-grid {
+  display: grid;
+  margin-top: 1.25rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.explore-popular-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.explore-guide-card {
+  position: relative;
+  display: flex;
+  min-height: 18rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  border-radius: 1.4rem;
+  background: rgba(255, 255, 255, 0.76);
+  color: var(--home-ink);
+  padding: 1.35rem 1.35rem 3.8rem;
+  box-shadow: 0 12px 28px rgba(42, 84, 132, 0.1);
+  flex-direction: column;
+  text-decoration: none;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.explore-guide-card:hover {
+  border-color: var(--home-blue);
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.explore-card-badge {
+  align-self: flex-start;
+  border-radius: 999px;
+  background: rgba(8, 118, 249, 0.1);
+  color: #0756b6;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.explore-card-app {
+  margin-top: 1rem;
+  color: var(--home-muted);
+  font-size: 0.9rem;
+  font-weight: 750;
+}
+
+.explore-guide-card h3 {
+  margin: 0.25rem 0 0;
+  font-size: 1.45rem;
+  line-height: 1.15;
+}
+
+.explore-guide-card p {
+  margin: 0.8rem 0 0;
+  color: var(--home-muted);
+  line-height: 1.45;
+}
+
+.explore-card-status {
+  margin-top: auto;
+  padding-top: 1rem;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.explore-card-status.is-available {
+  color: #17633c;
+}
+
+.explore-card-status.is-preparing {
+  color: #795300;
+}
+
+.explore-card-arrow {
+  position: absolute;
+  right: 1.35rem;
+  bottom: 1rem;
+  color: var(--home-blue);
+  font-size: 1.8rem;
+}
+
+.explore-empty {
+  margin-top: 1.25rem;
+  border: 1px solid rgba(8, 118, 249, 0.25);
+  border-radius: 1.4rem;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--home-ink);
+  padding: 2rem;
+}
+
+.explore-empty h3 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.explore-empty p {
+  margin: 0.5rem 0 1rem;
+}
+
+.explore-empty a {
+  color: var(--home-blue);
+  font-weight: 800;
+}
+
+html[data-theme="dark"] .explore-search-control,
+html[data-theme="dark"] .explore-filters a,
+html[data-theme="dark"] .explore-guide-card,
+html[data-theme="dark"] .explore-empty {
+  border-color: rgba(139, 182, 255, 0.25);
+  background: rgba(4, 15, 36, 0.9);
+}
+
+html[data-theme="dark"] .explore-search-control input {
+  color: #f4f8ff;
+}
+
+html[data-theme="dark"] .explore-search-control > svg {
+  color: #e8f1ff;
+}
+
+html[data-theme="dark"] .explore-guide-card:hover {
+  border-color: var(--home-blue);
+  background: rgba(7, 25, 55, 0.96);
+}
+
+html[data-theme="dark"] .explore-card-badge {
+  background: rgba(8, 118, 249, 0.22);
+  color: #b9d8ff;
+}
+
+html[data-theme="dark"] .explore-card-status.is-available {
+  color: #9ce0bc;
+}
+
+html[data-theme="dark"] .explore-card-status.is-preparing {
+  color: #f0cc7b;
+}
+
+@media (max-width: 62rem) {
+  .explore-guide-grid,
+  .explore-popular-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 42rem) {
+  .explore-content {
+    padding-top: 2rem;
+  }
+
+  .explore-search-control {
+    padding-bottom: 0.45rem;
+    flex-wrap: wrap;
+  }
+
+  .explore-search-control input {
+    min-height: 4.2rem;
+    padding-right: 1rem;
+  }
+
+  .explore-search-control button {
+    position: static;
+    width: calc(100% - 0.9rem);
+    margin-inline: 0.45rem;
+  }
+
+  .explore-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .explore-guide-grid,
+  .explore-popular-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .explore-guide-card {
+    min-height: 15rem;
+  }
+}
+
 @media (max-width: 75rem) {
   .home-header {
     grid-template-columns: auto 1fr;
