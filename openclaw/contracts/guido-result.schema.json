@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://guido.example/schemas/agent-result.json",
+  "title": "Resultado de agente do Guido",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "taskId",
+    "agentRole",
+    "status",
+    "summary",
+    "sources",
+    "uncertainties",
+    "sensitiveDataDetected",
+    "humanReviewRequired",
+    "publicationRequested"
+  ],
+  "properties": {
+    "taskId": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "agentRole": {
+      "enum": ["orchestrator", "research", "script", "media", "security", "review"]
+    },
+    "status": { "enum": ["completed", "needs_review", "blocked"] },
+    "summary": { "type": "string", "minLength": 1, "maxLength": 4000 },
+    "sources": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["url", "title", "consultedAt", "official", "notes"],
+        "properties": {
+          "url": { "type": "string", "format": "uri" },
+          "title": { "type": "string", "minLength": 1, "maxLength": 300 },
+          "consultedAt": { "type": "string", "format": "date-time" },
+          "official": { "type": "boolean" },
+          "notes": { "type": "string", "maxLength": 2000 }
+        }
+      }
+    },
+    "proposedSteps": {
+      "type": "array",
+      "maxItems": 30,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["order", "title", "instruction", "imageAlt"],
+        "properties": {
+          "order": { "type": "integer", "minimum": 1 },
+          "title": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "instruction": { "type": "string", "minLength": 1, "maxLength": 500 },
+          "imageAlt": { "type": "string", "minLength": 1, "maxLength": 300 },
+          "warning": { "type": ["string", "null"], "maxLength": 500 }
+        }
+      }
+    },
+    "mediaCandidates": {
+      "type": "array",
+      "maxItems": 30,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["stepOrder", "sourceUrl", "rightsStatus", "notes"],
+        "properties": {
+          "stepOrder": { "type": "integer", "minimum": 1 },
+          "sourceUrl": { "type": "string", "format": "uri" },
+          "rightsStatus": { "enum": ["authorized", "pending", "rejected"] },
+          "notes": { "type": "string", "maxLength": 2000 }
+        }
+      }
+    },
+    "uncertainties": {
+      "type": "array",
+      "maxItems": 50,
+      "items": { "type": "string", "minLength": 1, "maxLength": 1000 }
+    },
+    "sensitiveDataDetected": { "type": "boolean" },
+    "humanReviewRequired": { "const": true },
+    "publicationRequested": { "const": false }
+  }
+}

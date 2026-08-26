@@ -1,0 +1,12 @@
+{
+  "taskId": "manual-001",
+  "tutorialSlug": "enviar-audio-whatsapp",
+  "applicationSlug": "whatsapp",
+  "operatingSystem": "android",
+  "objective": "Preparar um rascunho educativo para ensinar como enviar uma mensagem de áudio.",
+  "allowedSources": [
+    "https://faq.whatsapp.com/"
+  ],
+  "riskLevel": "low",
+  "requestedAt": "2026-08-26T12:00:00Z"
+}

@@ -1,0 +1,38 @@
+// Mescle este fragmento em ~/.openclaw/openclaw.json.
+// Não substitua o arquivo inteiro e não adicione segredos aqui.
+{
+  agents: {
+    defaults: {
+      subagents: {
+        maxConcurrent: 1,
+        maxChildrenPerAgent: 1,
+        maxSpawnDepth: 1,
+        runTimeoutSeconds: 900,
+        archiveAfterMinutes: 60,
+        requireAgentId: true,
+      },
+    },
+    entries: {
+      "guido-orquestrador": {
+        subagents: {
+          allowAgents: [
+            "guido-pesquisa",
+            "guido-roteiro",
+            "guido-midia",
+            "guido-seguranca",
+            "guido-revisao",
+          ],
+          requireAgentId: true,
+        },
+      },
+    },
+  },
+  tools: {
+    subagents: {
+      tools: {
+        // Trabalhadores não administram o Gateway nem criam agendamentos.
+        deny: ["gateway", "cron"],
+      },
+    },
+  },
+}

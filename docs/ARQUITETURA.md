@@ -26,7 +26,7 @@ O Next.js apresenta a interface e contém somente a coordenação necessária. P
 - `src/data`: fallback temporário e fonte reprodutível da migração inicial; o banco é a fonte principal em execução;
 - `supabase/migrations`: schema e políticas RLS versionados, aplicados manualmente;
 - `supabase/seed.sql`: somente dados demonstrativos sem informações pessoais.
-- `docs/AGENTES_IA.md`: contrato e limites para futura automação externa, sem agente no runtime do Guido.
+- `openclaw`: manual, contratos e workspaces para futura automação externa, sem agente no runtime do Guido.
 
 O diretório `backend/` está congelado como referência da implementação anterior. Não participa da execução nem da CI e será removido somente depois da validação completa da migração.
 
@@ -100,7 +100,7 @@ Nenhum guia pesquisado, importado ou gerado automaticamente é publicado.
 
 Agentes futuros devem gravar rascunhos no Supabase e enviar um alerta para
 revisão humana. O contrato, os limites de concorrência e as regras para fontes
-e imagens estão em [AGENTES_IA.md](AGENTES_IA.md); a automação não recebe
+e imagens estão no [manual do OpenClaw](../openclaw/README.md); a automação não recebe
 permissão para publicar versões oficiais por conta própria.
 
 ## Evolução controlada

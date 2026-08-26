@@ -1,0 +1,31 @@
+{
+  "taskId": "manual-001",
+  "agentRole": "review",
+  "status": "needs_review",
+  "summary": "Rascunho fictício preparado; a equipe ainda precisa validar os nomes dos controles em um aparelho Android de teste.",
+  "sources": [
+    {
+      "url": "https://faq.whatsapp.com/",
+      "title": "Central de ajuda oficial do WhatsApp",
+      "consultedAt": "2026-08-26T12:15:00Z",
+      "official": true,
+      "notes": "A versão e a sequência exata da interface ainda exigem validação humana."
+    }
+  ],
+  "proposedSteps": [
+    {
+      "order": 1,
+      "title": "Abra a conversa",
+      "instruction": "Toque na conversa para a qual deseja enviar o áudio.",
+      "imageAlt": "Tela fictícia com uma conversa destacada para toque.",
+      "warning": null
+    }
+  ],
+  "mediaCandidates": [],
+  "uncertainties": [
+    "O texto e a posição do controle precisam ser conferidos na versão atual do aplicativo."
+  ],
+  "sensitiveDataDetected": false,
+  "humanReviewRequired": true,
+  "publicationRequested": false
+}

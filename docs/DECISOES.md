@@ -30,7 +30,7 @@ Hermes ou OpenClaw poderão operar como orquestradores externos, com agentes
 especializados para pesquisa, roteiro, mídia e verificação. A execução inicial
 será sequencial e salvará somente rascunhos no Supabase; o Guido exibirá um
 alerta e a publicação continuará humana. A especificação está em
-[AGENTES_IA.md](AGENTES_IA.md).
+[manual do OpenClaw](../openclaw/README.md).
 
 ## Tecnologias adiadas
 

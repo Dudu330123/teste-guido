@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://guido.example/schemas/agent-task.json",
+  "title": "Tarefa de conteúdo do Guido",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "taskId",
+    "tutorialSlug",
+    "operatingSystem",
+    "objective",
+    "allowedSources",
+    "riskLevel",
+    "requestedAt"
+  ],
+  "properties": {
+    "taskId": { "type": "string", "minLength": 1, "maxLength": 100 },
+    "tutorialSlug": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "maxLength": 120
+    },
+    "applicationSlug": {
+      "type": ["string", "null"],
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "maxLength": 80
+    },
+    "operatingSystem": { "enum": ["android", "ios"] },
+    "objective": { "type": "string", "minLength": 10, "maxLength": 1000 },
+    "allowedSources": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": { "type": "string", "format": "uri" },
+      "uniqueItems": true
+    },
+    "riskLevel": { "enum": ["low", "medium", "high"] },
+    "requestedAt": { "type": "string", "format": "date-time" }
+  }
+}
