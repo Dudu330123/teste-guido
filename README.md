@@ -80,7 +80,7 @@ serão sincronizadas com a `main` pela integração oficial entre Supabase e Git
 - imagens públicas ficam no Storage e substituem somente a tela do passo; instruções continuam controladas pelo guia;
 - não há OCR, integração bancária ou offline completo.
 
-Consulte [arquitetura](docs/ARQUITETURA.md), [API](docs/API.md), [banco](docs/DATABASE.md), [segurança](docs/SEGURANCA.md) e [testes](docs/TESTING.md).
+Consulte [arquitetura](docs/ARQUITETURA.md), [API](docs/API.md), [banco](docs/DATABASE.md), [segurança](docs/SEGURANCA.md), [preparação para agentes](docs/AGENTES_IA.md) e [testes](docs/TESTING.md).
 
 ## Publicação do frontend
 

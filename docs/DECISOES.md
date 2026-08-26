@@ -24,6 +24,14 @@ Cada versão de guia possui plataforma explícita. Etapas e mídias podem ser re
 
 Somente conteúdo `published` pode representar guia real. Demonstrações mantêm `draft` e `is_demo=true`. Pesquisa, OCR ou IA futura nunca alteram o status para publicado.
 
+## Agentes externos adiados
+
+Hermes ou OpenClaw poderão operar como orquestradores externos, com agentes
+especializados para pesquisa, roteiro, mídia e verificação. A execução inicial
+será sequencial e salvará somente rascunhos no Supabase; o Guido exibirá um
+alerta e a publicação continuará humana. A especificação está em
+[AGENTES_IA.md](AGENTES_IA.md).
+
 ## Tecnologias adiadas
 
 Python continua fora do runtime principal e só será considerado para processamento especializado. Redis, Kafka, RabbitMQ, Kubernetes, Elasticsearch, vector database, CQRS e event sourcing não possuem justificativa atual.
