@@ -15,8 +15,9 @@ describe("visualizador do guia", () => {
 
   it("expõe os controles principais e permite avançar e voltar", async () => {
     const user = userEvent.setup();
-    render(<GuideViewer application={application} guide={guide} steps={steps} task={task} />);
+    const { container } = render(<GuideViewer application={application} guide={guide} steps={steps} task={task} />);
     await screen.findByText("Passo 1 de 6");
+    expect(container.querySelector("main")).toHaveClass("guido-home", "internal-page", "guide-page");
     expect(screen.getByRole("progressbar", { name: /progresso/i })).toHaveAttribute("aria-valuenow", "1");
     expect(screen.getByRole("button", { name: "Voltar" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Ouvir instrução" })).toBeEnabled();

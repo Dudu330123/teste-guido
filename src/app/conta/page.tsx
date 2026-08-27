@@ -6,11 +6,11 @@ export const metadata: Metadata = { title: "Minha conta" };
 
 export default function AccountPage() {
   return (
-    <>
+    <main className="guido-home internal-page min-h-screen">
       <SiteHeader />
-      <main className="mx-auto max-w-2xl px-5 py-10">
+      <div className="internal-page-content internal-page-content--narrow">
         <AccountPanel />
-      </main>
-    </>
+      </div>
+    </main>
   );
 }

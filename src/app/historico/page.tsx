@@ -6,11 +6,11 @@ export const metadata: Metadata = { title: "Histórico" };
 
 export default function HistoryPage() {
   return (
-    <>
+    <main className="guido-home internal-page min-h-screen">
       <SiteHeader />
-      <main className="mx-auto max-w-4xl px-5 py-10">
+      <div className="internal-page-content internal-page-content--compact">
         <HistoryPanel />
-      </main>
-    </>
+      </div>
+    </main>
   );
 }

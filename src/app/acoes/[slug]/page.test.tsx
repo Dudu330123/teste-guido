@@ -12,7 +12,7 @@ describe("página de ação", () => {
 
     const nubankCard = screen.getByRole("heading", { name: "Nubank" }).closest("article");
     expect(nubankCard).not.toBeNull();
-    expect(within(nubankCard!).getByText(/Conteúdo de Nubank ainda não validado/)).toBeVisible();
+    expect(within(nubankCard!).getByText(/O guia de Nubank ainda está em revisão/)).toBeVisible();
     expect(within(nubankCard!).getByRole("link")).toHaveAttribute("href", "/tarefas/pix-nubank");
   });
 

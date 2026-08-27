@@ -35,7 +35,7 @@ export default async function ActionPage({ params }: ActionPageProps) {
           <p className="internal-page-description">{action.description}</p>
         </header>
         <div role="note" className="notice-info internal-page-notice">
-          <strong>Importante:</strong> opções em preparação não são tutoriais e ainda precisam de pesquisa oficial e revisão humana.
+          <strong>Importante:</strong> as opções em preparação ainda não são tutoriais validados e dependem de pesquisa oficial e revisão humana.
         </div>
 
         <section aria-label="Aplicativos cadastrados" className="internal-page-grid internal-page-grid--three">

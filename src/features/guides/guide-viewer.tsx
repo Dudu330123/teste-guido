@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { Application, Guide, GuideStep, Task } from "@/types/content";
 import { clearProgress, loadProgress, saveProgress } from "@/features/progress/progress-storage";
 import { nextStep, previousStep, restartGuide } from "@/features/progress/guide-navigation";
 import { loadRemoteProgress, saveRemoteProgress } from "@/features/progress/remote-progress";
+import { HomeToolbar } from "@/features/theme/home-toolbar";
 import { ScreenPlaceholder } from "./screen-placeholder";
 
 interface GuideViewerProps {
@@ -13,6 +14,17 @@ interface GuideViewerProps {
   guide: Guide;
   steps: GuideStep[];
   task: Task;
+}
+
+function GuidePageShell({ children }: { children: ReactNode }) {
+  return (
+    <main className="guido-home internal-page guide-page min-h-screen">
+      <HomeToolbar />
+      <div className="internal-page-content internal-page-content--wide guide-page-content">
+        {children}
+      </div>
+    </main>
+  );
 }
 
 export function GuideViewer({ application, guide, steps, task }: GuideViewerProps) {
@@ -65,13 +77,17 @@ export function GuideViewer({ application, guide, steps, task }: GuideViewerProp
   }, [currentStep, ready, resumeStep]);
 
   if (!ready || !step) {
-    return <main className="mx-auto max-w-4xl px-5 py-14"><p role="status">Carregando o guia…</p></main>;
+    return (
+      <GuidePageShell>
+        <p role="status" className="glass-panel guide-loading-state">Carregando o guia…</p>
+      </GuidePageShell>
+    );
   }
 
   if (resumeStep !== null) {
     return (
-      <main className="mx-auto max-w-2xl px-5 py-16">
-        <div className="glass-panel rounded-3xl border-[var(--primary)] p-7 text-center">
+      <GuidePageShell>
+        <div className="glass-panel guide-resume-card text-center">
           <h1 className="text-3xl font-bold">Continuar de onde parou?</h1>
           <p className="mt-4 text-xl">Você parou no passo {resumeStep + 1} de {steps.length}. Deseja continuar?</p>
           <p className="mt-3 font-semibold text-[var(--muted)]">Seu progresso está salvo. Escolha com calma.</p>
@@ -84,7 +100,7 @@ export function GuideViewer({ application, guide, steps, task }: GuideViewerProp
             </button>
           </div>
         </div>
-      </main>
+      </GuidePageShell>
     );
   }
 
@@ -125,13 +141,13 @@ export function GuideViewer({ application, guide, steps, task }: GuideViewerProp
       : `${remainingSteps === 1 ? "Falta 1 passo" : `Faltam ${remainingSteps} passos`}. Continue no seu ritmo.`;
 
   return (
-    <main className="mx-auto max-w-6xl px-5 py-5 sm:py-7">
-      <div className="flex items-center justify-between gap-2">
+    <GuidePageShell>
+      <div className="guide-viewer-toolbar">
         <Link href="/tarefas/pagar-boleto" className="quiet-action min-h-12 px-2 py-2 text-base font-bold underline">← Sair do guia</Link>
         <button type="button" onClick={restart} className="quiet-action min-h-12 px-2 py-2 text-base font-bold">Começar novamente</button>
       </div>
 
-      <header className="glass-panel mt-3 rounded-2xl px-5 py-4 sm:px-6">
+      <header className="glass-panel guide-viewer-header">
         <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end sm:gap-6">
           <div>
             <p className="text-base font-semibold text-[var(--primary)]">{application.name} · {guide.operatingSystem === "ios" ? "iPhone" : "Outro"}</p>
@@ -147,11 +163,11 @@ export function GuideViewer({ application, guide, steps, task }: GuideViewerProp
         </div>
       </header>
 
-      <div className="mt-5 grid items-start gap-8 lg:mt-6 lg:grid-cols-[1fr_1.1fr]">
+      <div className="guide-viewer-layout">
         <div className="order-2 lg:order-1">
           <ScreenPlaceholder step={step} />
         </div>
-        <section aria-labelledby="step-title" className="glass-panel order-1 rounded-3xl p-5 lg:order-2 sm:p-8">
+        <section aria-labelledby="step-title" className="glass-panel guide-step-card order-1 lg:order-2">
           <p className="text-base font-black uppercase tracking-wide text-[var(--primary)]">Agora faça somente isto</p>
           <h2 ref={stepTitleRef} id="step-title" tabIndex={-1} className="mt-1 scroll-mt-5 text-3xl font-bold">{step.title}</h2>
           <p className="mt-4 text-2xl leading-relaxed">{step.instruction}</p>
@@ -198,6 +214,6 @@ export function GuideViewer({ application, guide, steps, task }: GuideViewerProp
           </details>
         </section>
       </div>
-    </main>
+    </GuidePageShell>
   );
 }

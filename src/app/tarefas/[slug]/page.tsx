@@ -44,7 +44,7 @@ export default async function TaskPage({ params }: TaskPageProps) {
         ) : (
           <div className="glass-panel internal-page-card internal-page-card--preparing">
             <h2 className="internal-page-card-title">Guia em preparação</h2>
-            <p className="internal-page-card-description">Esta tarefa foi cadastrada para pesquisa, mas ainda não possui passos revisados para Android ou iPhone.</p>
+            <p className="internal-page-card-description">Esta tarefa ainda está em revisão e não possui passos validados.</p>
           </div>
         )}
       </div>

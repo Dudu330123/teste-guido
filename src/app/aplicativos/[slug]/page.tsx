@@ -56,7 +56,7 @@ export default async function ApplicationPage({ params }: ApplicationPageProps) 
           ) : (
             <div className="glass-panel internal-page-card">
               <p className="internal-page-card-title">Guia em preparação</p>
-              <p className="internal-page-card-description">Nenhum guia deste aplicativo foi validado para esta versão.</p>
+              <p className="internal-page-card-description">Ainda não há um guia validado para esta versão.</p>
             </div>
           )}
         </section>

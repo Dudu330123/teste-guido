@@ -13,7 +13,7 @@ export default async function AdminPage() {
   if (!superadminAccess) notFound();
 
   return (
-    <>
+    <main className="guido-home internal-page min-h-screen">
       <SiteHeader showAdmin />
       <GuideUploadContent
         eyebrow="Área administrativa experimental"
@@ -21,6 +21,6 @@ export default async function AdminPage() {
         description="Analise cada passo e associe uma captura de tela sem perder a proporção original."
         canDelete
       />
-    </>
+    </main>
   );
 }

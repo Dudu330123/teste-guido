@@ -966,6 +966,19 @@ html[data-theme="dark"] .home-mascot-dark {
   font-weight: 900;
 }
 
+.action-card-icon {
+  color: var(--home-blue);
+}
+
+.action-card-icon + .internal-page-eyebrow {
+  margin-top: 1rem;
+}
+
+.action-card-icon-svg {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
 .application-logo {
   display: flex;
   width: 4rem;
@@ -1040,6 +1053,77 @@ html[data-theme="dark"] .home-mascot-dark {
 }
 
 .internal-page-card-action--start { align-self: flex-start; }
+
+.auth-page-content {
+  padding-top: 2.5rem;
+}
+
+.auth-page-card,
+.internal-empty-state {
+  margin-top: 1.5rem;
+  padding: clamp(1.5rem, 4vw, 2.25rem);
+}
+
+.auth-page-title {
+  font-size: clamp(2.4rem, 6vw, 3.6rem);
+}
+
+.upload-page-content {
+  padding-top: 2.5rem;
+}
+
+.upload-page-intro {
+  margin-top: 0;
+}
+
+.guide-page {
+  overflow: visible;
+}
+
+.guide-page-content {
+  padding-top: 1.25rem;
+}
+
+.guide-loading-state {
+  max-width: 42rem;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  font-weight: 750;
+  text-align: center;
+}
+
+.guide-resume-card {
+  max-width: 42rem;
+  margin: 2rem auto;
+  border-color: var(--primary);
+  padding: clamp(1.5rem, 4vw, 2rem);
+}
+
+.guide-viewer-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.guide-viewer-header {
+  margin-top: 0.75rem;
+  border-radius: 1.25rem;
+  padding: 1rem 1.25rem;
+}
+
+.guide-viewer-layout {
+  display: grid;
+  align-items: start;
+  margin-top: 1.5rem;
+  gap: 2rem;
+  grid-template-columns: minmax(18rem, 1fr) minmax(24rem, 1.1fr);
+}
+
+.guide-step-card {
+  border-radius: 1.5rem;
+  padding: clamp(1.25rem, 3vw, 2rem);
+}
 
 html[data-theme="dark"] .internal-page {
   background-image:
@@ -1362,6 +1446,10 @@ html[data-theme="dark"] .explore-card-status.is-preparing {
   .internal-page-grid--three {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .guide-viewer-layout {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 42rem) {
@@ -1379,6 +1467,23 @@ html[data-theme="dark"] .explore-card-status.is-preparing {
 
   .internal-page-card-action--start {
     align-self: stretch;
+  }
+
+  .guide-page-content {
+    padding-top: 1rem;
+  }
+
+  .guide-viewer-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .guide-viewer-toolbar > * {
+    width: 100%;
+  }
+
+  .guide-viewer-header {
+    margin-top: 1rem;
   }
 
   .explore-content {
