@@ -24,34 +24,36 @@ export default async function ActionPage({ params }: ActionPageProps) {
     .filter((application) => application !== undefined);
 
   return (
-    <>
+    <main className="guido-home internal-page min-h-screen">
       <SiteHeader />
-      <main className="mx-auto max-w-5xl px-5 py-10">
-        <Link href="/#actions-title" className="font-bold underline">← Voltar para tarefas</Link>
-        <p className="mt-8 font-semibold text-[var(--primary)]">Escolha o aplicativo</p>
-        <h1 className="text-4xl font-black sm:text-5xl">{action.title}</h1>
-        <p className="mt-3 max-w-3xl text-xl">{action.description}</p>
-        <div role="note" className="notice-info mt-6 rounded-2xl p-5">
+      <div className="internal-page-content internal-page-content--wide">
+        <Link href="/#actions-title" className="internal-page-back">← Voltar para tarefas</Link>
+        <header className="internal-page-intro">
+          <p className="internal-page-eyebrow">Escolha o aplicativo</p>
+          <h1 className="internal-page-title">{action.title}</h1>
+          <p className="internal-page-description">{action.description}</p>
+        </header>
+        <div role="note" className="notice-info internal-page-notice">
           <strong>Importante:</strong> opções em preparação não são tutoriais e ainda precisam de pesquisa oficial e revisão humana.
         </div>
 
-        <section aria-label="Aplicativos cadastrados" className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <section aria-label="Aplicativos cadastrados" className="internal-page-grid internal-page-grid--three">
           {availableApplications.map((application) => {
             const applicationTask = actionTasks.find((task) => task.applicationId === application.id)!;
             const isDemo = applicationTask.availability === "demo";
             return (
-              <article key={application.id} className="glass-panel flex flex-col rounded-3xl p-6">
-                <div aria-hidden="true" className="soft-panel flex size-16 items-center justify-center rounded-2xl text-xl font-black text-[var(--primary-dark)]">
+              <article key={application.id} className="glass-panel internal-page-card">
+                <div aria-hidden="true" className="internal-page-card-icon">
                   {application.name.slice(0, 2).toUpperCase()}
                 </div>
-                <h2 className="mt-4 text-2xl font-black">{application.name}</h2>
-                <p className="mt-2 flex-1">{applicationTask.description}</p>
-                <p className="soft-panel mt-4 rounded-xl p-3 font-bold">
+                <h2 className="internal-page-card-title">{application.name}</h2>
+                <p className="internal-page-card-description">{applicationTask.description}</p>
+                <p className="soft-panel internal-page-card-status">
                   {isDemo ? "Demonstração não validada" : "Em preparação"}
                 </p>
                 <Link
                   href={`/tarefas/${applicationTask.slug}`}
-                  className="secondary-action mt-4 min-h-12 px-4 py-3 text-center font-bold"
+                  className="secondary-action internal-page-card-action"
                 >
                   {isDemo ? "Abrir demonstração" : "Ver conteúdo cadastrado"}
                 </Link>
@@ -59,7 +61,7 @@ export default async function ActionPage({ params }: ActionPageProps) {
             );
           })}
         </section>
-      </main>
-    </>
+      </div>
+    </main>
   );
 }

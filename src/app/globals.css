@@ -852,6 +852,179 @@ html[data-theme="dark"] .home-mascot-dark {
   background-attachment: fixed;
 }
 
+.internal-page {
+  overflow: visible;
+  background-image:
+    linear-gradient(180deg, rgba(239, 247, 255, 0.82), rgba(226, 241, 255, 0.9)),
+    url("/images/summer-sky-guido.webp");
+  background-attachment: fixed;
+}
+
+.internal-page-content {
+  position: relative;
+  z-index: 3;
+  width: min(100% - 2rem, 88rem);
+  margin-inline: auto;
+  padding: 2rem 0 5rem;
+}
+
+.internal-page-content--wide { max-width: 88rem; }
+.internal-page-content--compact { max-width: 72rem; }
+.internal-page-content--narrow { max-width: 54rem; }
+
+.internal-page-back {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  color: var(--home-ink);
+  font-weight: 800;
+  text-underline-offset: 0.2em;
+}
+
+.internal-page-intro {
+  max-width: 52rem;
+  margin-top: 2.5rem;
+}
+
+.internal-page-eyebrow {
+  margin: 0 0 0.75rem;
+  color: var(--home-blue);
+  font-size: 0.9rem;
+  font-weight: 850;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.internal-page-title {
+  margin: 0;
+  color: var(--home-ink);
+  font-size: clamp(2.6rem, 5vw, 4.3rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.045em;
+}
+
+.internal-page-description {
+  max-width: 43rem;
+  margin: 1rem 0 0;
+  color: var(--home-muted);
+  font-size: clamp(1.05rem, 1.7vw, 1.3rem);
+  line-height: 1.5;
+}
+
+.internal-page-notice {
+  max-width: 52rem;
+  margin-top: 1.75rem;
+  border-radius: 1.25rem;
+  padding: 1.1rem 1.25rem;
+}
+
+.internal-page-grid {
+  display: grid;
+  margin-top: 2rem;
+  gap: 1rem;
+}
+
+.internal-page-grid--three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.internal-page-section {
+  margin-top: 3.5rem;
+}
+
+.internal-page-section-title {
+  margin: 0;
+  color: var(--home-ink);
+  font-size: clamp(2rem, 3.3vw, 3rem);
+  font-weight: 850;
+  line-height: 1.05;
+}
+
+.internal-page-list {
+  display: grid;
+  margin-top: 1.25rem;
+  gap: 1rem;
+}
+
+.internal-page-card {
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  border-radius: 1.4rem;
+  padding: 1.35rem;
+}
+
+.internal-page-card-icon {
+  display: flex;
+  width: 4rem;
+  height: 4rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 1rem;
+  background: var(--surface-soft);
+  color: var(--primary-dark);
+  font-size: 1.25rem;
+  font-weight: 900;
+}
+
+.internal-page-card-title {
+  margin: 1rem 0 0;
+  color: var(--home-ink);
+  font-size: 1.55rem;
+  font-weight: 850;
+  line-height: 1.15;
+}
+
+.internal-page-card-description {
+  margin: 0.65rem 0 0;
+  color: var(--home-muted);
+  line-height: 1.45;
+}
+
+.internal-page-card-status {
+  margin: auto 0 0;
+  border-radius: 0.9rem;
+  padding: 0.75rem 0.9rem;
+  font-weight: 800;
+}
+
+.internal-page-card-status--inline {
+  display: inline-flex;
+  width: fit-content;
+  margin-top: 1.25rem;
+  color: var(--primary-dark);
+}
+
+.internal-page-card-notice {
+  margin-top: 1rem;
+  border-radius: 0.9rem;
+  padding: 0.85rem 0.95rem;
+  font-weight: 650;
+}
+
+.internal-page-card-action {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.internal-page-card-action--start { align-self: flex-start; }
+
+html[data-theme="dark"] .internal-page {
+  background-image:
+    linear-gradient(180deg, rgba(0, 5, 16, 0.72), rgba(1, 5, 14, 0.9)),
+    url("/images/home/cenario-home-dark.png");
+}
+
+html[data-theme="dark"] .internal-page-card-icon {
+  color: var(--primary-dark);
+}
+
 html[data-theme="dark"] .guido-explore {
   background-image:
     linear-gradient(180deg, rgba(0, 5, 16, 0.72), rgba(1, 5, 14, 0.9)),
@@ -1159,12 +1332,29 @@ html[data-theme="dark"] .explore-card-status.is-preparing {
 
 @media (max-width: 62rem) {
   .explore-guide-grid,
-  .explore-popular-grid {
+  .explore-popular-grid,
+  .internal-page-grid--three {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 42rem) {
+  .internal-page-content {
+    padding-top: 1.5rem;
+  }
+
+  .internal-page-intro {
+    margin-top: 2rem;
+  }
+
+  .internal-page-grid--three {
+    grid-template-columns: 1fr;
+  }
+
+  .internal-page-card-action--start {
+    align-self: stretch;
+  }
+
   .explore-content {
     padding-top: 2rem;
   }
