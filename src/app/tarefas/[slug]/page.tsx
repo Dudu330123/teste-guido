@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { applications } from "@/data/applications";
 import { tasks } from "@/data/guides";
-import { OsSelector } from "@/features/guides/os-selector";
+import { TaskGuideSetup } from "@/features/guides/task-guide-setup";
 import { getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/supabase/catalog";
 
 interface TaskPageProps {
@@ -25,29 +24,23 @@ export default async function TaskPage({ params }: TaskPageProps) {
     item.category === "Serviços financeiros" && item.slug !== "banco-demonstracao");
 
   return (
-    <main className="guido-home internal-page min-h-screen">
-      <SiteHeader />
-      <div className="internal-page-content internal-page-content--narrow">
-        <Link href={`/aplicativos/${application.slug}`} className="internal-page-back">← Voltar para tarefas</Link>
-        <header className="internal-page-intro">
-          <p className="internal-page-eyebrow">Guia educativo</p>
-          <h1 className="internal-page-title">{task.title}</h1>
-          <p className="internal-page-description">{task.description}</p>
-        </header>
-        {task.availability !== "preparing" ? (
-          <OsSelector
-            taskSlug={task.slug}
-            applicationOptions={application.slug === "banco-demonstracao"
-              ? bankApplications.map(({ slug: applicationSlug, name }) => ({ slug: applicationSlug, name }))
-              : undefined}
-          />
-        ) : (
-          <div className="glass-panel internal-page-card internal-page-card--preparing">
-            <h2 className="internal-page-card-title">Guia em preparação</h2>
-            <p className="internal-page-card-description">Esta tarefa ainda está em revisão e não possui passos validados.</p>
-          </div>
-        )}
-      </div>
-    </main>
+    <div className="guido-home internal-page task-setup-shell">
+      <SiteHeader showAdmin={false} />
+      {task.availability !== "preparing" ? (
+        <TaskGuideSetup
+          taskId={task.id}
+          taskSlug={task.slug}
+          taskTitle={task.title}
+          description={task.description}
+          safetyWarning={task.safetyWarning}
+          application={{ slug: application.slug, name: application.name, logoPath: application.logoPath }}
+          applicationOptions={application.slug === "banco-demonstracao"
+            ? bankApplications.map(({ slug: applicationSlug, name, logoPath }) => ({ slug: applicationSlug, name, logoPath }))
+            : undefined}
+        />
+      ) : (
+        <main className="task-setup-page"><div className="glass-panel internal-page-card internal-page-card--preparing"><h1 className="internal-page-card-title">Guia em preparação</h1><p className="internal-page-card-description">Esta tarefa ainda está em revisão e não possui passos validados.</p></div></main>
+      )}
+    </div>
   );
 }

@@ -38,12 +38,28 @@ describe("busca da página inicial", () => {
     expect(screen.getByRole("heading", { name: "Encontre o manual.Siga os passos.Resolva." })).toBeVisible();
     expect(screen.getByText(/Tutoriais práticos e passo a passo/)).toBeVisible();
     expect(screen.getByRole("searchbox", { name: "Pesquisar ajuda" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Pesquisar" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Pesquisar" })).toHaveAttribute("aria-busy", "false");
     expect(screen.getByRole("link", { name: "Bancos: Tutoriais sobre seu banco" })).toHaveAttribute("href", "/bancos");
     expect(screen.getByRole("link", { name: "WhatsApp: Dicas e funções essenciais" })).toHaveAttribute("href", "/aplicativos/whatsapp");
     expect(screen.getByRole("link", { name: "Gov.br: Serviços e acessos do governo" })).toHaveAttribute("href", "/aplicativos/gov-br");
     expect(screen.getByRole("link", { name: "PIX: Guias sobre pagamentos Pix" })).toHaveAttribute("href", "/acoes/pix");
     expect(screen.queryByText(/Sugestões rápidas/i)).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: /Resultados para/i })).not.toBeInTheDocument();
+  });
+
+  it("não envia uma pesquisa vazia e libera o botão quando existe texto útil", async () => {
+    const user = userEvent.setup();
+    render(<HomeSearch applications={applications} tasks={tasks} />);
+    const searchbox = screen.getByRole("searchbox", { name: "Pesquisar ajuda" });
+    const submit = screen.getByRole("button", { name: "Pesquisar" });
+
+    await user.type(searchbox, "   ");
+    expect(submit).toBeDisabled();
+    expect(push).not.toHaveBeenCalled();
+
+    await user.type(searchbox, "pix");
+    expect(submit).toBeEnabled();
   });
 
   it("faz o exemplo comum de boleto abrir diretamente a próxima tela", () => {

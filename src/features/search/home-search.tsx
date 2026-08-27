@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { actions } from "@/data/actions";
 import type { Application, Task } from "@/types/content";
 import { normalizeSearch, rankSearch } from "./search-content";
@@ -44,6 +44,7 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [submittedQuery, setSubmittedQuery] = useState("");
+  const [isPending, startTransition] = useTransition();
   const liveQuery = normalizeSearch(query);
   const normalizedQuery = normalizeSearch(submittedQuery);
   const liveSuggestions = liveQuery
@@ -51,6 +52,10 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
       .filter((task, index, rankedTasks) => rankedTasks.findIndex((candidate) => normalizeSearch(candidate.title) === normalizeSearch(task.title)) === index)
       .slice(0, 4)
     : [];
+
+  const navigateTo = (href: string) => {
+    startTransition(() => router.push(href));
+  };
 
   return (
     <section aria-labelledby="search-title" className="home-hero">
@@ -65,6 +70,7 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
         role="search"
         onSubmit={(event) => {
           event.preventDefault();
+          if (!liveQuery || isPending) return;
           const matchingAction = rankSearch(
             actions,
             query,
@@ -72,17 +78,17 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
             1,
           )[0];
           if (matchingAction) {
-            router.push(`/acoes/${matchingAction.slug}`);
+            navigateTo(`/acoes/${matchingAction.slug}`);
             return;
           }
           const matchingTask = rankSearch(tasks, query, (task) => `${task.title} ${task.description} ${task.searchTerms.join(" ")}`, 1)[0];
           if (matchingTask) {
-            router.push(getTaskHref(matchingTask, applications));
+            navigateTo(getTaskHref(matchingTask, applications));
             return;
           }
           const matchingApplication = rankSearch(applications, query, (application) => `${application.name} ${application.description} ${application.category} ${application.searchTerms.join(" ")}`, 1)[0];
           if (matchingApplication) {
-            router.push(`/aplicativos/${matchingApplication.slug}`);
+            navigateTo(`/aplicativos/${matchingApplication.slug}`);
             return;
           }
           setSubmittedQuery(query);
@@ -107,16 +113,23 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
         <button
           type="submit"
           aria-label="Pesquisar"
+          aria-busy={isPending}
+          disabled={!liveQuery || isPending}
           className="guido-search-button"
         >
-          <svg aria-hidden="true" viewBox="0 0 24 24" className="size-7 fill-none" stroke="currentColor" strokeWidth="2.2">
+          <svg aria-hidden="true" viewBox="0 0 24 24" className="home-search-arrow size-7 fill-none" stroke="currentColor" strokeWidth="2.2">
             <path d="M5 12h14M14 7l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
+          {isPending && (
+            <svg aria-hidden="true" viewBox="0 0 24 24" className="home-search-spinner size-7 fill-none" stroke="currentColor" strokeWidth="2.2">
+              <path d="M20 12a8 8 0 1 1-2.34-5.66" strokeLinecap="round" />
+            </svg>
+          )}
         </button>
       </form>
 
-      <p className="sr-only" aria-live="polite">
-        {liveQuery ? `${liveSuggestions.length} sugestões relacionadas encontradas.` : ""}
+      <p className="sr-only" role="status" aria-live="polite">
+        {isPending ? "Abrindo o guia selecionado." : liveQuery ? `${liveSuggestions.length} sugestões relacionadas encontradas.` : ""}
       </p>
       <section id="mais-acessados" className="home-popular" aria-labelledby="popular-title">
         <h2 id="popular-title">{liveQuery ? "Sugestões para você" : "Mais acessados"}</h2>

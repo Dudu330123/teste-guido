@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SessionNavigation } from "@/features/auth/session-navigation";
 
 type ThemePreference = "light" | "dark" | "system";
@@ -35,6 +35,8 @@ interface HomeToolbarProps {
 
 export function HomeToolbar({ activePage = "home", showAdmin = false }: HomeToolbarProps) {
   const [helpOpen, setHelpOpen] = useState(false);
+  const helpButtonRef = useRef<HTMLButtonElement>(null);
+  const helpCloseRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const storedPreference = window.localStorage.getItem(storageKey);
@@ -58,9 +60,12 @@ export function HomeToolbar({ activePage = "home", showAdmin = false }: HomeTool
   useEffect(() => {
     if (!helpOpen) return;
 
+    helpCloseRef.current?.focus();
+
     const closeWithEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setHelpOpen(false);
+        helpButtonRef.current?.focus();
       }
     };
 
@@ -102,6 +107,7 @@ export function HomeToolbar({ activePage = "home", showAdmin = false }: HomeTool
           <Link href="/explorar" aria-current={activePage === "explore" ? "page" : undefined}>Explorar</Link>
           <Link href="/enviar-print">Enviar print</Link>
           <button
+            ref={helpButtonRef}
             type="button"
             onClick={() => setHelpOpen(true)}
             className="home-nav-button"
@@ -126,10 +132,7 @@ export function HomeToolbar({ activePage = "home", showAdmin = false }: HomeTool
               <path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5 8.5 8.5 0 1 0 20.5 14.6Z" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-          {showAdmin && (
-            <Link href="/admin" className="home-header-link">Admin</Link>
-          )}
-          <SessionNavigation loginLabel="Entrar" showUpload={false} />
+          <SessionNavigation loginLabel="Entrar" showAdmin={showAdmin} showUpload={false} />
         </nav>
       </header>
 
@@ -145,8 +148,12 @@ export function HomeToolbar({ activePage = "home", showAdmin = false }: HomeTool
             <p className="mt-4">Digite o que você deseja fazer ou escolha um dos exemplos abaixo da pesquisa.</p>
             <p className="mt-4 font-bold">Nunca informe senhas, códigos ou dados bancários.</p>
             <button
+              ref={helpCloseRef}
               type="button"
-              onClick={() => setHelpOpen(false)}
+              onClick={() => {
+                setHelpOpen(false);
+                helpButtonRef.current?.focus();
+              }}
               className="primary-action mt-6 min-h-12 w-full rounded-full px-5 font-bold"
             >
               Fechar ajuda

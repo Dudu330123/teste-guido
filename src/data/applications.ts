@@ -23,6 +23,13 @@ const localLogoPaths: Record<string, string> = {
   "nubank": "/images/logos/nubank.ico",
   "banco-inter": "/images/logos/banco-inter.ico",
   "picpay": "/images/logos/picpay.ico",
+  "caixa": "/images/logos/caixa.png",
+  "banco-do-brasil": "/images/logos/banco-do-brasil.png",
+  "bradesco": "/images/logos/bradesco.png",
+  "santander": "/images/logos/santander.png",
+  "mercado-pago": "/images/logos/mercado-pago.png",
+  "c6-bank": "/images/logos/c6-bank.png",
+  "itau": "/images/logos/itau.webp",
 };
 
 export const applications: Application[] = [
