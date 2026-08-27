@@ -17,6 +17,14 @@ const preparingApplications: Array<[string, string, string, string, string[]]> =
   ["c6-bank", "C6 Bank", "Serviços financeiros", "Serviços do aplicativo bancário.", ["c6", "c6 banco"]],
 ];
 
+const localLogoPaths: Record<string, string> = {
+  "whatsapp": "/images/logos/whatsapp.webp",
+  "gov-br": "/images/logos/gov-br.ico",
+  "nubank": "/images/logos/nubank.ico",
+  "banco-inter": "/images/logos/banco-inter.ico",
+  "picpay": "/images/logos/picpay.ico",
+};
+
 export const applications: Application[] = [
   {
     id: "app-demo-bancos",
@@ -36,7 +44,7 @@ export const applications: Application[] = [
     slug,
     description,
     category,
-    logoPath: null,
+    logoPath: localLogoPaths[slug] ?? null,
     searchTerms,
     status: "preparing" as const,
     createdAt: baseDate,

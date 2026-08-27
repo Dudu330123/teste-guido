@@ -77,15 +77,17 @@ export async function GuideUploadContent({
   const bankApplications = remoteBankApplications?.length ? remoteBankApplications : financialApplications;
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-5 py-10 sm:px-8">
-      <p className="font-bold text-[var(--primary)]">{eyebrow}</p>
-      <h1 className="mt-1 text-4xl font-bold sm:text-5xl">{title}</h1>
-      <p className="mt-3 max-w-3xl text-xl">{description}</p>
+    <div className="internal-page-content internal-page-content--compact upload-page-content">
+      <header className="internal-page-intro upload-page-intro">
+        <p className="internal-page-eyebrow">{eyebrow}</p>
+        <h1 className="internal-page-title">{title}</h1>
+        <p className="internal-page-description">{description}</p>
+      </header>
       <GuideAdmin
         guides={guideOptions}
         bankApplications={bankApplications.map(({ slug, name }) => ({ slug, name }))}
         canDelete={canDelete}
       />
-    </main>
+    </div>
   );
 }

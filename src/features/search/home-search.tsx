@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { actions } from "@/data/actions";
 import type { Application, Task } from "@/types/content";
 import { normalizeSearch, rankSearch } from "./search-content";
 
@@ -13,7 +14,7 @@ interface HomeSearchProps {
 }
 
 const searchExamples = [
-  { category: "Bancos", label: "Tutoriais sobre seu banco", href: "/tarefas/pagar-boleto", icon: "bank" },
+  { category: "Bancos", label: "Tutoriais sobre seu banco", href: "/bancos", icon: "bank" },
   { category: "Gov.br", label: "Serviços e acessos do governo", href: "/aplicativos/gov-br", icon: "government" },
   { category: "WhatsApp", label: "Dicas e funções essenciais", href: "/aplicativos/whatsapp", icon: "message" },
   { category: "PIX", label: "Guias sobre pagamentos Pix", href: "/acoes/pix", icon: "pix" },
@@ -64,6 +65,16 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
         role="search"
         onSubmit={(event) => {
           event.preventDefault();
+          const matchingAction = rankSearch(
+            actions,
+            query,
+            (action) => `${action.title} ${action.taskTitle} ${action.description} ${action.searchTerms.join(" ")}`,
+            1,
+          )[0];
+          if (matchingAction) {
+            router.push(`/acoes/${matchingAction.slug}`);
+            return;
+          }
           const matchingTask = rankSearch(tasks, query, (task) => `${task.title} ${task.description} ${task.searchTerms.join(" ")}`, 1)[0];
           if (matchingTask) {
             router.push(getTaskHref(matchingTask, applications));
@@ -125,7 +136,7 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
               >
                 <span className="home-card-category">{category}</span>
                 <span className="home-card-title">{task.title}</span>
-                <span className="home-card-description">{task.availability === "demo" ? "Demonstração disponível" : task.availability === "available" ? "Guia disponível" : "Em preparação"}</span>
+                <span className="home-card-description">{task.availability === "demo" ? "Demonstração disponível" : task.availability === "available" ? "Guia disponível" : "Guia em preparação"}</span>
                 <span aria-hidden="true" className="home-card-arrow">→</span>
               </Link>
             );

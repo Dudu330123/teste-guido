@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { applications, getApplicationBySlug } from "@/data/applications";
 import { tasks } from "@/data/guides";
+import { ApplicationLogo } from "@/features/applications/application-logo";
 import { getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/supabase/catalog";
 
 interface ApplicationPageProps {
@@ -21,29 +22,31 @@ export default async function ApplicationPage({ params }: ApplicationPageProps) 
   const applicationTasks = catalog.tasks.filter((task) => task.applicationId === application.id);
 
   return (
-    <>
+    <main className="guido-home internal-page min-h-screen">
       <SiteHeader />
-      <main className="mx-auto max-w-4xl px-5 py-10">
-        <Link href="/" className="font-bold underline">← Voltar ao catálogo</Link>
-        <p className="mt-8 font-semibold text-[var(--primary)]">{application.category}</p>
-        <h1 className="text-4xl font-bold">{application.name}</h1>
-        <p className="mt-3 text-xl">{application.description}</p>
+      <div className="internal-page-content internal-page-content--compact">
+        <Link href="/" className="internal-page-back">← Voltar ao catálogo</Link>
+        <header className="internal-page-intro">
+          <p className="internal-page-eyebrow">{application.category}</p>
+          <h1 className="internal-page-title">{application.name}</h1>
+          <p className="internal-page-description">{application.description}</p>
+        </header>
 
-        <section aria-labelledby="tasks-title" className="mt-10">
-          <h2 id="tasks-title" className="text-3xl font-bold">Tarefas</h2>
+        <section aria-labelledby="tasks-title" className="internal-page-section">
+          <h2 id="tasks-title" className="internal-page-section-title">Tarefas</h2>
           {applicationTasks.length > 0 ? (
-            <div className="mt-5 space-y-5">
+            <div className="internal-page-list">
               {applicationTasks.map((task) => (
-                <article key={task.id} className="glass-panel rounded-2xl p-6">
-                  <h3 className="text-2xl font-bold">{task.title}</h3>
-                  <p className="mt-2">{task.description}</p>
-                  <p className="notice-info mt-3 rounded-xl p-4 font-semibold">{task.safetyWarning}</p>
+                <article key={task.id} className="glass-panel internal-page-card internal-page-card--task">
+                  <h3 className="internal-page-card-title">{task.title}</h3>
+                  <p className="internal-page-card-description">{task.description}</p>
+                  <p className="notice-info internal-page-card-notice">{task.safetyWarning}</p>
                   {task.availability !== "preparing" ? (
-                    <Link href={`/tarefas/${task.slug}`} className="primary-action mt-5 inline-block min-h-12 px-6 py-3 font-bold">
+                    <Link href={`/tarefas/${task.slug}`} className="primary-action internal-page-card-action internal-page-card-action--start">
                       Escolher meu celular
                     </Link>
                   ) : (
-                    <p className="soft-panel mt-5 inline-block rounded-xl px-5 py-3 font-bold text-[var(--primary-dark)]">
+                    <p className="soft-panel internal-page-card-status internal-page-card-status--inline">
                       Guia em preparação
                     </p>
                   )}
@@ -51,13 +54,13 @@ export default async function ApplicationPage({ params }: ApplicationPageProps) 
               ))}
             </div>
           ) : (
-            <div className="glass-panel mt-5 rounded-2xl p-6">
-              <p className="text-xl font-bold">Conteúdo em preparação</p>
-              <p className="mt-2">Nenhum guia deste aplicativo foi validado para esta versão.</p>
+            <div className="glass-panel internal-page-card">
+              <p className="internal-page-card-title">Guia em preparação</p>
+              <p className="internal-page-card-description">Ainda não há um guia validado para esta versão.</p>
             </div>
           )}
         </section>
-      </main>
-    </>
+      </div>
+    </main>
   );
 }

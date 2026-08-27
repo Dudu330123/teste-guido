@@ -25,13 +25,15 @@ export default async function TaskPage({ params }: TaskPageProps) {
     item.category === "Serviços financeiros" && item.slug !== "banco-demonstracao");
 
   return (
-    <>
+    <main className="guido-home internal-page min-h-screen">
       <SiteHeader />
-      <main className="mx-auto max-w-3xl px-5 py-10">
-        <Link href={`/aplicativos/${application.slug}`} className="font-bold underline">← Voltar para tarefas</Link>
-        <p className="mt-8 font-semibold text-[var(--primary)]">Guia educativo</p>
-        <h1 className="text-4xl font-bold">{task.title}</h1>
-        <p className="mt-3 text-xl">{task.description}</p>
+      <div className="internal-page-content internal-page-content--narrow">
+        <Link href={`/aplicativos/${application.slug}`} className="internal-page-back">← Voltar para tarefas</Link>
+        <header className="internal-page-intro">
+          <p className="internal-page-eyebrow">Guia educativo</p>
+          <h1 className="internal-page-title">{task.title}</h1>
+          <p className="internal-page-description">{task.description}</p>
+        </header>
         {task.availability !== "preparing" ? (
           <OsSelector
             taskSlug={task.slug}
@@ -40,12 +42,12 @@ export default async function TaskPage({ params }: TaskPageProps) {
               : undefined}
           />
         ) : (
-          <div className="glass-panel mt-7 rounded-2xl p-6">
-            <h2 className="text-2xl font-bold">Guia em preparação</h2>
-            <p className="mt-2">Esta tarefa foi cadastrada para pesquisa, mas ainda não possui passos revisados para Android ou iPhone.</p>
+          <div className="glass-panel internal-page-card internal-page-card--preparing">
+            <h2 className="internal-page-card-title">Guia em preparação</h2>
+            <p className="internal-page-card-description">Esta tarefa ainda está em revisão e não possui passos validados.</p>
           </div>
         )}
-      </main>
-    </>
+      </div>
+    </main>
   );
 }

@@ -22,7 +22,12 @@ export default async function DynamicGuidePage({ params, searchParams }: Dynamic
   const imageApplicationSlug = selectedApplication?.slug
     ?? remoteContent?.imageContext?.applicationSlug
     ?? null;
-  const publicImages = await getPublicGuideImages(imageGuideSlug, imageApplicationSlug, os);
+  const publicImages = await getPublicGuideImages(
+    imageGuideSlug,
+    imageApplicationSlug,
+    os,
+    selectedApplication?.category ?? remoteContent?.application.category,
+  );
   if (remoteContent) return <GuideViewer
     {...remoteContent}
     application={selectedApplication ?? remoteContent.application}

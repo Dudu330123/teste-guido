@@ -22,13 +22,23 @@ describe("busca da página inicial", () => {
     expect(screen.queryByRole("heading", { name: /Resultados para/i })).not.toBeInTheDocument();
   });
 
+  it("prioriza a ação geral de Pix antes de uma tarefa específica", async () => {
+    const user = userEvent.setup();
+    render(<HomeSearch applications={applications} tasks={tasks} />);
+
+    await user.type(screen.getByRole("searchbox", { name: "Pesquisar ajuda" }), "pix");
+    await user.click(screen.getByRole("button", { name: "Pesquisar" }));
+
+    expect(push).toHaveBeenCalledWith("/acoes/pix");
+  });
+
   it("mostra somente a busca antes de uma pesquisa", () => {
     render(<HomeSearch applications={applications} tasks={tasks} />);
 
     expect(screen.getByRole("heading", { name: "Encontre o manual.Siga os passos.Resolva." })).toBeVisible();
     expect(screen.getByText(/Tutoriais práticos e passo a passo/)).toBeVisible();
     expect(screen.getByRole("searchbox", { name: "Pesquisar ajuda" })).toBeVisible();
-    expect(screen.getByRole("link", { name: "Bancos: Tutoriais sobre seu banco" })).toHaveAttribute("href", "/tarefas/pagar-boleto");
+    expect(screen.getByRole("link", { name: "Bancos: Tutoriais sobre seu banco" })).toHaveAttribute("href", "/bancos");
     expect(screen.getByRole("link", { name: "WhatsApp: Dicas e funções essenciais" })).toHaveAttribute("href", "/aplicativos/whatsapp");
     expect(screen.getByRole("link", { name: "Gov.br: Serviços e acessos do governo" })).toHaveAttribute("href", "/aplicativos/gov-br");
     expect(screen.getByRole("link", { name: "PIX: Guias sobre pagamentos Pix" })).toHaveAttribute("href", "/acoes/pix");
@@ -39,7 +49,7 @@ describe("busca da página inicial", () => {
   it("faz o exemplo comum de boleto abrir diretamente a próxima tela", () => {
     render(<HomeSearch applications={applications} tasks={tasks} />);
 
-    expect(screen.getByRole("link", { name: "Bancos: Tutoriais sobre seu banco" })).toHaveAttribute("href", "/tarefas/pagar-boleto");
+    expect(screen.getByRole("link", { name: "Bancos: Tutoriais sobre seu banco" })).toHaveAttribute("href", "/bancos");
   });
 
   it("troca os exemplos por sugestões relacionadas enquanto o usuário digita", async () => {
@@ -54,14 +64,14 @@ describe("busca da página inicial", () => {
     expect(screen.queryByRole("link", { name: "Banco: Como pagar um boleto?" })).not.toBeInTheDocument();
   });
 
-  it("encontra o guia demonstrativo por um erro comum", async () => {
+  it("prioriza a ação geral por um erro comum", async () => {
     const user = userEvent.setup();
     render(<HomeSearch applications={applications} tasks={tasks} />);
 
     await user.type(screen.getByRole("searchbox", { name: "Pesquisar ajuda" }), "boletu");
     await user.click(screen.getByRole("button", { name: "Pesquisar" }));
 
-    expect(push).toHaveBeenCalledWith("/tarefas/pagar-boleto");
+    expect(push).toHaveBeenCalledWith("/acoes/boleto");
   });
 
   it("mostra uma mensagem simples quando não encontra e a remove ao editar", async () => {
