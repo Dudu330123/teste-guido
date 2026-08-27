@@ -63,8 +63,13 @@ export async function getPublicGuideImages(
   operatingSystem: OperatingSystem,
   applicationCategory?: string,
 ) {
-  const specificImages = await loadPublicGuideImages(guideSlug, applicationSlug, operatingSystem);
-  if (!shouldUseAndroidImageFallback(operatingSystem, applicationCategory)) return specificImages;
-  const androidImages = await loadPublicGuideImages(guideSlug, applicationSlug, "android");
+  if (!shouldUseAndroidImageFallback(operatingSystem, applicationCategory)) {
+    return loadPublicGuideImages(guideSlug, applicationSlug, operatingSystem);
+  }
+
+  const [specificImages, androidImages] = await Promise.all([
+    loadPublicGuideImages(guideSlug, applicationSlug, operatingSystem),
+    loadPublicGuideImages(guideSlug, applicationSlug, "android"),
+  ]);
   return mergePublicGuideImages(specificImages, androidImages);
 }
