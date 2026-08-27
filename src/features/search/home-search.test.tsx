@@ -18,7 +18,7 @@ describe("busca da página inicial", () => {
     await user.type(screen.getByRole("searchbox", { name: "Pesquisar ajuda" }), "enviar áudio");
     await user.click(screen.getByRole("button", { name: "Pesquisar" }));
 
-    expect(push).toHaveBeenCalledWith("/aplicativos/whatsapp");
+    expect(push).toHaveBeenCalledWith("/aplicativos/whatsapp?returnTo=%2F");
     expect(screen.queryByRole("heading", { name: /Resultados para/i })).not.toBeInTheDocument();
   });
 
@@ -29,7 +29,7 @@ describe("busca da página inicial", () => {
     await user.type(screen.getByRole("searchbox", { name: "Pesquisar ajuda" }), "pix");
     await user.click(screen.getByRole("button", { name: "Pesquisar" }));
 
-    expect(push).toHaveBeenCalledWith("/acoes/pix");
+    expect(push).toHaveBeenCalledWith("/acoes/pix?returnTo=%2F");
   });
 
   it("mostra somente a busca antes de uma pesquisa", () => {
@@ -68,9 +68,9 @@ describe("busca da página inicial", () => {
 
     await user.type(screen.getByRole("searchbox", { name: "Pesquisar ajuda" }), "pix");
 
-    expect(screen.getByRole("link", { name: "Pix: Fazer Pix" })).toHaveAttribute("href", "/acoes/pix");
-    expect(screen.getByRole("link", { name: "Comprovante: Ver comprovante Pix" })).toHaveAttribute("href", "/acoes/comprovante");
-    expect(screen.getByRole("link", { name: "Pix: Cobrar via Pix" })).toHaveAttribute("href", "/acoes/pix");
+    expect(screen.getByRole("link", { name: "Pix: Fazer Pix" })).toHaveAttribute("href", "/acoes/pix?returnTo=%2F");
+    expect(screen.getByRole("link", { name: "Comprovante: Ver comprovante Pix" })).toHaveAttribute("href", "/acoes/comprovante?returnTo=%2F");
+    expect(screen.getByRole("link", { name: "Pix: Cobrar via Pix" })).toHaveAttribute("href", "/acoes/pix?returnTo=%2F");
     expect(screen.queryByRole("link", { name: "Banco: Como pagar um boleto?" })).not.toBeInTheDocument();
   });
 
@@ -81,7 +81,7 @@ describe("busca da página inicial", () => {
     await user.type(screen.getByRole("searchbox", { name: "Pesquisar ajuda" }), "boletu");
     await user.click(screen.getByRole("button", { name: "Pesquisar" }));
 
-    expect(push).toHaveBeenCalledWith("/acoes/boleto");
+    expect(push).toHaveBeenCalledWith("/acoes/boleto?returnTo=%2F");
   });
 
   it("mostra uma mensagem simples quando não encontra e a remove ao editar", async () => {

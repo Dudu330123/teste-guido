@@ -5,26 +5,30 @@ import { SiteHeader } from "@/components/site-header";
 import { applications, getApplicationBySlug, getCategoryLabel } from "@/data/applications";
 import { tasks } from "@/data/guides";
 import { getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/supabase/catalog";
+import { safeReturnPath, withReturnPath } from "@/lib/navigation/return-path";
 
 interface ApplicationPageProps {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ returnTo?: string }>;
 }
 
 export const metadata: Metadata = { title: "Tarefas do aplicativo" };
 
-export default async function ApplicationPage({ params }: ApplicationPageProps) {
+export default async function ApplicationPage({ params, searchParams }: ApplicationPageProps) {
   const { slug } = await params;
+  const { returnTo } = searchParams ? await searchParams : {};
   const remoteCatalog = await getCatalogFromSupabase();
   const catalog = mergeCatalogWithFallback(remoteCatalog, { applications, tasks });
   const application = catalog.applications.find((item) => item.slug === slug) ?? getApplicationBySlug(slug);
   if (!application) notFound();
   const applicationTasks = catalog.tasks.filter((task) => task.applicationId === application.id);
+  const backHref = safeReturnPath(returnTo, "/explorar");
 
   return (
     <main className="guido-home internal-page min-h-screen">
       <SiteHeader />
       <div className="internal-page-content internal-page-content--compact">
-        <Link href="/" className="internal-page-back">← Voltar ao catálogo</Link>
+        <Link href={returnTo ? backHref : "/"} className="internal-page-back">← Voltar ao catálogo</Link>
         <header className="internal-page-intro">
           <p className="internal-page-eyebrow">{getCategoryLabel(application.category)}</p>
           <h1 className="internal-page-title">{application.name}</h1>
@@ -41,7 +45,7 @@ export default async function ApplicationPage({ params }: ApplicationPageProps) 
                   <p className="internal-page-card-description">{task.description}</p>
                   <p className="notice-info internal-page-card-notice">{task.safetyWarning}</p>
                   {task.availability !== "preparing" ? (
-                    <Link href={`/tarefas/${task.slug}`} className="primary-action internal-page-card-action internal-page-card-action--start">
+                    <Link href={withReturnPath(`/tarefas/${task.slug}`, returnTo ? backHref : undefined)} className="primary-action internal-page-card-action internal-page-card-action--start">
                       Escolher meu celular
                     </Link>
                   ) : (

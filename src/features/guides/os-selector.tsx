@@ -8,9 +8,10 @@ import { detectOperatingSystem, readOperatingSystem, saveOperatingSystem } from 
 interface OsSelectorProps {
   taskSlug: string;
   applicationOptions?: Array<{ slug: string; name: string }>;
+  returnTo?: string;
 }
 
-export function OsSelector({ taskSlug, applicationOptions = [] }: OsSelectorProps) {
+export function OsSelector({ taskSlug, applicationOptions = [], returnTo }: OsSelectorProps) {
   const router = useRouter();
   const [operatingSystem, setOperatingSystem] = useState<OperatingSystem>("android");
   const [applicationSlug, setApplicationSlug] = useState(applicationOptions[0]?.slug ?? "");
@@ -36,6 +37,7 @@ export function OsSelector({ taskSlug, applicationOptions = [] }: OsSelectorProp
         saveOperatingSystem(window.localStorage, operatingSystem);
         const search = new URLSearchParams({ os: operatingSystem });
         if (applicationSlug) search.set("app", applicationSlug);
+        if (returnTo) search.set("returnTo", returnTo);
         router.push(`/guias/${encodeURIComponent(taskSlug)}?${search}`);
       }}
     >

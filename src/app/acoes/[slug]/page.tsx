@@ -6,17 +6,22 @@ import { getActionBySlug } from "@/data/actions";
 import { applications } from "@/data/applications";
 import { tasks } from "@/data/guides";
 import { ApplicationLogo } from "@/features/applications/application-logo";
+import { safeReturnPath, withReturnPath } from "@/lib/navigation/return-path";
 
 interface ActionPageProps {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ returnTo?: string }>;
 }
 
 export const metadata: Metadata = { title: "Escolher aplicativo" };
 
-export default async function ActionPage({ params }: ActionPageProps) {
+export default async function ActionPage({ params, searchParams }: ActionPageProps) {
   const { slug } = await params;
+  const { returnTo } = searchParams ? await searchParams : {};
   const action = getActionBySlug(slug);
   if (!action) notFound();
+  const backHref = safeReturnPath(returnTo, "/explorar");
+  const contextReturnTo = returnTo ? backHref : undefined;
 
   const actionTasks = tasks.filter((task) => task.actionId === action.id);
   const applicationIds = [...new Set(actionTasks.map((task) => task.applicationId))];
@@ -28,7 +33,7 @@ export default async function ActionPage({ params }: ActionPageProps) {
     <main className="guido-home internal-page min-h-screen">
       <SiteHeader />
       <div className="internal-page-content internal-page-content--wide">
-        <Link href="/#actions-title" className="internal-page-back">← Voltar para tarefas</Link>
+        <Link href={backHref} className="internal-page-back">← Voltar para tarefas</Link>
         <header className="internal-page-intro">
           <p className="internal-page-eyebrow">Escolha seu banco</p>
           <h1 className="internal-page-title">{action.title}</h1>
@@ -53,7 +58,7 @@ export default async function ActionPage({ params }: ActionPageProps) {
                   {isDemo ? "Demonstração disponível" : "Guia em preparação"}
                 </p>
                 <Link
-                  href={`/tarefas/${applicationTask.slug}`}
+                  href={withReturnPath(`/tarefas/${applicationTask.slug}`, contextReturnTo)}
                   className="secondary-action internal-page-card-action"
                 >
                   {isDemo ? "Abrir demonstração" : "Ver guias deste banco"}

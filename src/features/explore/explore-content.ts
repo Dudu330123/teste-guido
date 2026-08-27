@@ -1,5 +1,6 @@
 import { actions, getActionForTask } from "@/data/actions";
 import { getCategoryLabel, isBankCategory } from "@/data/applications";
+import { withReturnPath } from "@/lib/navigation/return-path";
 import type { Action, Application, Task } from "@/types/content";
 import { normalizeSearch, scoreSearch } from "@/features/search/search-content";
 
@@ -99,11 +100,11 @@ export function removeExploreItems(items: ExploreGuideItem[], excludedItems: Exp
   return items.filter((item) => !excludedKeys.has(getExploreItemKey(item)));
 }
 
-export function getExploreGuideHref({ action, task }: ExploreGuideItem) {
-  if (action) return `/acoes/${action.slug}`;
-  if (task.availability !== "preparing") return `/tarefas/${task.slug}`;
-  if (task.applicationId === "app-demo-bancos" && task.actionId) return `/acoes/${task.actionId}`;
-  return `/tarefas/${task.slug}`;
+export function getExploreGuideHref({ action, task }: ExploreGuideItem, returnTo?: string) {
+  if (action) return withReturnPath(`/acoes/${action.slug}`, returnTo);
+  if (task.availability !== "preparing") return withReturnPath(`/tarefas/${task.slug}`, returnTo);
+  if (task.applicationId === "app-demo-bancos" && task.actionId) return withReturnPath(`/acoes/${task.actionId}`, returnTo);
+  return withReturnPath(`/tarefas/${task.slug}`, returnTo);
 }
 
 export function selectPopularItems(

@@ -14,6 +14,7 @@ interface GuideViewerProps {
   guide: Guide;
   steps: GuideStep[];
   task: Task;
+  returnTo?: string;
 }
 
 function GuidePageShell({ children }: { children: ReactNode }) {
@@ -27,7 +28,7 @@ function GuidePageShell({ children }: { children: ReactNode }) {
   );
 }
 
-export function GuideViewer({ application, guide, steps, task }: GuideViewerProps) {
+export function GuideViewer({ application, guide, steps, task, returnTo }: GuideViewerProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [ready, setReady] = useState(false);
   const [remotePending, setRemotePending] = useState(true);
@@ -158,7 +159,7 @@ export function GuideViewer({ application, guide, steps, task }: GuideViewerProp
   return (
     <GuidePageShell>
       <div className="guide-viewer-toolbar">
-        <Link href="/tarefas/pagar-boleto" className="quiet-action min-h-12 px-2 py-2 text-base font-bold underline">← Sair do guia</Link>
+        <Link href={returnTo ?? "/tarefas/pagar-boleto"} className="quiet-action min-h-12 px-2 py-2 text-base font-bold underline">← Sair do guia</Link>
         <button type="button" onClick={restart} className="quiet-action min-h-12 px-2 py-2 text-base font-bold">Começar novamente</button>
       </div>
 

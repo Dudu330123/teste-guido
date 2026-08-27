@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { actions } from "@/data/actions";
 import { isBankCategory } from "@/data/applications";
+import { withReturnPath } from "@/lib/navigation/return-path";
 import type { Application, Task } from "@/types/content";
 import { normalizeSearch, rankSearch } from "./search-content";
 
@@ -34,11 +35,11 @@ function PopularIcon({ type }: { type: (typeof searchExamples)[number]["icon"] }
   return <svg aria-hidden="true" viewBox="0 0 32 32"><path d="m10 2 6 6-6 6-6-6 6-6Zm12 0 6 6-6 6-6-6 6-6ZM10 16l6 6-6 6-6-6 6-6Zm12 0 6 6-6 6-6-6 6-6Z" /></svg>;
 }
 
-function getTaskHref(task: Task, applications: Application[]) {
-  if (task.availability !== "preparing") return `/tarefas/${task.slug}`;
-  if (task.applicationId === "app-demo-bancos" && task.actionId) return `/acoes/${task.actionId}`;
+function getTaskHref(task: Task, applications: Application[], returnTo?: string) {
+  if (task.availability !== "preparing") return withReturnPath(`/tarefas/${task.slug}`, returnTo);
+  if (task.applicationId === "app-demo-bancos" && task.actionId) return withReturnPath(`/acoes/${task.actionId}`, returnTo);
   const application = applications.find((item) => item.id === task.applicationId);
-  return `/aplicativos/${application?.slug ?? ""}`;
+  return withReturnPath(`/aplicativos/${application?.slug ?? ""}`, returnTo);
 }
 
 function isBankNicheQuery(query: string) {
@@ -84,12 +85,12 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
             1,
           )[0];
           if (matchingAction) {
-            router.push(`/acoes/${matchingAction.slug}`);
+            router.push(withReturnPath(`/acoes/${matchingAction.slug}`, "/"));
             return;
           }
           const matchingTask = rankSearch(tasks, query, (task) => `${task.title} ${task.description} ${task.searchTerms.join(" ")}`, 1)[0];
           if (matchingTask) {
-            router.push(getTaskHref(matchingTask, applications));
+            router.push(getTaskHref(matchingTask, applications, "/"));
             return;
           }
           const matchingApplication = rankSearch(applications, query, (application) => `${application.name} ${application.description} ${application.category} ${application.searchTerms.join(" ")}`, 1)[0];
@@ -143,7 +144,7 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
               <Link
                 key={task.id}
                 aria-label={`${category}: ${task.title}`}
-                href={getTaskHref(task, applications)}
+                href={getTaskHref(task, applications, "/")}
                 className="home-popular-card home-suggestion-card"
               >
                 <span className="home-card-category">{category}</span>

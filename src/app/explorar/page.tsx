@@ -30,12 +30,12 @@ export const metadata: Metadata = {
   description: "Encontre guias do Guido por assunto, aplicativo ou categoria.",
 };
 
-function GuideCard({ item }: { item: ExploreGuideItem }) {
+function GuideCard({ item, returnTo }: { item: ExploreGuideItem; returnTo: string }) {
   const available = item.task.availability !== "preparing";
   const title = item.action?.taskTitle ?? item.task.title;
   const description = item.action?.description ?? item.task.description;
   return (
-    <Link href={getExploreGuideHref(item)} className="explore-guide-card">
+    <Link href={getExploreGuideHref(item, returnTo)} className="explore-guide-card">
       <span className="explore-card-badge">{item.action ? "Bancos" : getCategoryLabel(item.application.category)}</span>
       <span className="explore-card-app">{item.action ? "Escolha seu banco" : item.application.name}</span>
       <h3>{title}</h3>
@@ -73,6 +73,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   const displayItems = getExplorePresentationItems(filteredItems, q);
   const visibleItems = isGeneralView ? removeExploreItems(displayItems, popular) : displayItems;
   const popularMeasured = popularSelection?.measured ?? false;
+  const exploreReturnTo = categoryHref(categoria, q);
 
   return (
     <main className="guido-home guido-explore min-h-screen">
@@ -116,7 +117,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
               <p>{popularMeasured ? "Guias mais abertos pela comunidade." : "Guias disponíveis para conhecer o Guido."}</p>
             </div>
             <div className="explore-guide-grid explore-popular-grid">
-              {popular.map((item) => <GuideCard key={`popular-${item.task.id}`} item={item} />)}
+              {popular.map((item) => <GuideCard key={`popular-${item.task.id}`} item={item} returnTo={exploreReturnTo} />)}
             </div>
           </section>
         )}
@@ -131,7 +132,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
           </div>
           {visibleItems.length > 0 ? (
             <div className="explore-guide-grid">
-              {visibleItems.map((item) => <GuideCard key={item.action ? `action-${item.action.id}` : item.task.id} item={item} />)}
+              {visibleItems.map((item) => <GuideCard key={item.action ? `action-${item.action.id}` : item.task.id} item={item} returnTo={exploreReturnTo} />)}
             </div>
           ) : (
             <div className="explore-empty" role="status">

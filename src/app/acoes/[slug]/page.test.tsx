@@ -26,4 +26,18 @@ describe("página de ação", () => {
       "/tarefas/pagar-boleto",
     );
   });
+
+  it("preserva o caminho do Explorar ao escolher o banco", async () => {
+    render(await ActionPage({
+      params: Promise.resolve({ slug: "pix" }),
+      searchParams: Promise.resolve({ returnTo: "/explorar?q=Pix" }),
+    }));
+
+    expect(screen.getByRole("link", { name: /Voltar para tarefas/i })).toHaveAttribute("href", "/explorar?q=Pix");
+    const nubankCard = screen.getByRole("heading", { name: "Nubank" }).closest("article");
+    expect(within(nubankCard!).getByRole("link")).toHaveAttribute(
+      "href",
+      "/tarefas/pix-nubank?returnTo=%2Fexplorar%3Fq%3DPix",
+    );
+  });
 });

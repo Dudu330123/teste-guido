@@ -4,17 +4,18 @@ import { applications, financialApplications } from "@/data/applications";
 import { getGuide, getStepsForGuide, tasks } from "@/data/guides";
 import { GuideViewer } from "@/features/guides/guide-viewer";
 import { getGuideFromSupabase } from "@/lib/supabase/catalog";
+import { safeReturnPath } from "@/lib/navigation/return-path";
 import { applyPublicGuideImages, getPublicGuideImages } from "@/lib/supabase/public-guide-images";
 
 interface DynamicGuidePageProps {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ os?: string; app?: string }>;
+  searchParams: Promise<{ os?: string; app?: string; returnTo?: string }>;
 }
 
 export const metadata: Metadata = { title: "Guia passo a passo" };
 
 export default async function DynamicGuidePage({ params, searchParams }: DynamicGuidePageProps) {
-  const [{ slug }, { os, app }] = await Promise.all([params, searchParams]);
+  const [{ slug }, { os, app, returnTo }] = await Promise.all([params, searchParams]);
   if (os !== "android" && os !== "ios") redirect(`/tarefas/${encodeURIComponent(slug)}`);
   const selectedApplication = financialApplications.find((application) => application.slug === app);
   const remoteContent = await getGuideFromSupabase(slug, os);
@@ -22,6 +23,7 @@ export default async function DynamicGuidePage({ params, searchParams }: Dynamic
   const imageApplicationSlug = selectedApplication?.slug
     ?? remoteContent?.imageContext?.applicationSlug
     ?? null;
+  const guideReturnTo = safeReturnPath(returnTo, `/tarefas/${encodeURIComponent(slug)}`);
   const publicImages = await getPublicGuideImages(
     imageGuideSlug,
     imageApplicationSlug,
@@ -32,6 +34,7 @@ export default async function DynamicGuidePage({ params, searchParams }: Dynamic
     {...remoteContent}
     application={selectedApplication ?? remoteContent.application}
     steps={applyPublicGuideImages(remoteContent.steps, publicImages)}
+    returnTo={guideReturnTo}
   />;
 
   // Somente a demonstração explicitamente identificada possui fallback local.
@@ -46,5 +49,6 @@ export default async function DynamicGuidePage({ params, searchParams }: Dynamic
     guide={guide}
     steps={applyPublicGuideImages(getStepsForGuide(guide.id), publicImages)}
     task={task}
+    returnTo={guideReturnTo}
   />;
 }
