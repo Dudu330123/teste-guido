@@ -93,14 +93,20 @@ jobs:
         env:
           PGPASSWORD: postgres
         run: |
-          test "$(psql -h 127.0.0.1 -U postgres -Atqc "set role anon; select count(*) from public.guide_public_images;")" = "0"
-          psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -c "set role anon; insert into public.guide_public_images (guide_slug, application_slug, operating_system, step_id, step_order, storage_key, original_filename, mime_type, byte_size, width, height, created_by, updated_by) values ('pagar-boleto', 'caixa', 'android', 'passo-1', 1, 'public/pagar-boleto/caixa/android/passo-1/publico.png', 'publico.png', 'image/png', 100, 1080, 1920, null, null);"
-          test "$(psql -h 127.0.0.1 -U postgres -Atqc "set role anon; select count(*) from public.guide_public_images where guide_slug = 'pagar-boleto';")" = "1"
-          psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -c "set role anon; update public.guide_public_images set storage_key = 'public/pagar-boleto/caixa/android/passo-1/substituto.png', original_filename = 'substituto.png', updated_by = null where guide_slug = 'pagar-boleto';"
-          test "$(psql -h 127.0.0.1 -U postgres -Atqc "select storage_key from public.guide_public_images where guide_slug = 'pagar-boleto';")" = "public/pagar-boleto/caixa/android/passo-1/substituto.png"
-          psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -c "set role anon; insert into storage.objects (id, bucket_id, name) values ('33333333-3333-4333-8333-333333333333', 'guide-public', 'public/pagar-boleto/caixa/android/passo-1/publico.png');"
-          if psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -c "set role anon; insert into storage.objects (id, bucket_id, name) values ('44444444-4444-4444-8444-444444444444', 'guide-public', 'privado/arquivo.png');"; then
-            echo "visitante conseguiu gravar fora da pasta publica no Storage" >&2
+          test "$(psql -h 127.0.0.1 -U postgres -Atqc "set role anon; select count(id) from public.guide_public_images;")" = "0"
+          if psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -c "set role anon; insert into public.guide_public_images (guide_slug, application_slug, operating_system, step_id, step_order, storage_key, original_filename, mime_type, byte_size, width, height, created_by, updated_by) values ('pagar-boleto', 'caixa', 'android', 'passo-1', 1, 'public/pagar-boleto/caixa/android/passo-1/publico.png', 'publico.png', 'image/png', 100, 1080, 1920, null, null);"; then
+            echo "anon conseguiu inserir uma imagem pública" >&2
             exit 1
           fi
-          test "$(psql -h 127.0.0.1 -U postgres -Atqc "set role anon; delete from public.guide_public_images where guide_slug = 'pagar-boleto'; select count(*) from public.guide_public_images where guide_slug = 'pagar-boleto';" | tail -n 1)" = "1"
+          if psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -c "set role anon; update public.guide_public_images set storage_key = 'public/pagar-boleto/caixa/android/passo-1/substituto.png' where guide_slug = 'pagar-boleto';"; then
+            echo "anon conseguiu atualizar uma imagem pública" >&2
+            exit 1
+          fi
+          if psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -c "set role anon; delete from public.guide_public_images where guide_slug = 'pagar-boleto';"; then
+            echo "anon conseguiu excluir uma imagem pública" >&2
+            exit 1
+          fi
+          if psql -h 127.0.0.1 -U postgres -v ON_ERROR_STOP=1 -c "set role anon; insert into storage.objects (id, bucket_id, name) values ('33333333-3333-4333-8333-333333333333', 'guide-public', 'public/pagar-boleto/caixa/android/passo-1/publico.png');"; then
+            echo "anon conseguiu gravar um arquivo no Storage" >&2
+            exit 1
+          fi
