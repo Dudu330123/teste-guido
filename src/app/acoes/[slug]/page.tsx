@@ -50,7 +50,7 @@ export default async function ActionPage({ params }: ActionPageProps) {
                   {isDemo ? "Demonstração não validada" : "Em preparação"}
                 </p>
                 <Link
-                  href={isDemo ? `/tarefas/${applicationTask.slug}` : `/aplicativos/${application.slug}`}
+                  href={`/tarefas/${applicationTask.slug}`}
                   className="secondary-action mt-4 min-h-12 px-4 py-3 text-center font-bold"
                 >
                   {isDemo ? "Abrir demonstração" : "Ver conteúdo cadastrado"}
