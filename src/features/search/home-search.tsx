@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { actions } from "@/data/actions";
 import type { Application, Task } from "@/types/content";
 import { normalizeSearch, rankSearch } from "./search-content";
 
@@ -64,6 +65,16 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
         role="search"
         onSubmit={(event) => {
           event.preventDefault();
+          const matchingAction = rankSearch(
+            actions,
+            query,
+            (action) => `${action.title} ${action.taskTitle} ${action.description} ${action.searchTerms.join(" ")}`,
+            1,
+          )[0];
+          if (matchingAction) {
+            router.push(`/acoes/${matchingAction.slug}`);
+            return;
+          }
           const matchingTask = rankSearch(tasks, query, (task) => `${task.title} ${task.description} ${task.searchTerms.join(" ")}`, 1)[0];
           if (matchingTask) {
             router.push(getTaskHref(matchingTask, applications));

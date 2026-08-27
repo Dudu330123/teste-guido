@@ -22,6 +22,16 @@ describe("busca da página inicial", () => {
     expect(screen.queryByRole("heading", { name: /Resultados para/i })).not.toBeInTheDocument();
   });
 
+  it("prioriza a ação geral de Pix antes de uma tarefa específica", async () => {
+    const user = userEvent.setup();
+    render(<HomeSearch applications={applications} tasks={tasks} />);
+
+    await user.type(screen.getByRole("searchbox", { name: "Pesquisar ajuda" }), "pix");
+    await user.click(screen.getByRole("button", { name: "Pesquisar" }));
+
+    expect(push).toHaveBeenCalledWith("/acoes/pix");
+  });
+
   it("mostra somente a busca antes de uma pesquisa", () => {
     render(<HomeSearch applications={applications} tasks={tasks} />);
 
@@ -54,14 +64,14 @@ describe("busca da página inicial", () => {
     expect(screen.queryByRole("link", { name: "Banco: Como pagar um boleto?" })).not.toBeInTheDocument();
   });
 
-  it("encontra o guia demonstrativo por um erro comum", async () => {
+  it("prioriza a ação geral por um erro comum", async () => {
     const user = userEvent.setup();
     render(<HomeSearch applications={applications} tasks={tasks} />);
 
     await user.type(screen.getByRole("searchbox", { name: "Pesquisar ajuda" }), "boletu");
     await user.click(screen.getByRole("button", { name: "Pesquisar" }));
 
-    expect(push).toHaveBeenCalledWith("/tarefas/pagar-boleto");
+    expect(push).toHaveBeenCalledWith("/acoes/boleto");
   });
 
   it("mostra uma mensagem simples quando não encontra e a remove ao editar", async () => {
