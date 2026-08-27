@@ -11,10 +11,11 @@ describe("seletor de celular", () => {
 
   it("oferece controles nomeados e confirma a escolha do iPhone", async () => {
     const user = userEvent.setup();
-    render(<OsSelector taskSlug="pagar-boleto" />);
-    const other = screen.getByRole("radio", { name: /outro/i });
+    const { container } = render(<OsSelector taskSlug="pagar-boleto" />);
+    const android = screen.getByRole("radio", { name: /android/i });
     const ios = screen.getByRole("radio", { name: /iphone/i });
-    expect(other).toBeChecked();
+    expect(android).toBeChecked();
+    expect(container.querySelectorAll("img")).toHaveLength(2);
     await user.click(ios);
     expect(ios).toBeChecked();
     await user.click(screen.getByRole("button", { name: /próximo/i }));
@@ -31,5 +32,19 @@ describe("seletor de celular", () => {
     await user.selectOptions(screen.getByRole("combobox", { name: "Qual aplicativo você usa?" }), "nubank");
     await user.click(screen.getByRole("button", { name: /próximo/i }));
     expect(push).toHaveBeenCalledWith("/guias/pagar-boleto?os=android&app=nubank");
+  });
+
+  it("permite mudar de celular pelo teclado com foco visível no card", async () => {
+    const user = userEvent.setup();
+    render(<OsSelector taskSlug="pagar-boleto" />);
+    const android = screen.getByRole("radio", { name: /android/i });
+    const ios = screen.getByRole("radio", { name: /iphone/i });
+
+    await user.tab();
+    expect(android).toHaveFocus();
+    expect(android.closest("label")).toHaveClass("focus-within:outline");
+    await user.keyboard("[ArrowUp]");
+    expect(ios).toHaveFocus();
+    expect(ios).toBeChecked();
   });
 });
