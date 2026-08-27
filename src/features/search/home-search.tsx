@@ -16,9 +16,9 @@ interface HomeSearchProps {
 
 const searchExamples = [
   { category: "Bancos", label: "Tutoriais sobre seu banco", href: "/explorar?categoria=Bancos", icon: "bank" },
-  { category: "Gov.br", label: "Serviços e acessos do governo", href: "/aplicativos/gov-br", icon: "government" },
-  { category: "WhatsApp", label: "Dicas e funções essenciais", href: "/aplicativos/whatsapp", icon: "message" },
-  { category: "PIX", label: "Guias sobre pagamentos Pix", href: "/acoes/pix", icon: "pix" },
+  { category: "Gov.br", label: "Serviços e acessos do governo", href: "/explorar?q=Gov.br", icon: "government" },
+  { category: "WhatsApp", label: "Dicas e funções essenciais", href: "/explorar?q=WhatsApp", icon: "message" },
+  { category: "PIX", label: "Guias sobre pagamentos Pix", href: "/explorar?q=Pix", icon: "pix" },
 ] as const;
 
 function PopularIcon({ type }: { type: (typeof searchExamples)[number]["icon"] }) {
