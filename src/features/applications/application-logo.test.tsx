@@ -37,7 +37,20 @@ describe("logo do aplicativo", () => {
     expect(applications.find((item) => item.slug === "banco-demonstracao")?.logoPath).toBeNull();
   });
 
-  it.each(["whatsapp", "gov-br", "nubank", "banco-inter", "picpay"]) (
+  it.each([
+    "whatsapp",
+    "gov-br",
+    "caixa",
+    "banco-do-brasil",
+    "itau",
+    "bradesco",
+    "santander",
+    "nubank",
+    "banco-inter",
+    "picpay",
+    "mercado-pago",
+    "c6-bank",
+  ]) (
     "aponta o logo local de %s para um arquivo existente",
     (slug) => {
       const application = applications.find((item) => item.slug === slug);

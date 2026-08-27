@@ -30,12 +30,22 @@ const preparingApplications: Array<[string, string, string, string, string[]]> =
   ["c6-bank", "C6 Bank", "Serviços financeiros", "Serviços do aplicativo bancário.", ["c6", "c6 banco"]],
 ];
 
+// Os arquivos locais vêm dos ícones exibidos nas listagens oficiais da App Store.
+// Mantê-los no repositório evita depender de CDN externa e permite atualizar cada
+// marca de forma controlada, sem transformar o app fictício em uma marca bancária.
 const localLogoPaths: Record<string, string> = {
-  "whatsapp": "/images/logos/whatsapp.webp",
-  "gov-br": "/images/logos/gov-br.ico",
-  "nubank": "/images/logos/nubank.ico",
-  "banco-inter": "/images/logos/banco-inter.ico",
-  "picpay": "/images/logos/picpay.ico",
+  whatsapp: "/images/logos/whatsapp.jpg",
+  "gov-br": "/images/logos/gov-br.jpg",
+  caixa: "/images/logos/caixa.jpg",
+  "banco-do-brasil": "/images/logos/banco-do-brasil.jpg",
+  itau: "/images/logos/itau.jpg",
+  bradesco: "/images/logos/bradesco.jpg",
+  santander: "/images/logos/santander.jpg",
+  nubank: "/images/logos/nubank.jpg",
+  "banco-inter": "/images/logos/banco-inter.jpg",
+  picpay: "/images/logos/picpay.jpg",
+  "mercado-pago": "/images/logos/mercado-pago.jpg",
+  "c6-bank": "/images/logos/c6-bank.jpg",
 };
 
 export const applications: Application[] = [
