@@ -42,10 +42,10 @@ export function filterExploreItems(items: ExploreGuideItem[], query: string, cat
   });
 }
 
-export function getExploreGuideHref({ application, task }: ExploreGuideItem) {
+export function getExploreGuideHref({ task }: ExploreGuideItem) {
   if (task.availability !== "preparing") return `/tarefas/${task.slug}`;
   if (task.applicationId === "app-demo-bancos" && task.actionId) return `/acoes/${task.actionId}`;
-  return `/aplicativos/${application.slug}`;
+  return `/tarefas/${task.slug}`;
 }
 
 export function selectPopularItems(
