@@ -44,7 +44,7 @@ export default async function ActionPage({ params }: ActionPageProps) {
             const isDemo = applicationTask.availability === "demo";
             return (
               <article key={application.id} className="glass-panel internal-page-card">
-                <div className="internal-page-card-icon">
+                <div className="internal-page-card-icon application-logo">
                   <ApplicationLogo application={application} />
                 </div>
                 <h2 className="internal-page-card-title">{application.name}</h2>
