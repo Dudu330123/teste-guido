@@ -7,6 +7,9 @@ import {
   filterExploreItems,
   getExploreCategories,
   getExploreGuideHref,
+  getExplorePresentationItems,
+  groupFinancialExploreItems,
+  removeExploreItems,
   selectPopularItems,
   type ExploreGuideItem,
 } from "@/features/explore/explore-content";
@@ -29,14 +32,16 @@ export const metadata: Metadata = {
 
 function GuideCard({ item }: { item: ExploreGuideItem }) {
   const available = item.task.availability !== "preparing";
+  const title = item.action?.taskTitle ?? item.task.title;
+  const description = item.action?.description ?? item.task.description;
   return (
     <Link href={getExploreGuideHref(item)} className="explore-guide-card">
-      <span className="explore-card-badge">{item.application.category}</span>
-      <span className="explore-card-app">{item.application.name}</span>
-      <h3>{item.task.title}</h3>
-      <p>{item.task.description}</p>
-      <span className={`explore-card-status ${available ? "is-available" : "is-preparing"}`}>
-        {item.task.availability === "demo" ? "Demonstração disponível" : available ? "Guia disponível" : "Em preparação"}
+      <span className="explore-card-badge">{item.action ? "Serviços financeiros" : item.application.category}</span>
+      <span className="explore-card-app">{item.action ? "Escolha seu banco" : item.application.name}</span>
+      <h3>{title}</h3>
+      <p>{description}</p>
+      <span className={`explore-card-status ${item.action || available ? "is-available" : "is-preparing"}`}>
+        {item.action ? "Escolha o aplicativo" : item.task.availability === "demo" ? "Demonstração disponível" : available ? "Guia disponível" : "Em preparação"}
       </span>
       <span aria-hidden="true" className="explore-card-arrow">→</span>
     </Link>
@@ -62,7 +67,12 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   const allItems = buildExploreItems(catalog.applications, catalog.tasks);
   const categories = getExploreCategories(allItems);
   const filteredItems = filterExploreItems(allItems, q, categoria);
-  const popular = selectPopularItems(allItems, accessCounts, 6);
+  const isGeneralView = !q && !categoria;
+  const popularSelection = isGeneralView ? selectPopularItems(allItems, accessCounts, 6) : null;
+  const popular = popularSelection ? groupFinancialExploreItems(popularSelection.items) : [];
+  const displayItems = getExplorePresentationItems(filteredItems, q);
+  const visibleItems = isGeneralView ? removeExploreItems(displayItems, popular) : displayItems;
+  const popularMeasured = popularSelection?.measured ?? false;
 
   return (
     <main className="guido-home guido-explore min-h-screen">
@@ -96,17 +106,17 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
           ))}
         </nav>
 
-        {!q && !categoria && popular.items.length > 0 && (
+        {isGeneralView && popular.length > 0 && (
           <section aria-labelledby="popular-guides-title" className="explore-section">
             <div className="explore-section-heading">
               <div>
                 <p className="explore-kicker">Comece por aqui</p>
-                <h2 id="popular-guides-title">{popular.measured ? "Mais acessados" : "Em destaque"}</h2>
+                <h2 id="popular-guides-title">{popularMeasured ? "Mais acessados" : "Em destaque"}</h2>
               </div>
-              <p>{popular.measured ? "Guias mais abertos pela comunidade." : "Guias disponíveis para conhecer o Guido."}</p>
+              <p>{popularMeasured ? "Guias mais abertos pela comunidade." : "Guias disponíveis para conhecer o Guido."}</p>
             </div>
             <div className="explore-guide-grid explore-popular-grid">
-              {popular.items.map((item) => <GuideCard key={`popular-${item.task.id}`} item={item} />)}
+              {popular.map((item) => <GuideCard key={`popular-${item.task.id}`} item={item} />)}
             </div>
           </section>
         )}
@@ -117,11 +127,11 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
               <p className="explore-kicker">Em ordem alfabética</p>
               <h2 id="all-guides-title">{q || categoria ? "Resultados" : "Todos os guias"}</h2>
             </div>
-            <p aria-live="polite">{filteredItems.length} {filteredItems.length === 1 ? "guia encontrado" : "guias encontrados"}</p>
+            <p aria-live="polite">{visibleItems.length} {visibleItems.length === 1 ? "guia encontrado" : "guias encontrados"}</p>
           </div>
-          {filteredItems.length > 0 ? (
+          {visibleItems.length > 0 ? (
             <div className="explore-guide-grid">
-              {filteredItems.map((item) => <GuideCard key={item.task.id} item={item} />)}
+              {visibleItems.map((item) => <GuideCard key={item.action ? `action-${item.action.id}` : item.task.id} item={item} />)}
             </div>
           ) : (
             <div className="explore-empty" role="status">

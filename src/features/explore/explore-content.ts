@@ -1,9 +1,11 @@
-import type { Application, Task } from "@/types/content";
+import { actions } from "@/data/actions";
+import type { Action, Application, Task } from "@/types/content";
 import { normalizeSearch, scoreSearch } from "@/features/search/search-content";
 
 export interface ExploreGuideItem {
   application: Application;
   task: Task;
+  action?: Action;
 }
 
 /** Une tarefas e aplicativos uma única vez para manter busca, filtros e cards consistentes. */
@@ -42,7 +44,63 @@ export function filterExploreItems(items: ExploreGuideItem[], query: string, cat
   });
 }
 
-export function getExploreGuideHref({ task }: ExploreGuideItem) {
+function getItemAction({ task }: ExploreGuideItem) {
+  return actions.find((action) =>
+    task.actionId === action.id
+      || task.slug === action.slug
+      || task.slug.startsWith(`${action.slug}-`)
+      || task.title === action.taskTitle,
+  );
+}
+
+export function groupFinancialExploreItems(items: ExploreGuideItem[]) {
+  const grouped = new Map<string, ExploreGuideItem>();
+  const result: ExploreGuideItem[] = [];
+
+  items.forEach((item) => {
+    const action = getItemAction(item);
+    if (item.application.category !== "Serviços financeiros" || !action) {
+      result.push(item);
+      return;
+    }
+    if (!grouped.has(action.id)) {
+      grouped.set(action.id, { ...item, action });
+      result.push({ ...item, action });
+    }
+  });
+
+  return result.sort((first, second) => {
+    const firstTitle = first.action?.taskTitle ?? first.task.title;
+    const secondTitle = second.action?.taskTitle ?? second.task.title;
+    return firstTitle.localeCompare(secondTitle, "pt-BR");
+  });
+}
+
+function queryMentionsFinancialApplication(items: ExploreGuideItem[], query: string) {
+  const normalizedQuery = normalizeSearch(query);
+  if (!normalizedQuery) return false;
+  return items.some(({ application }) =>
+    application.category === "Serviços financeiros"
+      && [application.name, ...application.searchTerms]
+        .some((term) => normalizeSearch(term) && normalizedQuery.includes(normalizeSearch(term))),
+  );
+}
+
+export function getExplorePresentationItems(items: ExploreGuideItem[], query: string) {
+  return queryMentionsFinancialApplication(items, query) ? items : groupFinancialExploreItems(items);
+}
+
+export function getExploreItemKey(item: ExploreGuideItem) {
+  return item.action ? `action:${item.action.slug}` : `task:${item.task.id}`;
+}
+
+export function removeExploreItems(items: ExploreGuideItem[], excludedItems: ExploreGuideItem[]) {
+  const excludedKeys = new Set(excludedItems.map(getExploreItemKey));
+  return items.filter((item) => !excludedKeys.has(getExploreItemKey(item)));
+}
+
+export function getExploreGuideHref({ action, task }: ExploreGuideItem) {
+  if (action) return `/acoes/${action.slug}`;
   if (task.availability !== "preparing") return `/tarefas/${task.slug}`;
   if (task.applicationId === "app-demo-bancos" && task.actionId) return `/acoes/${task.actionId}`;
   return `/tarefas/${task.slug}`;
