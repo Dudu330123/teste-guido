@@ -2,6 +2,19 @@ import type { Application } from "@/types/content";
 
 const baseDate = "2026-07-28T00:00:00.000Z";
 
+/** Rótulo amigável do nicho; mantemos o nome antigo no Supabase durante a migração. */
+export const BANK_CATEGORY = "Bancos";
+export const LEGACY_BANK_CATEGORY = "Serviços financeiros";
+
+export function isBankCategory(category: string) {
+  const normalized = category.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  return normalized === "bancos" || normalized === "banco" || normalized === "servicos financeiros";
+}
+
+export function getCategoryLabel(category: string) {
+  return isBankCategory(category) ? BANK_CATEGORY : category;
+}
+
 const preparingApplications: Array<[string, string, string, string, string[]]> = [
   ["whatsapp", "WhatsApp", "Comunicação", "Mensagens, áudios e chamadas.", ["zap", "mensagem", "áudio", "ligação", "contato"]],
   ["gov-br", "Gov.br", "Serviços públicos", "Acesso a serviços digitais do governo.", ["governo", "conta gov", "senha gov", "serviço público"]],
@@ -57,5 +70,5 @@ export function getApplicationBySlug(slug: string) {
 }
 
 export const financialApplications = applications.filter(
-  (application) => application.category === "Serviços financeiros" && application.id !== "app-demo-bancos",
+  (application) => isBankCategory(application.category) && application.id !== "app-demo-bancos",
 );

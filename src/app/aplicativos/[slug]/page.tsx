@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
-import { applications, getApplicationBySlug } from "@/data/applications";
+import { applications, getApplicationBySlug, getCategoryLabel } from "@/data/applications";
 import { tasks } from "@/data/guides";
 import { ApplicationLogo } from "@/features/applications/application-logo";
 import { getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/supabase/catalog";
@@ -27,7 +27,7 @@ export default async function ApplicationPage({ params }: ApplicationPageProps) 
       <div className="internal-page-content internal-page-content--compact">
         <Link href="/" className="internal-page-back">← Voltar ao catálogo</Link>
         <header className="internal-page-intro">
-          <p className="internal-page-eyebrow">{application.category}</p>
+          <p className="internal-page-eyebrow">{getCategoryLabel(application.category)}</p>
           <h1 className="internal-page-title">{application.name}</h1>
           <p className="internal-page-description">{application.description}</p>
         </header>

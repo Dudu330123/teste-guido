@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { applications } from "@/data/applications";
+import { applications, getCategoryLabel } from "@/data/applications";
 import { tasks } from "@/data/guides";
 import {
   buildExploreItems,
@@ -36,7 +36,7 @@ function GuideCard({ item }: { item: ExploreGuideItem }) {
   const description = item.action?.description ?? item.task.description;
   return (
     <Link href={getExploreGuideHref(item)} className="explore-guide-card">
-      <span className="explore-card-badge">{item.action ? "Serviços financeiros" : item.application.category}</span>
+      <span className="explore-card-badge">{item.action ? "Bancos" : getCategoryLabel(item.application.category)}</span>
       <span className="explore-card-app">{item.action ? "Escolha seu banco" : item.application.name}</span>
       <h3>{title}</h3>
       <p>{description}</p>
@@ -81,7 +81,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
         <header className="explore-intro">
           <p className="home-eyebrow">Biblioteca de guias</p>
           <h1>Explore no seu ritmo.</h1>
-          <p>Pesquise uma tarefa ou escolha um assunto. Os guias disponíveis mostram cada passo com calma.</p>
+          <p>Pesquise uma tarefa ou escolha um assunto. Em Bancos, escolha primeiro a função e depois o aplicativo.</p>
         </header>
 
         <form action="/explorar" method="get" role="search" className="explore-search-form">
@@ -127,7 +127,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
               <p className="explore-kicker">Em ordem alfabética</p>
               <h2 id="all-guides-title">{q || categoria ? "Resultados" : "Todos os guias"}</h2>
             </div>
-            <p aria-live="polite">{visibleItems.length} {visibleItems.length === 1 ? "guia encontrado" : "guias encontrados"}</p>
+            <p aria-live="polite">{visibleItems.length} {visibleItems.length === 1 ? "opção encontrada" : "opções encontradas"}</p>
           </div>
           {visibleItems.length > 0 ? (
             <div className="explore-guide-grid">

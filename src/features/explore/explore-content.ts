@@ -1,4 +1,5 @@
-import { actions } from "@/data/actions";
+import { actions, getActionForTask } from "@/data/actions";
+import { getCategoryLabel, isBankCategory } from "@/data/applications";
 import type { Action, Application, Task } from "@/types/content";
 import { normalizeSearch, scoreSearch } from "@/features/search/search-content";
 
@@ -20,14 +21,16 @@ export function buildExploreItems(applications: Application[], tasks: Task[]): E
 }
 
 export function getExploreCategories(items: ExploreGuideItem[]) {
-  return [...new Set(items.map(({ application }) => application.category))]
+  return [...new Set(items.map(({ application }) => getCategoryLabel(application.category)))]
     .sort((first, second) => first.localeCompare(second, "pt-BR"));
 }
 
 export function filterExploreItems(items: ExploreGuideItem[], query: string, category: string) {
   const normalizedCategory = normalizeSearch(category);
   return items.filter(({ application, task }) => {
-    const categoryMatches = !normalizedCategory || normalizeSearch(application.category) === normalizedCategory;
+    const categoryMatches = !normalizedCategory
+      || (isBankCategory(category) && isBankCategory(application.category))
+      || normalizeSearch(getCategoryLabel(application.category)) === normalizedCategory;
     const applicationTerms = new Set([
       normalizeSearch(application.name),
       ...application.searchTerms.map(normalizeSearch),
@@ -38,18 +41,15 @@ export function filterExploreItems(items: ExploreGuideItem[], query: string, cat
       task.description,
       ...taskTerms,
     ].join(" ");
-    const applicationText = [application.name, application.description, application.category].join(" ");
+    const applicationText = [application.name, application.description, application.category, getCategoryLabel(application.category)].join(" ");
     const queryMatches = scoreSearch(`${taskText} ${applicationText}`, query) > 0;
     return categoryMatches && (!normalizeSearch(query) || queryMatches);
   });
 }
 
 function getItemAction({ task }: ExploreGuideItem) {
-  return actions.find((action) =>
-    task.actionId === action.id
-      || task.slug === action.slug
-      || task.slug.startsWith(`${action.slug}-`)
-      || task.title === action.taskTitle,
+  return getActionForTask(task) ?? actions.find((action) =>
+    task.slug === action.slug || task.slug.startsWith(`${action.slug}-`) || task.title === action.taskTitle,
   );
 }
 
@@ -59,7 +59,7 @@ export function groupFinancialExploreItems(items: ExploreGuideItem[]) {
 
   items.forEach((item) => {
     const action = getItemAction(item);
-    if (item.application.category !== "Serviços financeiros" || !action) {
+    if (!isBankCategory(item.application.category) || !action) {
       result.push(item);
       return;
     }
@@ -80,7 +80,7 @@ function queryMentionsFinancialApplication(items: ExploreGuideItem[], query: str
   const normalizedQuery = normalizeSearch(query);
   if (!normalizedQuery) return false;
   return items.some(({ application }) =>
-    application.category === "Serviços financeiros"
+    isBankCategory(application.category)
       && [application.name, ...application.searchTerms]
         .some((term) => normalizeSearch(term) && normalizedQuery.includes(normalizeSearch(term))),
   );

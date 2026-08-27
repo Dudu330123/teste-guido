@@ -30,7 +30,7 @@ export default async function ActionPage({ params }: ActionPageProps) {
       <div className="internal-page-content internal-page-content--wide">
         <Link href="/#actions-title" className="internal-page-back">← Voltar para tarefas</Link>
         <header className="internal-page-intro">
-          <p className="internal-page-eyebrow">Escolha o aplicativo</p>
+          <p className="internal-page-eyebrow">Escolha seu banco</p>
           <h1 className="internal-page-title">{action.title}</h1>
           <p className="internal-page-description">{action.description}</p>
         </header>
@@ -38,7 +38,7 @@ export default async function ActionPage({ params }: ActionPageProps) {
           <strong>Importante:</strong> as opções em preparação ainda não são tutoriais validados e dependem de pesquisa oficial e revisão humana.
         </div>
 
-        <section aria-label="Aplicativos cadastrados" className="internal-page-grid internal-page-grid--three">
+        <section aria-label="Bancos cadastrados" className="internal-page-grid internal-page-grid--three">
           {availableApplications.map((application) => {
             const applicationTask = actionTasks.find((task) => task.applicationId === application.id)!;
             const isDemo = applicationTask.availability === "demo";
@@ -56,7 +56,7 @@ export default async function ActionPage({ params }: ActionPageProps) {
                   href={`/tarefas/${applicationTask.slug}`}
                   className="secondary-action internal-page-card-action"
                 >
-                  {isDemo ? "Abrir demonstração" : "Ver tarefa"}
+                  {isDemo ? "Abrir demonstração" : "Ver guias deste banco"}
                 </Link>
               </article>
             );

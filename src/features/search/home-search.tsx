@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { actions } from "@/data/actions";
+import { isBankCategory } from "@/data/applications";
 import type { Application, Task } from "@/types/content";
 import { normalizeSearch, rankSearch } from "./search-content";
 
@@ -14,7 +15,7 @@ interface HomeSearchProps {
 }
 
 const searchExamples = [
-  { category: "Bancos", label: "Tutoriais sobre seu banco", href: "/bancos", icon: "bank" },
+  { category: "Bancos", label: "Tutoriais sobre seu banco", href: "/explorar?categoria=Bancos", icon: "bank" },
   { category: "Gov.br", label: "Serviços e acessos do governo", href: "/aplicativos/gov-br", icon: "government" },
   { category: "WhatsApp", label: "Dicas e funções essenciais", href: "/aplicativos/whatsapp", icon: "message" },
   { category: "PIX", label: "Guias sobre pagamentos Pix", href: "/acoes/pix", icon: "pix" },
@@ -38,6 +39,13 @@ function getTaskHref(task: Task, applications: Application[]) {
   if (task.applicationId === "app-demo-bancos" && task.actionId) return `/acoes/${task.actionId}`;
   const application = applications.find((item) => item.id === task.applicationId);
   return `/aplicativos/${application?.slug ?? ""}`;
+}
+
+function isBankNicheQuery(query: string) {
+  const normalized = normalizeSearch(query);
+  return ["banco", "bancos", "servicos financeiros", "servico financeiro", "financeiro", "financeira", "servicos bancarios", "servico bancario"]
+    .some((term) => normalized === term)
+    || isBankCategory(normalized);
 }
 
 export function HomeSearch({ applications, tasks }: HomeSearchProps) {
@@ -65,6 +73,10 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
         role="search"
         onSubmit={(event) => {
           event.preventDefault();
+          if (isBankNicheQuery(query)) {
+            router.push("/explorar?categoria=Bancos");
+            return;
+          }
           const matchingAction = rankSearch(
             actions,
             query,

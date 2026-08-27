@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
-import { applications } from "@/data/applications";
+import { applications, isBankCategory } from "@/data/applications";
 import { tasks } from "@/data/guides";
 import { OsSelector } from "@/features/guides/os-selector";
 import { getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/supabase/catalog";
@@ -22,7 +22,7 @@ export default async function TaskPage({ params }: TaskPageProps) {
   const application = catalog.applications.find((item) => item.id === task.applicationId);
   if (!application) notFound();
   const bankApplications = catalog.applications.filter((item) =>
-    item.category === "Serviços financeiros" && item.slug !== "banco-demonstracao");
+    isBankCategory(item.category) && item.slug !== "banco-demonstracao");
 
   return (
     <main className="guido-home internal-page min-h-screen">
