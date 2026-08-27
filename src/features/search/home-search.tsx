@@ -14,7 +14,7 @@ interface HomeSearchProps {
 }
 
 const searchExamples = [
-  { category: "Bancos", label: "Tutoriais sobre seu banco", href: "/tarefas/pagar-boleto", icon: "bank" },
+  { category: "Bancos", label: "Tutoriais sobre seu banco", href: "/bancos", icon: "bank" },
   { category: "Gov.br", label: "Serviços e acessos do governo", href: "/aplicativos/gov-br", icon: "government" },
   { category: "WhatsApp", label: "Dicas e funções essenciais", href: "/aplicativos/whatsapp", icon: "message" },
   { category: "PIX", label: "Guias sobre pagamentos Pix", href: "/acoes/pix", icon: "pix" },
@@ -136,7 +136,7 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
               >
                 <span className="home-card-category">{category}</span>
                 <span className="home-card-title">{task.title}</span>
-                <span className="home-card-description">{task.availability === "demo" ? "Demonstração disponível" : task.availability === "available" ? "Guia disponível" : "Em preparação"}</span>
+                <span className="home-card-description">{task.availability === "demo" ? "Demonstração disponível" : task.availability === "available" ? "Guia disponível" : "Guia em preparação"}</span>
                 <span aria-hidden="true" className="home-card-arrow">→</span>
               </Link>
             );

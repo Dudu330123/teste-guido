@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { getActionBySlug } from "@/data/actions";
 import { applications } from "@/data/applications";
 import { tasks } from "@/data/guides";
+import { ApplicationLogo } from "@/features/applications/application-logo";
 
 interface ActionPageProps {
   params: Promise<{ slug: string }>;
@@ -43,19 +44,19 @@ export default async function ActionPage({ params }: ActionPageProps) {
             const isDemo = applicationTask.availability === "demo";
             return (
               <article key={application.id} className="glass-panel internal-page-card">
-                <div aria-hidden="true" className="internal-page-card-icon">
-                  {application.name.slice(0, 2).toUpperCase()}
+                <div className="internal-page-card-icon">
+                  <ApplicationLogo application={application} />
                 </div>
                 <h2 className="internal-page-card-title">{application.name}</h2>
                 <p className="internal-page-card-description">{applicationTask.description}</p>
                 <p className="soft-panel internal-page-card-status">
-                  {isDemo ? "Demonstração não validada" : "Em preparação"}
+                  {isDemo ? "Demonstração disponível" : "Guia em preparação"}
                 </p>
                 <Link
                   href={`/tarefas/${applicationTask.slug}`}
                   className="secondary-action internal-page-card-action"
                 >
-                  {isDemo ? "Abrir demonstração" : "Ver conteúdo cadastrado"}
+                  {isDemo ? "Abrir demonstração" : "Ver tarefa"}
                 </Link>
               </article>
             );

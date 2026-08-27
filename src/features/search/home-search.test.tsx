@@ -38,7 +38,7 @@ describe("busca da página inicial", () => {
     expect(screen.getByRole("heading", { name: "Encontre o manual.Siga os passos.Resolva." })).toBeVisible();
     expect(screen.getByText(/Tutoriais práticos e passo a passo/)).toBeVisible();
     expect(screen.getByRole("searchbox", { name: "Pesquisar ajuda" })).toBeVisible();
-    expect(screen.getByRole("link", { name: "Bancos: Tutoriais sobre seu banco" })).toHaveAttribute("href", "/tarefas/pagar-boleto");
+    expect(screen.getByRole("link", { name: "Bancos: Tutoriais sobre seu banco" })).toHaveAttribute("href", "/bancos");
     expect(screen.getByRole("link", { name: "WhatsApp: Dicas e funções essenciais" })).toHaveAttribute("href", "/aplicativos/whatsapp");
     expect(screen.getByRole("link", { name: "Gov.br: Serviços e acessos do governo" })).toHaveAttribute("href", "/aplicativos/gov-br");
     expect(screen.getByRole("link", { name: "PIX: Guias sobre pagamentos Pix" })).toHaveAttribute("href", "/acoes/pix");
@@ -49,7 +49,7 @@ describe("busca da página inicial", () => {
   it("faz o exemplo comum de boleto abrir diretamente a próxima tela", () => {
     render(<HomeSearch applications={applications} tasks={tasks} />);
 
-    expect(screen.getByRole("link", { name: "Bancos: Tutoriais sobre seu banco" })).toHaveAttribute("href", "/tarefas/pagar-boleto");
+    expect(screen.getByRole("link", { name: "Bancos: Tutoriais sobre seu banco" })).toHaveAttribute("href", "/bancos");
   });
 
   it("troca os exemplos por sugestões relacionadas enquanto o usuário digita", async () => {

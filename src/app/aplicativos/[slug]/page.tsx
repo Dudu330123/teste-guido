@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { applications, getApplicationBySlug } from "@/data/applications";
 import { tasks } from "@/data/guides";
+import { ApplicationLogo } from "@/features/applications/application-logo";
 import { getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/supabase/catalog";
 
 interface ApplicationPageProps {
@@ -54,7 +55,7 @@ export default async function ApplicationPage({ params }: ApplicationPageProps) 
             </div>
           ) : (
             <div className="glass-panel internal-page-card">
-              <p className="internal-page-card-title">Conteúdo em preparação</p>
+              <p className="internal-page-card-title">Guia em preparação</p>
               <p className="internal-page-card-description">Nenhum guia deste aplicativo foi validado para esta versão.</p>
             </div>
           )}

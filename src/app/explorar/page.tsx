@@ -41,7 +41,7 @@ function GuideCard({ item }: { item: ExploreGuideItem }) {
       <h3>{title}</h3>
       <p>{description}</p>
       <span className={`explore-card-status ${item.action || available ? "is-available" : "is-preparing"}`}>
-        {item.action ? "Escolha o aplicativo" : item.task.availability === "demo" ? "Demonstração disponível" : available ? "Guia disponível" : "Em preparação"}
+        {item.action ? "Escolha o aplicativo" : item.task.availability === "demo" ? "Demonstração disponível" : available ? "Guia disponível" : "Guia em preparação"}
       </span>
       <span aria-hidden="true" className="explore-card-arrow">→</span>
     </Link>
