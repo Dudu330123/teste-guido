@@ -488,6 +488,21 @@ html[data-theme="dark"] .home-main-nav a[aria-current="page"]::after {
   color: var(--home-blue);
 }
 
+.home-main-nav .home-admin-tool-link {
+  border: 1px solid rgba(8, 118, 249, 0.42);
+  border-radius: 0.75rem;
+  background: rgba(8, 118, 249, 0.1);
+  padding-inline: 0.8rem;
+  transition: background-color 160ms ease-out, border-color 160ms ease-out, color 160ms ease-out;
+}
+
+.home-main-nav .home-admin-tool-link:hover,
+.home-main-nav .home-admin-tool-link:focus-visible {
+  border-color: var(--home-blue);
+  background: rgba(8, 118, 249, 0.2);
+  color: var(--home-blue);
+}
+
 .home-account-nav {
   justify-content: flex-end;
 }

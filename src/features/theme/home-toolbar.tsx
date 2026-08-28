@@ -108,6 +108,11 @@ export function HomeToolbar({ activePage = "home", showAdmin = false }: HomeTool
           >
             Sobre
           </button>
+          {showAdmin && (
+            <Link href="/admin/guias/preview" className="home-admin-tool-link">
+              Tarefas automáticas
+            </Link>
+          )}
         </nav>
 
         <nav aria-label="Acesso à conta e aparência" className="home-account-nav">
