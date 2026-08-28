@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { applications, getApplicationBySlug, getCategoryLabel } from "@/data/applications";
 import { tasks } from "@/data/guides";
@@ -21,6 +21,12 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
   const catalog = mergeCatalogWithFallback(remoteCatalog, { applications, tasks });
   const application = catalog.applications.find((item) => item.slug === slug) ?? getApplicationBySlug(slug);
   if (!application) notFound();
+  if (application.slug === "banco-demonstracao") {
+    // A demonstração é um contexto de guia, não um aplicativo com catálogo
+    // próprio. Links antigos para esta rota voltam à origem em vez de exibir
+    // uma tela intermediária que não ajuda a pessoa a continuar.
+    redirect(safeReturnPath(returnTo, "/"));
+  }
   const applicationTasks = catalog.tasks.filter((task) => task.applicationId === application.id);
   const backHref = safeReturnPath(returnTo, "/explorar");
 

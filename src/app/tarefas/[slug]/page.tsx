@@ -34,7 +34,8 @@ export default async function TaskPage({ params, searchParams }: TaskPageProps) 
   // O boleto começa pelo aparelho para que a segunda tela possa listar os
   // aplicativos no mesmo catálogo visual usado pela ação Pix.
   const chooseApplicationAfterDevice = isGenericBankTask && task.actionId === "boleto";
-  const backHref = safeReturnPath(returnTo, `/aplicativos/${application.slug}`);
+  const defaultBackHref = isGenericBankTask ? "/" : `/aplicativos/${application.slug}`;
+  const backHref = safeReturnPath(returnTo, defaultBackHref);
 
   if (task.availability === "preparing" && task.applicationId !== "app-demo-bancos" && task.actionId) {
     const genericTask = catalog.tasks.find((item) =>
