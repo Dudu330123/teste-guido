@@ -10,6 +10,7 @@ import { isBankCategory } from "@/data/applications";
 import { ApplicationLogo } from "@/features/applications/application-logo";
 import type { Action, Application, Task } from "@/types/content";
 import { normalizeSearch, rankSearch } from "./search-content";
+import type { SearchDocument } from "./search-content";
 
 interface HomeSearchProps { applications: Application[]; tasks: Task[]; }
 type GuidedCategory = "banks" | "whatsapp" | "government";
@@ -33,6 +34,31 @@ function ApplicationMark({ application }: { application: Application }) {
 }
 
 function taskHref(task: Task) { return `/tarefas/${task.slug}`; }
+
+function taskSearchDocument(task: Task, applications: Application[], includeApplicationName = true): SearchDocument {
+  const application = applications.find((item) => item.id === task.applicationId);
+  return {
+    title: task.title,
+    aliases: [...task.searchTerms, ...(includeApplicationName && application ? [application.name] : [])],
+    description: task.description,
+  };
+}
+
+function actionSearchDocument(action: Action): SearchDocument {
+  return {
+    title: action.taskTitle,
+    aliases: [action.title, ...action.searchTerms],
+    description: action.description,
+  };
+}
+
+function applicationSearchDocument(application: Application): SearchDocument {
+  return {
+    title: application.name,
+    aliases: [application.category, ...application.searchTerms],
+    description: application.description,
+  };
+}
 
 function searchTaskHref(task: Task, applications: Application[]) {
   if (task.availability !== "preparing") return taskHref(task);
@@ -94,23 +120,6 @@ function resolveSearchTask(target: SearchBankTarget, bank: Application, tasks: T
 function taskRoute(task: Task, applicationSlug?: string) {
   const query = applicationSlug ? `?app=${encodeURIComponent(applicationSlug)}` : "";
   return `/tarefas/${encodeURIComponent(task.slug)}${query}`;
-}
-
-/**
- * Embaralha as sugestões de forma determinística: a ordem muda conforme a busca,
- * mas não fica pulando a cada renderização nem causa diferenças entre servidor e cliente.
- */
-function shuffleSuggestions<T>(items: T[], seedText: string) {
-  const shuffled = [...items];
-  let seed = Array.from(seedText).reduce((value, character) => ((value * 31) + character.charCodeAt(0)) >>> 0, 7);
-
-  for (let index = shuffled.length - 1; index > 0; index -= 1) {
-    seed = (seed * 1_664_525 + 1_013_904_223) >>> 0;
-    const swapIndex = seed % (index + 1);
-    [shuffled[index], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[index]];
-  }
-
-  return shuffled;
 }
 
 function TaskCard({ task, modal = false }: { task: Task; modal?: boolean }) {
@@ -258,7 +267,6 @@ function TaskModal({ applicationName, tasks: modalTasks, onClose }: TaskModalPro
 export function HomeSearch({ applications, tasks }: HomeSearchProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [submittedQuery, setSubmittedQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<GuidedCategory | null>(null);
   const [selectedBank, setSelectedBank] = useState<Application | null>(null);
   const [bankModalOpen, setBankModalOpen] = useState(false);
@@ -270,15 +278,12 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
   const searchSubmitButtonRef = useRef<HTMLButtonElement>(null);
   const modalOriginRef = useRef<"category" | "search">("category");
   const liveQuery = normalizeSearch(query);
-  const normalizedQuery = normalizeSearch(submittedQuery);
 
   const financialApplications = useMemo(() => applications.filter((application) => application.category === "Serviços financeiros" && application.id !== "app-demo-bancos"), [applications]);
   const liveSuggestions = liveQuery
-    ? shuffleSuggestions(
-      rankSearch(tasks, liveQuery, (task) => `${task.title} ${task.description} ${task.searchTerms.join(" ")}`, 40)
-        .filter((task, index, rankedTasks) => rankedTasks.findIndex((candidate) => normalizeSearch(candidate.title) === normalizeSearch(task.title)) === index),
-      liveQuery,
-    ).slice(0, 4)
+    ? rankSearch(tasks, liveQuery, (task) => taskSearchDocument(task, applications), 40)
+      .filter((task, index, rankedTasks) => rankedTasks.findIndex((candidate) => normalizeSearch(candidate.title) === normalizeSearch(task.title)) === index)
+      .slice(0, 4)
     : [];
   const selectedApplication = selectedCategory === "whatsapp"
     ? applications.find((application) => application.slug === "whatsapp")
@@ -295,7 +300,6 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
   };
   const chooseQuickQuery = (value: string) => {
     setQuery(value);
-    setSubmittedQuery("");
     window.requestAnimationFrame(() => searchInputRef.current?.focus({ preventScroll: true }));
   };
   const chooseCategory = (category: GuidedCategory) => {
@@ -364,12 +368,12 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
             navigateTo("/explorar?categoria=Bancos");
             return;
           }
-          const matchingAction = rankSearch(actions, query, (action) => `${action.title} ${action.taskTitle} ${action.description} ${action.searchTerms.join(" ")}`, 1)[0];
+          const matchingAction = rankSearch(actions, query, actionSearchDocument, 1)[0];
           if (matchingAction) {
             openBankModalFromSearch({ action: matchingAction });
             return;
           }
-          const matchingTask = rankSearch(tasks, query, (task) => `${task.title} ${task.description} ${task.searchTerms.join(" ")}`, 1)[0];
+          const matchingTask = rankSearch(tasks, query, (task) => taskSearchDocument(task, applications, false), 1)[0];
           if (matchingTask) {
             if (isBankTask(matchingTask, applications)) {
               openBankModalFromSearch({ task: matchingTask });
@@ -378,12 +382,11 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
             navigateTo(taskRoute(matchingTask));
             return;
           }
-          const matchingApplication = rankSearch(applications, query, (application) => `${application.name} ${application.description} ${application.category} ${application.searchTerms.join(" ")}`, 1)[0];
+          const matchingApplication = rankSearch(applications, query, applicationSearchDocument, 1)[0];
           if (matchingApplication) { navigateTo(`/aplicativos/${matchingApplication.slug}`); return; }
-          setSubmittedQuery(query);
         }}>
           <label htmlFor="home-search" className="sr-only">Pesquisar ajuda</label>
-          <input ref={searchInputRef} id="home-search" type="search" value={query} onChange={(event) => { setQuery(event.target.value); setSubmittedQuery(""); }} placeholder="Digite: Pix, boleto, senha..." className="home-search-input" />
+          <input ref={searchInputRef} id="home-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Digite: Pix, boleto, senha..." className="home-search-input" />
           <svg aria-hidden="true" viewBox="0 0 24 24" className="home-search-icon fill-none" stroke="currentColor" strokeWidth="2.25"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5" strokeLinecap="round" /></svg>
           <button ref={searchSubmitButtonRef} type="submit" aria-label="Pesquisar" aria-busy={isPending} disabled={!liveQuery || isPending} className="guido-search-button">
             <svg aria-hidden="true" viewBox="0 0 24 24" className="home-search-arrow size-7 fill-none" stroke="currentColor" strokeWidth="2.2"><path d="M5 12h14M14 7l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" /></svg>
@@ -396,8 +399,10 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
           {liveQuery ? (
             <section className="home-suggestions" aria-labelledby="home-suggestions-title">
               <h2 id="home-suggestions-title">Sugestões para você</h2>
-              <div className="home-task-grid">
-                {liveSuggestions.length > 0 ? liveSuggestions.map((task) => {
+              {liveSuggestions.length > 0 ? <>
+                <p className="home-suggestions-context">Talvez você esteja procurando:</p>
+                <div className="home-task-grid">
+                  {liveSuggestions.map((task) => {
                   const application = applications.find((item) => item.id === task.applicationId);
                   const bankTask = isBankTask(task, applications);
                   return <Link key={task.id} href={searchTaskHref(task, applications)} onClick={(event) => {
@@ -405,8 +410,9 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
                     event.preventDefault();
                     openBankModalFromSearch({ task });
                   }} aria-haspopup={bankTask ? "dialog" : undefined} className="home-task-card"><span>{application?.name ?? "Guido"}</span><strong>{task.title}</strong><small>{task.availability === "preparing" ? "Em preparação" : "Abrir guia"}</small><span aria-hidden="true" className="home-card-arrow">→</span></Link>;
-                }) : <p className="home-search-empty">Continue digitando ou pressione a lupa para pesquisar.</p>}
-              </div>
+                  })}
+                </div>
+              </> : <div className="home-task-grid"><p className="home-search-empty"><strong>Não encontramos esse guia.</strong><span>Tente escrever de outra forma.</span></p></div>}
             </section>
           ) : selectedCategory === null || taskModalOpen ? (
             <>
@@ -441,7 +447,6 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
           ) : null}
         </div>
 
-        {normalizedQuery && <div className="home-search-error" aria-live="polite"><h2>Ainda não encontramos “{submittedQuery}”</h2><p>Tente usar palavras mais curtas ou procure “pagar boleto”.</p></div>}
       </div>
 
       <div className="home-mascot" aria-hidden="true">

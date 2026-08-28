@@ -235,38 +235,26 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
 
   return (
     <GuidePageShell toolbar={guideToolbar}>
-      <div role="note" className="notice-warning guide-safety-notice">
-        <span aria-hidden="true">⚠</span>
-        <span>{task.safetyWarning}</span>
-      </div>
-
-      <header className="guide-reader-header">
-        <div className="guide-reader-summary">
-          <div>
-            <p className="text-base font-semibold text-[var(--primary)]">{application.name} · {guide.operatingSystem === "ios" ? "iPhone" : "Outro"}</p>
-            <h1 className="text-2xl font-bold sm:text-3xl">{task.title}</h1>
-          </div>
-          <div className="shrink-0 sm:text-right">
-            <p className="text-lg font-bold" aria-live="polite">Passo {currentStep + 1} de {steps.length}</p>
-            <p className="text-sm font-semibold text-[var(--muted)]" aria-live="polite">{progressMessage}</p>
-          </div>
-        </div>
-        {!preparing && <GuideProgressStepper steps={steps} currentStep={currentStep} />}
-      </header>
-
       <div className="guide-reader-layout">
         <div className="guide-reader-visual">
           {preparing ? <GuidePreparationPhoneScreen /> : <ScreenPlaceholder step={activeStep} />}
         </div>
-        {preparing ? (
-          <GuidePreparationPanel
-            application={application}
-            task={task}
-            onPrevious={() => { setPreparing(false); setSpeechMessage(""); }}
-            onFinish={() => { setPreparing(false); setCompleted(false); }}
-            nextStepNumber={currentStep + 2}
+        <div className="guide-reader-content">
+          <GuideProgressStepper
+            steps={steps}
+            currentStep={currentStep}
+            partial={guide.guideStatus === "partial" || guide.guideStatus === "preparing"}
+            statusMessage={progressMessage}
           />
-        ) : <section aria-labelledby="step-title" className="guide-reader-card guide-reader-instruction">
+          {preparing ? (
+            <GuidePreparationPanel
+              application={application}
+              task={task}
+              onPrevious={() => { setPreparing(false); setSpeechMessage(""); }}
+              onFinish={() => { setPreparing(false); setCompleted(false); }}
+              nextStepNumber={currentStep + 2}
+            />
+          ) : <section aria-labelledby="step-title" className="guide-reader-card guide-reader-instruction">
           <div className="guide-step-heading">
             <span className="guide-step-number" aria-hidden="true">{currentStep + 1}</span>
             <div>
@@ -316,7 +304,8 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
               <p className="font-bold">Não compartilhe senha, código de segurança ou dados do boleto.</p>
             </div>
           </details>
-        </section>}
+          </section>}
+        </div>
       </div>
     </GuidePageShell>
   );

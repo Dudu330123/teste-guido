@@ -160,7 +160,7 @@ describe("busca e navegação guiada da página inicial", () => {
     await waitFor(() => expect(screen.getByRole("button", { name: /Gov.br/ })).toHaveFocus());
   });
 
-  it("troca categorias por quatro sugestões embaralhadas", async () => {
+  it("troca categorias por quatro sugestões relevantes enquanto digita", async () => {
     const user = userEvent.setup();
     render(<HomeSearch applications={applications} tasks={tasks} />);
     await user.type(screen.getByRole("searchbox", { name: "Pesquisar ajuda" }), "pix");
@@ -178,6 +178,18 @@ describe("busca e navegação guiada da página inicial", () => {
     const suggestionLinks = screen.getAllByRole("link");
     expect(suggestionLinks).toHaveLength(4);
     expect(suggestionLinks.some((link) => /pix/i.test(link.textContent ?? ""))).toBe(true);
+  });
+
+  it("mantém a grafia digitada e sugere o guia mais próximo", async () => {
+    const user = userEvent.setup();
+    render(<HomeSearch applications={applications} tasks={tasks} />);
+    const searchbox = screen.getByRole("searchbox", { name: "Pesquisar ajuda" });
+
+    await user.type(searchbox, "Boleta");
+
+    expect(searchbox).toHaveValue("Boleta");
+    expect(screen.getByRole("link", { name: /Pagar um boleto/ })).toBeVisible();
+    expect(screen.getByText("Talvez você esteja procurando:")).toBeVisible();
   });
 
   it("abre o menu ao selecionar uma sugestão bancária", async () => {
@@ -198,14 +210,15 @@ describe("busca e navegação guiada da página inicial", () => {
     expect(push).not.toHaveBeenCalled();
   });
 
-  it("mostra mensagem quando não encontra e remove ao editar", async () => {
+  it("mostra uma orientação clara quando não encontra e remove ao editar", async () => {
     const user = userEvent.setup();
     render(<HomeSearch applications={applications} tasks={tasks} />);
     const searchbox = screen.getByRole("searchbox", { name: "Pesquisar ajuda" });
     await user.type(searchbox, "xyz inexistente");
     await user.click(screen.getByRole("button", { name: "Pesquisar" }));
-    expect(screen.getByRole("heading", { name: "Ainda não encontramos “xyz inexistente”" })).toBeVisible();
+    expect(screen.getByText("Não encontramos esse guia.")).toBeVisible();
+    expect(screen.getByText("Tente escrever de outra forma.")).toBeVisible();
     await user.clear(searchbox);
-    expect(screen.queryByRole("heading", { name: /Ainda não encontramos/i })).not.toBeInTheDocument();
+    expect(screen.queryByText("Não encontramos esse guia.")).not.toBeInTheDocument();
   });
 });

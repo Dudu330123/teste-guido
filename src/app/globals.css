@@ -858,6 +858,12 @@ html[data-theme="dark"] .home-theme-moon {
   font-weight: 850;
 }
 
+.home-suggestions-context {
+  margin: -0.15rem 0 0.75rem;
+  color: #425b7d;
+  font-size: 0.9rem;
+}
+
 .home-category-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -1530,6 +1536,21 @@ html[data-theme="dark"] .home-panel-back {
   padding: 1rem 1.25rem;
 }
 
+.home-search-empty {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+}
+
+.home-search-empty strong {
+  font-size: 1rem;
+}
+
+.home-search-empty span {
+  color: #425b7d;
+  font-size: 0.9rem;
+}
+
 .home-search-error {
   margin-top: 1rem;
 }
@@ -1541,6 +1562,11 @@ html[data-theme="dark"] .home-search-error {
   border-color: rgba(154, 200, 255, 0.24);
   background: rgba(4, 16, 39, 0.9);
   color: #f2f7ff;
+}
+
+html[data-theme="dark"] .home-suggestions-context,
+html[data-theme="dark"] .home-search-empty span {
+  color: #bdcce2;
 }
 
 html[data-theme="dark"] .guido-search-form input,
@@ -4770,5 +4796,213 @@ html[data-theme="dark"] .guide-toolbar-breadcrumb {
   .guide-toolbar-action,
   .guide-theme-toggle {
     transition: none;
+  }
+}
+
+/* O leitor usa uma única composição de foco: evidência visual à esquerda e
+   orientação à direita. O progresso fica junto da instrução para não
+   consumir uma faixa inteira no topo nem empurrar o primeiro passo para fora
+   da viewport em notebooks baixos. */
+.guide-reader-content {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(0.55rem, 1.2vh, 0.9rem);
+}
+
+.guide-reader-content > .guide-progress {
+  flex: 0 0 auto;
+  margin-top: 0;
+}
+
+.guide-reader-content > .guide-reader-instruction {
+  min-height: 0;
+  flex: 0 1 auto;
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+.guide-progress-heading {
+  align-items: center;
+}
+
+.guide-progress-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  text-align: right;
+}
+
+.guide-progress-meta p {
+  margin: 0;
+}
+
+.guide-progress-meta p:first-child {
+  color: #285b98;
+  font-size: 0.95rem;
+  font-weight: 900;
+}
+
+.guide-progress-meta p:last-child {
+  color: #42566e;
+  font-size: 0.82rem;
+}
+
+.guide-progress-status {
+  margin: 0.25rem 0 0;
+  color: #42566e;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.guide-phone-caption {
+  flex: 0 0 auto;
+  overflow-wrap: anywhere;
+}
+
+.guide-touch-target {
+  font-size: clamp(0.75rem, 0.9vw, 1rem);
+  line-height: 1.2;
+}
+
+html[data-theme="dark"] .guide-progress-meta p:first-child {
+  color: #8fc2ff;
+}
+
+html[data-theme="dark"] .guide-progress-meta p:last-child,
+html[data-theme="dark"] .guide-progress-status {
+  color: #c7d6e9;
+}
+
+@media (min-width: 80rem) {
+  .guide-page-content {
+    grid-template-rows: minmax(0, 1fr);
+    padding-top: clamp(0.5rem, 1.1vh, 0.9rem);
+    padding-bottom: clamp(0.75rem, 1.4vh, 1.1rem);
+  }
+
+  .guide-reader-layout {
+    height: 100%;
+    margin-top: 0;
+    gap: clamp(1rem, 2vw, 2.35rem);
+    grid-template-columns: minmax(19rem, 0.82fr) minmax(0, 1.18fr);
+  }
+
+  .guide-reader-visual {
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* A altura fluida mantém o telefone alto, mas deixa respiro lateral e
+     impede que os quadros recebidos do catálogo ditem a largura da coluna. */
+  .guide-page .guide-reader-visual .mock-phone,
+  .guide-page .guide-reader-visual .guide-preparation-phone {
+    width: auto;
+    height: clamp(26rem, 78%, 44rem);
+    max-width: min(100%, 22rem);
+    max-height: 100%;
+  }
+
+  .guide-page .guide-reader-visual .guide-evidence {
+    display: flex;
+    width: auto;
+    height: min(78%, 44rem);
+    max-width: 100%;
+    max-height: 100%;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .guide-page .guide-reader-visual .guide-evidence-frame {
+    width: auto;
+    height: calc(100% - 1.35rem);
+    max-width: 100%;
+    max-height: 100%;
+    aspect-ratio: 837 / 1880;
+  }
+
+  .guide-page .guide-reader-visual .guide-evidence-viewport {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+  }
+
+  .guide-page .guide-reader-visual .guide-evidence-caption {
+    margin-top: 0.3rem;
+    font-size: 0.72rem;
+    line-height: 1.2;
+  }
+
+  .guide-reader-instruction {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  .guide-progress {
+    padding: clamp(0.6rem, 1.2vh, 0.85rem) clamp(0.8rem, 1.4vw, 1.1rem);
+  }
+
+  .guide-progress-track {
+    margin-top: 0.55rem;
+  }
+}
+
+@media (max-width: 42rem) {
+  .guide-progress-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  .guide-progress-meta {
+    width: 100%;
+    align-items: baseline;
+    justify-content: space-between;
+    text-align: left;
+  }
+
+  .guide-progress-status {
+    font-size: 0.78rem;
+  }
+}
+
+@media (max-width: 79.9375rem) {
+  /* O bloco de regras do shell vem depois das media queries legadas; repetir
+     explicitamente a coluna única evita que a grade desktop reapareça em
+     telas estreitas e comprima o telefone em uma faixa de poucos pixels. */
+  .guide-reader-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .guide-reader-visual {
+    width: 100%;
+  }
+
+  .guide-page .guide-reader-visual .mock-phone,
+  .guide-page .guide-reader-visual .guide-preparation-phone {
+    width: min(100%, 22rem);
+    height: auto;
+    max-width: 22rem;
+  }
+
+  .guide-page .guide-reader-visual .guide-evidence {
+    width: min(100%, 22rem);
+    height: auto;
+    max-width: 22rem;
+  }
+
+  .guide-page .guide-reader-visual .guide-evidence-frame {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 837 / 1880;
+  }
+
+  .guide-page .guide-reader-visual .guide-evidence-viewport {
+    width: 100%;
+    height: 100%;
   }
 }

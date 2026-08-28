@@ -11,6 +11,7 @@ describe("trilha de progresso do guia", () => {
     render(<GuideProgressStepper steps={steps} currentStep={0} />);
 
     expect(screen.getByRole("progressbar", { name: "Progresso" })).toHaveAttribute("aria-valuenow", "1");
+    expect(screen.getByText("Passo 1 de 6")).toBeVisible();
     expect(screen.getByText("0 concluídos")).toBeVisible();
     expect(screen.getByText(`${steps[0]!.title}: Atual`)).toBeInTheDocument();
     expect(screen.getByText(`${steps[1]!.title}: Próximo`)).toBeInTheDocument();

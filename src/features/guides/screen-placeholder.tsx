@@ -42,7 +42,7 @@ export function ScreenPlaceholder({ step }: { step: GuideStep }) {
         <div className="flex flex-1 flex-col p-5">
           <MockScreen step={step} />
         </div>
-        <p className="bg-[#e8f0ff] px-4 py-3 text-center text-xs font-bold text-[var(--primary-dark)]">
+        <p className="guide-phone-caption break-words bg-[#e8f0ff] px-4 py-3 text-center text-xs font-bold leading-tight text-[var(--primary-dark)]">
           Ilustração educativa — não é tela de banco
         </p>
       </div>
@@ -52,7 +52,7 @@ export function ScreenPlaceholder({ step }: { step: GuideStep }) {
 
 function TouchTarget({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative flex min-h-16 items-center justify-center rounded-2xl border-4 border-[var(--primary)] bg-white px-3 text-center font-black text-[var(--primary-dark)] shadow-[0_0_0_8px_rgba(22,89,216,0.12)]">
+    <div className="guide-touch-target relative flex min-h-16 items-center justify-center rounded-2xl border-4 border-[var(--primary)] bg-white px-3 text-center font-black text-[var(--primary-dark)] shadow-[0_0_0_8px_rgba(22,89,216,0.12)]">
       <span className="absolute -top-8 rounded-full bg-[var(--primary)] px-3 py-1 text-xs font-black uppercase text-white">Toque aqui ↓</span>
       {children}
     </div>
@@ -65,7 +65,7 @@ function MockScreen({ step }: { step: GuideStep }) {
       <div className="mt-12 grid grid-cols-2 gap-5">
         <div className="h-24 rounded-3xl bg-[#dce7f7]" />
         <TouchTarget>
-          <span className="flex flex-col items-center gap-2">
+          <span className="flex min-w-0 max-w-full flex-col items-center gap-2 break-words">
             <Image src={demoBankIconPath} alt="" width={72} height={72} className="size-16 rounded-2xl" />
             Banco de demonstração
           </span>
