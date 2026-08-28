@@ -33,6 +33,15 @@ describe("seletor de celular", () => {
     expect(push).toHaveBeenCalledWith("/guias/pagar-boleto?os=android&app=nubank");
   });
 
+  it("preserva o banco escolhido ao reutilizar um roteiro genérico", async () => {
+    const user = userEvent.setup();
+    render(<OsSelector taskSlug="fazer-pix" initialApplicationSlug="caixa" />);
+
+    await user.click(screen.getByRole("button", { name: /próximo/i }));
+
+    expect(push).toHaveBeenCalledWith("/guias/fazer-pix?os=android&app=caixa");
+  });
+
   it("leva o contexto de retorno até o guia", async () => {
     const user = userEvent.setup();
     render(<OsSelector taskSlug="pix-nubank" returnTo="/explorar?q=Pix" />);

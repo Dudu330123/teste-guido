@@ -8,13 +8,14 @@ import { detectOperatingSystem, readOperatingSystem, saveOperatingSystem } from 
 interface OsSelectorProps {
   taskSlug: string;
   applicationOptions?: Array<{ slug: string; name: string }>;
+  initialApplicationSlug?: string;
   returnTo?: string;
 }
 
-export function OsSelector({ taskSlug, applicationOptions = [], returnTo }: OsSelectorProps) {
+export function OsSelector({ taskSlug, applicationOptions = [], initialApplicationSlug, returnTo }: OsSelectorProps) {
   const router = useRouter();
   const [operatingSystem, setOperatingSystem] = useState<OperatingSystem>("android");
-  const [applicationSlug, setApplicationSlug] = useState(applicationOptions[0]?.slug ?? "");
+  const [applicationSlug, setApplicationSlug] = useState(initialApplicationSlug ?? applicationOptions[0]?.slug ?? "");
 
   useEffect(() => {
     const timer = window.setTimeout(() => {

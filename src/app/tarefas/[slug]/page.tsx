@@ -1,32 +1,49 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { applications, isBankCategory } from "@/data/applications";
 import { tasks } from "@/data/guides";
 import { OsSelector } from "@/features/guides/os-selector";
-import { safeReturnPath } from "@/lib/navigation/return-path";
+import { safeReturnPath, withReturnPath } from "@/lib/navigation/return-path";
 import { getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/supabase/catalog";
 
 interface TaskPageProps {
   params: Promise<{ slug: string }>;
-  searchParams?: Promise<{ returnTo?: string }>;
+  searchParams?: Promise<{ app?: string; returnTo?: string }>;
 }
 
 export const metadata: Metadata = { title: "Escolha seu celular" };
 
 export default async function TaskPage({ params, searchParams }: TaskPageProps) {
   const { slug } = await params;
-  const { returnTo } = searchParams ? await searchParams : {};
+  const { app, returnTo } = searchParams ? await searchParams : {};
   const remoteCatalog = await getCatalogFromSupabase();
   const catalog = mergeCatalogWithFallback(remoteCatalog, { applications, tasks });
   const task = catalog.tasks.find((item) => item.slug === slug);
   if (!task) notFound();
-  const application = catalog.applications.find((item) => item.id === task.applicationId);
-  if (!application) notFound();
+  const taskApplication = catalog.applications.find((item) => item.id === task.applicationId);
+  if (!taskApplication) notFound();
+  const selectedApplication = app
+    ? catalog.applications.find((item) => item.slug === app && isBankCategory(item.category))
+    : undefined;
+  const application = selectedApplication ?? taskApplication;
   const bankApplications = catalog.applications.filter((item) =>
     isBankCategory(item.category) && item.slug !== "banco-demonstracao");
   const backHref = safeReturnPath(returnTo, `/aplicativos/${application.slug}`);
+
+  if (task.availability === "preparing" && task.applicationId !== "app-demo-bancos" && task.actionId) {
+    const genericTask = catalog.tasks.find((item) =>
+      item.applicationId === "app-demo-bancos" && item.actionId === task.actionId,
+    );
+    if (genericTask) {
+      // Links antigos podem apontar para uma tarefa específica do banco. Como o
+      // roteiro publicado é compartilhado por ação, redirecionamos para a versão
+      // genérica e preservamos o banco escolhido no contexto do guia.
+      const genericPath = `/tarefas/${genericTask.slug}?app=${encodeURIComponent(application.slug)}`;
+      redirect(withReturnPath(genericPath, returnTo ? backHref : undefined));
+    }
+  }
 
   return (
     <main className="guido-home internal-page min-h-screen">
@@ -41,9 +58,10 @@ export default async function TaskPage({ params, searchParams }: TaskPageProps) 
         {task.availability !== "preparing" ? (
           <OsSelector
             taskSlug={task.slug}
-            applicationOptions={application.slug === "banco-demonstracao"
+            applicationOptions={taskApplication.slug === "banco-demonstracao" && !selectedApplication
               ? bankApplications.map(({ slug: applicationSlug, name }) => ({ slug: applicationSlug, name }))
               : undefined}
+            initialApplicationSlug={selectedApplication?.slug}
             returnTo={returnTo ? backHref : undefined}
           />
         ) : (
