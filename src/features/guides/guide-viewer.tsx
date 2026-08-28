@@ -8,6 +8,8 @@ import { nextStep, previousStep, restartGuide } from "@/features/progress/guide-
 import { loadRemoteProgress, saveRemoteProgress } from "@/features/progress/remote-progress";
 import { HomeToolbar } from "@/features/theme/home-toolbar";
 import { ScreenPlaceholder } from "./screen-placeholder";
+import { GuidePreparationPanel, GuidePreparationPhoneScreen } from "./guide-preparation-state";
+import { GuideProgressStepper } from "./guide-progress-stepper";
 
 interface GuideViewerProps {
   application: Application;
@@ -21,7 +23,7 @@ function GuidePageShell({ children }: { children: ReactNode }) {
   return (
     <main className="guido-home internal-page guide-page min-h-screen">
       <HomeToolbar />
-      <div className="internal-page-content internal-page-content--wide guide-page-content">
+      <div className="internal-page-content internal-page-content--wide guide-page-content guide-reader">
         {children}
       </div>
     </main>
@@ -35,6 +37,7 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
   const [resumeStep, setResumeStep] = useState<number | null>(null);
   const [speechMessage, setSpeechMessage] = useState("");
   const [completed, setCompleted] = useState(false);
+  const [preparing, setPreparing] = useState(false);
   const stepTitleRef = useRef<HTMLHeadingElement>(null);
   const previousRenderedStep = useRef(0);
   const step = steps[currentStep];
@@ -92,13 +95,15 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
     return () => window.cancelAnimationFrame(frame);
   }, [currentStep, ready, resumeStep]);
 
-  if (!ready || !step) {
+  if (!ready || (!step && !preparing)) {
     return (
       <GuidePageShell>
         <p role="status" className="glass-panel guide-loading-state">Carregando o guia…</p>
       </GuidePageShell>
     );
   }
+
+  const activeStep = step!;
 
   if (resumeStep !== null) {
     return (
@@ -126,7 +131,7 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
       return;
     }
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(`${step.title}. ${step.instruction}${step.warning ? ` Importante: ${step.warning}` : ""}`);
+    const utterance = new SpeechSynthesisUtterance(`${activeStep.title}. ${activeStep.instruction}${activeStep.warning ? ` Importante: ${activeStep.warning}` : ""}`);
     utterance.lang = "pt-BR";
     window.speechSynthesis.speak(utterance);
     setSpeechMessage("Instrução sendo lida em voz alta.");
@@ -134,6 +139,11 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
 
   const finishOrAdvance = () => {
     if (currentStep === steps.length - 1) {
+      if (guide.guideStatus === "partial" || guide.guideStatus === "preparing") {
+        setPreparing(true);
+        setSpeechMessage("");
+        return;
+      }
       setCompleted(true);
       return;
     }
@@ -146,14 +156,20 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
     void saveRemoteProgress(guide.id, 0, "in_progress");
     setCurrentStep(restartGuide());
     setCompleted(false);
+    setPreparing(false);
     setSpeechMessage("");
   };
 
   const remainingSteps = steps.length - currentStep - 1;
-  const progressMessage = completed
+  const hasUnpublishedNextStep = guide.guideStatus === "partial" || guide.guideStatus === "preparing";
+  const progressMessage = preparing
+    ? "As próximas etapas ainda estão em preparação."
+    : completed
     ? "Demonstração concluída com segurança."
     : currentStep === steps.length - 1
-      ? "Este é o último passo. Nenhum pagamento será confirmado pelo Guido."
+      ? hasUnpublishedNextStep
+        ? "Este é o último passo disponível. O Guido não mostrará etapas sem validação."
+        : "Este é o último passo. Nenhum pagamento será confirmado pelo Guido."
       : `${remainingSteps === 1 ? "Falta 1 passo" : `Faltam ${remainingSteps} passos`}. Continue no seu ritmo.`;
 
   return (
@@ -163,8 +179,8 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
         <button type="button" onClick={restart} className="quiet-action min-h-12 px-2 py-2 text-base font-bold">Começar novamente</button>
       </div>
 
-      <header className="glass-panel guide-viewer-header">
-        <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-end sm:gap-6">
+      <header className="guide-reader-header">
+        <div className="guide-reader-summary">
           <div>
             <p className="text-base font-semibold text-[var(--primary)]">{application.name} · {guide.operatingSystem === "ios" ? "iPhone" : "Outro"}</p>
             <h1 className="text-2xl font-bold sm:text-3xl">{task.title}</h1>
@@ -174,27 +190,38 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
             <p className="text-sm font-semibold text-[var(--muted)]" aria-live="polite">{progressMessage}</p>
           </div>
         </div>
-        <div className="soft-panel mt-3 h-2 overflow-hidden rounded-full" role="progressbar" aria-label="Progresso do guia" aria-valuemin={1} aria-valuemax={steps.length} aria-valuenow={currentStep + 1}>
-          <div className="guide-progress-fill h-full bg-[var(--primary)]" style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }} />
-        </div>
+        {!preparing && <GuideProgressStepper steps={steps} currentStep={currentStep} />}
       </header>
 
-      <div className="guide-viewer-layout">
-        <div className="order-2 lg:order-1">
-          <ScreenPlaceholder step={step} />
+      <div className="guide-reader-layout">
+        <div className="guide-reader-visual">
+          {preparing ? <GuidePreparationPhoneScreen /> : <ScreenPlaceholder step={activeStep} />}
         </div>
-        <section aria-labelledby="step-title" className="glass-panel guide-step-card order-1 lg:order-2">
-          <p className="text-base font-black uppercase tracking-wide text-[var(--primary)]">Agora faça somente isto</p>
-          <h2 ref={stepTitleRef} id="step-title" tabIndex={-1} className="mt-1 scroll-mt-5 text-3xl font-bold">{step.title}</h2>
-          <p className="mt-4 text-2xl leading-relaxed">{step.instruction}</p>
-          {step.warning && (
+        {preparing ? (
+          <GuidePreparationPanel
+            application={application}
+            task={task}
+            onPrevious={() => { setPreparing(false); setSpeechMessage(""); }}
+            onFinish={() => { setPreparing(false); setCompleted(false); }}
+            nextStepNumber={currentStep + 2}
+          />
+        ) : <section aria-labelledby="step-title" className="guide-reader-card guide-reader-instruction">
+          <div className="guide-step-heading">
+            <span className="guide-step-number" aria-hidden="true">{currentStep + 1}</span>
+            <div>
+              <p>O que fazer agora</p>
+              <h2 ref={stepTitleRef} id="step-title" tabIndex={-1}>{activeStep.title}</h2>
+            </div>
+          </div>
+          <p className="guide-step-instruction">{activeStep.instruction}</p>
+          {activeStep.warning && (
             <div role="alert" className="notice-danger mt-6 rounded-2xl border-4 p-5 text-xl font-bold">
               <p>Antes de continuar</p>
-              <p className="mt-2">{step.warning}</p>
+              <p className="mt-2">{activeStep.warning}</p>
             </div>
           )}
-          {completed && step.confirmationMessage && (
-            <p role="status" className="notice-success mt-6 rounded-xl p-4 font-bold">{step.confirmationMessage}</p>
+          {completed && activeStep.confirmationMessage && (
+            <p role="status" className="notice-success mt-6 rounded-xl p-4 font-bold">{activeStep.confirmationMessage}</p>
           )}
 
           <button type="button" onClick={speak} className="secondary-action mt-7 min-h-14 w-full px-5 py-3 text-xl font-bold">
@@ -212,7 +239,7 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
               Voltar
             </button>
             <button type="button" onClick={finishOrAdvance} className="primary-action min-h-14 px-5 py-3 text-xl font-bold">
-              {currentStep === steps.length - 1 ? "Concluir demonstração" : "Próximo"}
+              {currentStep === steps.length - 1 ? hasUnpublishedNextStep ? "Ver próxima etapa" : "Concluir demonstração" : "Próximo"}
             </button>
           </div>
 
@@ -228,7 +255,7 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
               <p className="font-bold">Não compartilhe senha, código de segurança ou dados do boleto.</p>
             </div>
           </details>
-        </section>
+        </section>}
       </div>
     </GuidePageShell>
   );
