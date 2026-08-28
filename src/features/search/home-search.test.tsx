@@ -11,7 +11,6 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 describe("busca e navegação guiada da página inicial", () => {
   beforeEach(() => {
     push.mockClear();
-    window.HTMLElement.prototype.scrollIntoView = vi.fn();
   });
 
   it("abre diretamente uma tarefa em preparação pela barra de pesquisa", async () => {
@@ -19,27 +18,68 @@ describe("busca e navegação guiada da página inicial", () => {
     render(<HomeSearch applications={applications} tasks={tasks} />);
     await user.type(screen.getByRole("searchbox", { name: "Pesquisar ajuda" }), "enviar áudio");
     await user.click(screen.getByRole("button", { name: "Pesquisar" }));
-    expect(push).toHaveBeenCalledWith("/aplicativos/whatsapp");
+    expect(push).toHaveBeenCalledWith("/tarefas/enviar-audio-whatsapp");
   });
 
-  it("prioriza a ação geral de Pix antes de uma tarefa específica", async () => {
+  it("abre o menu de bancos ao pesquisar uma ação geral de Pix", async () => {
     const user = userEvent.setup();
     render(<HomeSearch applications={applications} tasks={tasks} />);
     await user.type(screen.getByRole("searchbox", { name: "Pesquisar ajuda" }), "pix");
     await user.click(screen.getByRole("button", { name: "Pesquisar" }));
-    expect(push).toHaveBeenCalledWith("/acoes/pix");
+    expect(screen.getByRole("dialog", { name: "Escolha seu banco" })).toBeVisible();
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it("abre o menu de bancos para uma tarefa bancária específica", async () => {
+    const user = userEvent.setup();
+    render(<HomeSearch applications={applications} tasks={tasks} />);
+    await user.type(screen.getByRole("searchbox", { name: "Pesquisar ajuda" }), "identificar golpe bancário");
+    await user.click(screen.getByRole("button", { name: "Pesquisar" }));
+    expect(screen.getByRole("dialog", { name: "Escolha seu banco" })).toBeVisible();
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it("preserva a ação pesquisada ao escolher Caixa", async () => {
+    const user = userEvent.setup();
+    render(<HomeSearch applications={applications} tasks={tasks} />);
+    await user.type(screen.getByRole("searchbox", { name: "Pesquisar ajuda" }), "pix");
+    await user.click(screen.getByRole("button", { name: "Pesquisar" }));
+    await user.click(screen.getByRole("button", { name: /Caixa/ }));
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/tarefas/pix-caixa"));
+    expect(screen.queryByRole("dialog", { name: "Escolha uma tarefa" })).not.toBeInTheDocument();
+  });
+
+  it("mantém o nome da tarefa genérica e o banco selecionado na rota", async () => {
+    const user = userEvent.setup();
+    render(<HomeSearch applications={applications} tasks={tasks} />);
+    await user.type(screen.getByRole("searchbox", { name: "Pesquisar ajuda" }), "identificar golpe bancário");
+    await user.click(screen.getByRole("button", { name: "Pesquisar" }));
+    await user.click(screen.getByRole("button", { name: /Nubank/ }));
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/tarefas/identificar-golpe-bancario?app=nubank"));
   });
 
   it("começa sem categoria pré-selecionada e mantém a busca secundária", () => {
     render(<HomeSearch applications={applications} tasks={tasks} />);
-    expect(screen.getByRole("heading", { name: "Como podemos ajudar?" })).toBeVisible();
-    expect(screen.getByText(/Conte com o Guido/)).toBeVisible();
+    expect(screen.getByRole("heading", { name: "O que você precisa fazer?" })).toBeVisible();
+    expect(screen.getByText("Encontre ajuda passo a passo para resolver tarefas do dia a dia.")).toBeVisible();
     expect(screen.getByRole("searchbox", { name: "Pesquisar ajuda" })).toBeVisible();
+    expect(screen.getByPlaceholderText("Digite: Pix, boleto, senha...")).toBeVisible();
     expect(screen.getByRole("button", { name: "Pesquisar" })).toBeDisabled();
     expect(screen.getByRole("button", { name: /Bancos/ })).toBeVisible();
     expect(screen.getByRole("button", { name: /WhatsApp/ })).toBeVisible();
     expect(screen.getByRole("button", { name: /Gov.br/ })).toBeVisible();
     expect(screen.queryByRole("heading", { name: "Qual banco você usa?" })).not.toBeInTheDocument();
+  });
+
+  it("preenche a busca ao escolher uma sugestão rápida", async () => {
+    const user = userEvent.setup();
+    render(<HomeSearch applications={applications} tasks={tasks} />);
+
+    await user.click(screen.getByRole("button", { name: "Pix" }));
+
+    expect(screen.getByRole("searchbox", { name: "Pesquisar ajuda" })).toHaveValue("Pix");
+    await waitFor(() => expect(screen.getByRole("searchbox", { name: "Pesquisar ajuda" })).toHaveFocus());
+    expect(push).not.toHaveBeenCalled();
   });
 
   it("não envia pesquisa vazia e libera o botão com texto útil", async () => {
@@ -64,57 +104,21 @@ describe("busca e navegação guiada da página inicial", () => {
     expect(screen.getByRole("button", { name: /Nubank/ })).toBeVisible();
 
     await user.click(screen.getByRole("button", { name: /Caixa/ }));
-    expect(screen.getByRole("heading", { name: "O que você quer fazer em Caixa?" })).toBeVisible();
+    expect(screen.getByRole("dialog", { name: "Escolha uma tarefa" })).toBeVisible();
     expect(screen.getByRole("link", { name: /Fazer Pix/ })).toHaveAttribute("href", "/tarefas/pix-caixa");
-    expect(screen.getByRole("button", { name: "← Trocar banco" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Em preparação" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Fechar lista de tarefas" })).toHaveFocus();
   });
 
-  it("troca a área por tarefas reais de WhatsApp e permite voltar", async () => {
+  it("abre diretamente o menu de tarefas reais de WhatsApp", async () => {
     const user = userEvent.setup();
     render(<HomeSearch applications={applications} tasks={tasks} />);
     await user.click(screen.getByRole("button", { name: /WhatsApp/ }));
-    expect(screen.getByRole("heading", { name: "O que você quer fazer em WhatsApp?" })).toBeVisible();
+    expect(screen.getByRole("dialog", { name: "Escolha uma tarefa" })).toBeVisible();
     expect(screen.getByRole("link", { name: /Enviar um áudio/ })).toHaveAttribute("href", "/tarefas/enviar-audio-whatsapp");
-    await user.click(screen.getByRole("button", { name: "← Voltar" }));
-    expect(screen.getByRole("heading", { name: "Escolha por onde começar" })).toBeVisible();
-  });
-
-  it("não rola a página quando o novo painel já está suficientemente visível", async () => {
-    const user = userEvent.setup();
-    const scrollIntoView = vi.fn();
-    window.HTMLElement.prototype.scrollIntoView = scrollIntoView;
-    const bounds = vi.spyOn(window.HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({
-      x: 0, y: 300, top: 300, left: 0, right: 700, bottom: 620, width: 700, height: 320,
-      toJSON: () => ({}),
-    });
-    render(<HomeSearch applications={applications} tasks={tasks} />);
-    await user.click(screen.getByRole("button", { name: /WhatsApp/ }));
-    await waitFor(() => expect(screen.getByRole("heading", { name: "O que você quer fazer em WhatsApp?" })).toBeVisible());
-    expect(scrollIntoView).not.toHaveBeenCalled();
-    bounds.mockRestore();
-  });
-
-  it("usa rolagem sem animação quando há pouco painel visível e movimento reduzido", async () => {
-    const user = userEvent.setup();
-    const scrollIntoView = vi.fn();
-    window.HTMLElement.prototype.scrollIntoView = scrollIntoView;
-    const bounds = vi.spyOn(window.HTMLElement.prototype, "getBoundingClientRect").mockReturnValue({
-      x: 0, y: 760, top: 760, left: 0, right: 700, bottom: 1080, width: 700, height: 320,
-      toJSON: () => ({}),
-    });
-    const originalMatchMedia = window.matchMedia;
-    Object.defineProperty(window, "matchMedia", {
-      configurable: true,
-      value: vi.fn((query: string) => ({
-        matches: query === "(prefers-reduced-motion: reduce)", media: query, onchange: null,
-        addEventListener: vi.fn(), removeEventListener: vi.fn(), addListener: vi.fn(), removeListener: vi.fn(), dispatchEvent: vi.fn(),
-      })),
-    });
-    render(<HomeSearch applications={applications} tasks={tasks} />);
-    await user.click(screen.getByRole("button", { name: /WhatsApp/ }));
-    await waitFor(() => expect(scrollIntoView).toHaveBeenCalledWith({ behavior: "auto", block: "nearest" }));
-    bounds.mockRestore();
-    Object.defineProperty(window, "matchMedia", { configurable: true, value: originalMatchMedia });
+    expect(screen.queryByRole("button", { name: /Ver todas as tarefas/ })).not.toBeInTheDocument();
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(screen.getByRole("heading", { name: "Escolha uma categoria" })).toBeVisible());
   });
 
   it("abre o menu de bancos, fecha com Escape e devolve o foco", async () => {
@@ -133,25 +137,48 @@ describe("busca e navegação guiada da página inicial", () => {
     render(<HomeSearch applications={applications} tasks={tasks} />);
     await user.click(screen.getByRole("button", { name: /Bancos/ }));
     await user.click(screen.getByRole("button", { name: /Banco do Brasil/ }));
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "O que você quer fazer em Banco do Brasil?" })).toBeVisible();
+    expect(screen.getByRole("dialog", { name: "Escolha uma tarefa" })).toBeVisible();
+    expect(screen.getByRole("link", { name: /Fazer Pix/ })).toBeVisible();
   });
 
-  it("troca categorias por sugestões sem quebrar os destinos existentes", async () => {
+  it("abre o menu de tarefas diretamente para categorias com poucas opções", async () => {
+    const user = userEvent.setup();
+    render(<HomeSearch applications={applications} tasks={tasks} />);
+    await user.click(screen.getByRole("button", { name: /Gov.br/ }));
+    expect(screen.getByRole("dialog", { name: "Escolha uma tarefa" })).toBeVisible();
+    expect(screen.getByRole("link", { name: /Acessar o Gov.br/ })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Fechar lista de tarefas" })).toHaveFocus();
+
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(screen.getByRole("button", { name: /Gov.br/ })).toHaveFocus());
+  });
+
+  it("troca categorias por quatro sugestões embaralhadas", async () => {
     const user = userEvent.setup();
     render(<HomeSearch applications={applications} tasks={tasks} />);
     await user.type(screen.getByRole("searchbox", { name: "Pesquisar ajuda" }), "pix");
-    expect(screen.getByRole("link", { name: /Fazer Pix/ })).toHaveAttribute("href", "/acoes/pix");
-    expect(screen.getByRole("link", { name: /Ver comprovante Pix/ })).toHaveAttribute("href", "/acoes/comprovante");
+    const suggestionLinks = screen.getAllByRole("link");
+    expect(suggestionLinks).toHaveLength(4);
+    expect(suggestionLinks.every((link) => link.classList.contains("home-task-card"))).toBe(true);
     expect(screen.queryByRole("heading", { name: "Escolha por onde começar" })).not.toBeInTheDocument();
   });
 
-  it("prioriza a ação geral por um erro comum", async () => {
+  it("abre o menu ao selecionar uma sugestão bancária", async () => {
+    const user = userEvent.setup();
+    render(<HomeSearch applications={applications} tasks={tasks} />);
+    await user.type(screen.getByRole("searchbox", { name: "Pesquisar ajuda" }), "pix");
+    await user.click(screen.getAllByRole("link")[0]);
+    expect(screen.getByRole("dialog", { name: "Escolha seu banco" })).toBeVisible();
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it("abre o menu de bancos mesmo com um erro comum em boleto", async () => {
     const user = userEvent.setup();
     render(<HomeSearch applications={applications} tasks={tasks} />);
     await user.type(screen.getByRole("searchbox", { name: "Pesquisar ajuda" }), "boletu");
     await user.click(screen.getByRole("button", { name: "Pesquisar" }));
-    expect(push).toHaveBeenCalledWith("/acoes/boleto");
+    expect(screen.getByRole("dialog", { name: "Escolha seu banco" })).toBeVisible();
+    expect(push).not.toHaveBeenCalled();
   });
 
   it("mostra mensagem quando não encontra e remove ao editar", async () => {

@@ -8,17 +8,23 @@ import { getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/supabase
 
 interface TaskPageProps {
   params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ app?: string | string[] }>;
 }
 
 export const metadata: Metadata = { title: "Escolha seu celular" };
 
-export default async function TaskPage({ params }: TaskPageProps) {
+export default async function TaskPage({ params, searchParams }: TaskPageProps) {
   const { slug } = await params;
+  const query = searchParams ? await searchParams : {};
+  const requestedApplicationSlug = Array.isArray(query.app) ? query.app[0] : query.app;
   const remoteCatalog = await getCatalogFromSupabase();
   const catalog = mergeCatalogWithFallback(remoteCatalog, { applications, tasks });
   const task = catalog.tasks.find((item) => item.slug === slug);
   if (!task) notFound();
-  const application = catalog.applications.find((item) => item.id === task.applicationId);
+  const taskApplication = catalog.applications.find((item) => item.id === task.applicationId);
+  const application = taskApplication?.slug === "banco-demonstracao" && requestedApplicationSlug
+    ? catalog.applications.find((item) => item.slug === requestedApplicationSlug) ?? taskApplication
+    : taskApplication;
   if (!application) notFound();
   const bankApplications = catalog.applications.filter((item) =>
     item.category === "Serviços financeiros" && item.slug !== "banco-demonstracao");
@@ -26,21 +32,19 @@ export default async function TaskPage({ params }: TaskPageProps) {
   return (
     <div className="guido-home internal-page task-setup-shell">
       <SiteHeader showAdmin={false} />
-      {task.availability !== "preparing" ? (
-        <TaskGuideSetup
-          taskId={task.id}
-          taskSlug={task.slug}
-          taskTitle={task.title}
-          description={task.description}
-          safetyWarning={task.safetyWarning}
-          application={{ slug: application.slug, name: application.name, logoPath: application.logoPath }}
-          applicationOptions={application.slug === "banco-demonstracao"
-            ? bankApplications.map(({ slug: applicationSlug, name, logoPath }) => ({ slug: applicationSlug, name, logoPath }))
-            : undefined}
-        />
-      ) : (
-        <main className="task-setup-page"><div className="glass-panel internal-page-card internal-page-card--preparing"><h1 className="internal-page-card-title">Guia em preparação</h1><p className="internal-page-card-description">Esta tarefa ainda está em revisão e não possui passos validados.</p></div></main>
-      )}
+      <TaskGuideSetup
+        taskId={task.id}
+        taskSlug={task.slug}
+        taskTitle={task.title}
+        description={task.description}
+        safetyWarning={task.safetyWarning}
+        application={{ slug: application.slug, name: application.name, logoPath: application.logoPath }}
+        applicationOptions={taskApplication?.slug === "banco-demonstracao"
+          ? bankApplications.map(({ slug: applicationSlug, name, logoPath }) => ({ slug: applicationSlug, name, logoPath }))
+          : undefined}
+        selectedApplicationSlug={application.slug}
+        canContinue={task.availability !== "preparing"}
+      />
     </div>
   );
 }

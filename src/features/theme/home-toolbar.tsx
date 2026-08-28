@@ -30,10 +30,11 @@ function applyThemePreference(preference: ThemePreference, save = true) {
 
 interface HomeToolbarProps {
   activePage?: "home" | "explore";
+  compactHome?: boolean;
   showAdmin?: boolean;
 }
 
-export function HomeToolbar({ activePage = "home", showAdmin = false }: HomeToolbarProps) {
+export function HomeToolbar({ activePage = "home", compactHome = false, showAdmin = false }: HomeToolbarProps) {
   const [helpOpen, setHelpOpen] = useState(false);
   const helpButtonRef = useRef<HTMLButtonElement>(null);
   const helpCloseRef = useRef<HTMLButtonElement>(null);
@@ -103,17 +104,19 @@ export function HomeToolbar({ activePage = "home", showAdmin = false }: HomeTool
         </Link>
 
         <nav aria-label="Navegação principal" className="home-main-nav">
-          <Link href="/" aria-current={activePage === "home" ? "page" : undefined}>Início</Link>
+          {!compactHome && <Link href="/" aria-current={activePage === "home" ? "page" : undefined}>Início</Link>}
           <Link href="/explorar" aria-current={activePage === "explore" ? "page" : undefined}>Explorar</Link>
           <Link href="/enviar-print">Enviar print</Link>
-          <button
-            ref={helpButtonRef}
-            type="button"
-            onClick={() => setHelpOpen(true)}
-            className="home-nav-button"
-          >
-            Sobre
-          </button>
+          {!compactHome && (
+            <button
+              ref={helpButtonRef}
+              type="button"
+              onClick={() => setHelpOpen(true)}
+              className="home-nav-button"
+            >
+              Sobre
+            </button>
+          )}
         </nav>
 
         <nav aria-label="Acesso à conta e aparência" className="home-account-nav">
