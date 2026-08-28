@@ -42,6 +42,7 @@ interface TaskGuideSetupProps {
   applicationOptions?: ApplicationOption[];
   selectedApplicationSlug?: string;
   canContinue?: boolean;
+  returnTo?: string;
 }
 
 /** Supported devices. Order determines visual position. */
@@ -62,6 +63,7 @@ export function TaskGuideSetup({
   applicationOptions = [],
   selectedApplicationSlug,
   canContinue = true,
+  returnTo,
 }: TaskGuideSetupProps) {
   const router = useRouter();
 
@@ -91,6 +93,7 @@ export function TaskGuideSetup({
     saveOperatingSystem(window.localStorage, device.os);
     const search = new URLSearchParams({ os: device.os });
     if (applicationOptions.length) search.set("app", applicationSlug);
+    if (returnTo) search.set("returnTo", returnTo);
     router.push(`/guias/${encodeURIComponent(taskSlug)}?${search}`);
   };
 

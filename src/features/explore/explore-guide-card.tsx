@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getCategoryLabel } from "@/data/applications";
 import { ApplicationLogo } from "@/features/applications/application-logo";
 import { getExploreGuideHref, type ExploreGuideItem } from "./explore-content";
 
@@ -7,6 +8,7 @@ export type ExploreGuideCardVariant = "featured" | "standard";
 interface ExploreGuideCardProps {
   item: ExploreGuideItem;
   variant?: ExploreGuideCardVariant;
+  returnTo?: string;
 }
 
 function getCardStatus(item: ExploreGuideItem) {
@@ -15,7 +17,7 @@ function getCardStatus(item: ExploreGuideItem) {
   return item.task.availability === "preparing" ? "Guia em preparação" : "Guia disponível";
 }
 
-export function ExploreGuideCard({ item, variant = "standard" }: ExploreGuideCardProps) {
+export function ExploreGuideCard({ item, variant = "standard", returnTo }: ExploreGuideCardProps) {
   const available = item.task.availability !== "preparing";
   const title = item.action?.taskTitle ?? item.task.title;
   const description = item.action?.description ?? item.task.description;
@@ -30,7 +32,7 @@ export function ExploreGuideCard({ item, variant = "standard" }: ExploreGuideCar
 
   return (
     <Link
-      href={getExploreGuideHref(item)}
+      href={getExploreGuideHref(item, returnTo)}
       className={`explore-guide-card${variant === "featured" ? " explore-guide-card--featured" : ""}`}
     >
       {variant === "featured" ? (
@@ -39,7 +41,7 @@ export function ExploreGuideCard({ item, variant = "standard" }: ExploreGuideCar
             <ApplicationLogo application={item.application} />
           </span>
           <span className="explore-card-badge">
-            {item.action ? "Serviços financeiros" : item.application.category}
+            {item.action ? "Bancos" : getCategoryLabel(item.application.category)}
           </span>
           <span className="explore-card-app">
             {item.action ? "Escolha seu banco" : item.application.name}
@@ -48,7 +50,7 @@ export function ExploreGuideCard({ item, variant = "standard" }: ExploreGuideCar
       ) : (
         <>
           <span className="explore-card-badge">
-            {item.action ? "Serviços financeiros" : item.application.category}
+            {item.action ? "Bancos" : getCategoryLabel(item.application.category)}
           </span>
           <span className="explore-card-app">
             {item.action ? "Escolha seu banco" : item.application.name}

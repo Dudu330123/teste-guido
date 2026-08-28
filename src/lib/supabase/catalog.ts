@@ -2,6 +2,7 @@ import { z } from "zod";
 import type { Application, GuideStep, OperatingSystem, Task } from "@/types/content";
 import type { RemoteGuideContent } from "@/lib/api/catalog";
 import { getSupabaseServerClient } from "./server";
+import { isBankCategory } from "@/data/applications";
 
 const publicationStatusSchema = z.enum(["draft", "under_review", "published", "outdated"]);
 const mediaSchema = z.object({
@@ -340,7 +341,7 @@ export function parseSupabaseUploadGuides(payload: unknown): SupabaseUploadGuide
       slug: row.tutorials.slug,
       title: row.tutorials.title,
       category: row.tutorials.applications.is_demo
-        && row.tutorials.applications.categories.name === "Serviços financeiros" ? "bank" : "other",
+        && isBankCategory(row.tutorials.applications.categories.name) ? "bank" : "other",
       stepsByOperatingSystem: { android: [], ios: [] },
     };
     current.stepsByOperatingSystem[row.platform] = row.steps

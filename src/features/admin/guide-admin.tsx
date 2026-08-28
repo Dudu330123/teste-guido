@@ -159,7 +159,7 @@ export function GuideAdmin({ guides, bankApplications, canDelete = false }: Guid
           <li>Marque a confirmação de segurança e use o botão <strong>Fazer upload do print</strong> no passo correspondente.</li>
           <li>Confira a prévia. O Guido preserva a proporção original e adapta a imagem à tela do usuário.</li>
         </ol>
-        <p className="notice-info mt-4 rounded-xl p-4 font-semibold">Recomendado: print vertical de 837 × 1880 pixels ou a resolução original equivalente do celular. Não corte, estique, adicione moldura nem marque dados reais.</p>
+        <p className="notice-info mt-4 rounded-xl p-4 font-semibold">Recomendado: print vertical na resolução original do celular, com no mínimo 720 pixels de largura. Não adicione moldura, marca d’água ou efeito visual. Nos guias de bancos, o print do Android é reutilizado como referência no iPhone.</p>
       </section>
 
       <section className="glass-panel mt-6 p-5" aria-labelledby="admin-selection-title">

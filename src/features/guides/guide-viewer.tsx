@@ -16,6 +16,7 @@ interface GuideViewerProps {
   guide: Guide;
   steps: GuideStep[];
   task: Task;
+  returnTo?: string;
 }
 
 function GuidePageShell({ children }: { children: ReactNode }) {
@@ -29,9 +30,10 @@ function GuidePageShell({ children }: { children: ReactNode }) {
   );
 }
 
-export function GuideViewer({ application, guide, steps, task }: GuideViewerProps) {
+export function GuideViewer({ application, guide, steps, task, returnTo }: GuideViewerProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [ready, setReady] = useState(false);
+  const [remotePending, setRemotePending] = useState(true);
   const [resumeStep, setResumeStep] = useState<number | null>(null);
   const [speechMessage, setSpeechMessage] = useState("");
   const [completed, setCompleted] = useState(false);
@@ -43,20 +45,34 @@ export function GuideViewer({ application, guide, steps, task }: GuideViewerProp
   useEffect(() => {
     const timer = window.setTimeout(() => {
       const localProgress = loadProgress(window.localStorage, guide.id);
+      const localCandidate = localProgress
+        && localProgress.currentStep > 0
+        && localProgress.currentStep < steps.length
+        && localProgress.status === "in_progress"
+        ? localProgress
+        : null;
+      if (localCandidate) setResumeStep(localCandidate.currentStep);
+      // O roteiro aparece assim que o armazenamento local está disponível. A
+      // sincronização remota continua em segundo plano para não atrasar o guia.
+      setReady(true);
       void loadRemoteProgress(guide.id).then((remoteProgress) => {
-        const candidates = [localProgress, remoteProgress]
-          .filter((progress): progress is NonNullable<typeof progress> => Boolean(progress))
-          .filter((progress) => progress.currentStep > 0 && progress.currentStep < steps.length && progress.status === "in_progress")
-          .sort((first, second) => second.lastAccessedAt.localeCompare(first.lastAccessedAt));
-        if (candidates[0]) setResumeStep(candidates[0].currentStep);
-        setReady(true);
+        if (!localCandidate) {
+          const remoteCandidate = remoteProgress
+            && remoteProgress.currentStep > 0
+            && remoteProgress.currentStep < steps.length
+            && remoteProgress.status === "in_progress"
+            ? remoteProgress
+            : null;
+          if (remoteCandidate) setResumeStep(remoteCandidate.currentStep);
+        }
+        setRemotePending(false);
       });
     }, 0);
     return () => window.clearTimeout(timer);
   }, [guide.guideVersion, guide.id, steps.length]);
 
   useEffect(() => {
-    if (!ready || resumeStep !== null) return;
+    if (!ready || remotePending || resumeStep !== null) return;
     saveProgress(window.localStorage, {
       guideId: guide.id,
       currentStep,
@@ -66,7 +82,7 @@ export function GuideViewer({ application, guide, steps, task }: GuideViewerProp
       operatingSystem: guide.operatingSystem,
     });
     void saveRemoteProgress(guide.id, currentStep, completed ? "completed" : "in_progress");
-  }, [completed, currentStep, guide, ready, resumeStep]);
+  }, [completed, currentStep, guide, ready, remotePending, resumeStep]);
 
   useEffect(() => {
     if (!ready || resumeStep !== null || previousRenderedStep.current === currentStep) return;
@@ -159,7 +175,7 @@ export function GuideViewer({ application, guide, steps, task }: GuideViewerProp
   return (
     <GuidePageShell>
       <div className="guide-viewer-toolbar">
-        <Link href="/tarefas/pagar-boleto" className="quiet-action min-h-12 px-2 py-2 text-base font-bold underline">← Sair do guia</Link>
+        <Link href={returnTo ?? "/tarefas/pagar-boleto"} className="quiet-action min-h-12 px-2 py-2 text-base font-bold underline">← Sair do guia</Link>
         <button type="button" onClick={restart} className="quiet-action min-h-12 px-2 py-2 text-base font-bold">Começar novamente</button>
       </div>
 

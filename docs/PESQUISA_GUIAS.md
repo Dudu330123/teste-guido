@@ -107,6 +107,25 @@ Os seis passos existentes em `src/data/guides.ts` foram revisados com o núcleo 
 
 O arquivo `public/guide-placeholders/banco-demonstracao-icon.png` foi gerado por IA em 9 de agosto de 2026 exclusivamente para identificar o aplicativo bancário fictício nos mockups. O símbolo é genérico, não foi obtido de terceiros, não representa instituição financeira real e não deve ser apresentado como marca oficial.
 
+## Logos do catálogo
+
+Em **27 de agosto de 2026**, os ícones abaixo foram consultados nas listagens oficiais da App Store e salvos localmente em `public/images/logos/` em resolução de 1000 × 1000 px. Eles são usados somente para identificação visual dos aplicativos no catálogo. A presença de uma marca não indica parceria, patrocínio, endosso ou validação do Guido.
+
+- [WhatsApp](https://apps.apple.com/br/app/whatsapp-messenger/id310633997) — arquivo `whatsapp.jpg`;
+- [Gov.br](https://apps.apple.com/br/app/gov-br/id1506827551) — arquivo `gov-br.jpg`;
+- [CAIXA](https://apps.apple.com/br/app/caixa/id490813624) — arquivo `caixa.jpg`;
+- [Banco do Brasil](https://apps.apple.com/br/app/bb-banco-cart%C3%A3o-cr%C3%A9dito/id330984271) — arquivo `banco-do-brasil.jpg`;
+- [Itaú](https://apps.apple.com/br/app/banco-ita%C3%BA-conta-cart%C3%A3o-e/id474505665) — arquivo `itau.jpg`;
+- [Bradesco](https://apps.apple.com/br/app/banco-bradesco/id336954985) — arquivo `bradesco.jpg`;
+- [Santander](https://apps.apple.com/br/app/banco-santander-brasil/id613365711) — arquivo `santander.jpg`;
+- [Nubank](https://apps.apple.com/br/app/nubank-conta-cart%C3%A3o-e-mais/id814456780) — arquivo `nubank.jpg`;
+- [Banco Inter](https://apps.apple.com/br/app/inter-conta-cart%C3%A3o-e-pix/id839711154) — arquivo `banco-inter.jpg`;
+- [PicPay](https://apps.apple.com/br/app/picpay-conta-cart%C3%A3o-e-pix/id561524792) — arquivo `picpay.jpg`;
+- [Mercado Pago](https://apps.apple.com/br/app/mercado-pago-banco-digital/id925436649) — arquivo `mercado-pago.jpg`;
+- [C6 Bank](https://apps.apple.com/br/app/c6-bank-cart%C3%A3o-conta-e-mais/id1463463143) — arquivo `c6-bank.jpg`.
+
+As imagens são derivadas dos ícones publicados nas páginas oficiais das lojas, não de capturas de contas ou telas autenticadas. Antes de uma publicação definitiva, a equipe deve confirmar os termos de uso de cada marca e substituir qualquer arquivo que deixe de corresponder à versão atual do aplicativo. As telas dos guias continuam fictícias e pendentes de validação humana.
+
 ## Verificação manual pendente
 
 Para cada item, a equipe deve verificar separadamente Android e iOS, registrar versão e data, produzir capturas autorizadas e anonimizadas e obter revisão de duas pessoas quando houver risco financeiro.
@@ -133,4 +152,4 @@ receber um print **não equivale a aprovação**: a equipe ainda deve comparar c
 passo com Android e iPhone, registrar a versão do aplicativo e emitir revisão
 humana antes de mudar o status para `published`.
 
-Também falta confirmar fontes oficiais e autorização de uso para todos os logos. Até isso ocorrer, a interface usa placeholders textuais sem alterar ou reproduzir marcas.
+As fontes dos logos listados acima foram registradas, mas a autorização de uso de cada marca ainda deve ser confirmada pela equipe antes de uma publicação comercial. O aplicativo fictício continua usando um identificador genérico para não sugerir vínculo com uma instituição real.

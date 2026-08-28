@@ -38,11 +38,15 @@ async function loadPublicGuideImages(
 ) {
   const supabase = await getSupabaseServerClient();
   if (!supabase) return new Map<number, string>();
+  // Os prints bancários são imagens de referência da tarefa, não uma promessa
+  // de que a tela muda entre plataformas. O Android é a fonte comum escolhida
+  // para iPhone; outros nichos continuam usando a plataforma selecionada.
+  const imageOperatingSystem = applicationSlug ? "android" : operatingSystem;
   let query = supabase
     .from("guide_public_images")
     .select("step_order, storage_bucket, storage_key")
     .eq("guide_slug", guideSlug)
-    .eq("operating_system", operatingSystem);
+    .eq("operating_system", imageOperatingSystem);
   query = applicationSlug
     ? query.eq("application_slug", applicationSlug)
     : query.is("application_slug", null);

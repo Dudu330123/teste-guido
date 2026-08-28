@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getCategoryLabel } from "@/data/applications";
 import { ApplicationLogo } from "./application-logo";
 import type { Application } from "@/types/content";
 
@@ -15,7 +16,7 @@ export function ApplicationCard({ application, taskCount }: ApplicationCardProps
       <div className="soft-panel application-logo mb-4">
         <ApplicationLogo application={application} />
       </div>
-      <p className="mb-1 text-base font-semibold text-[var(--muted)]">{application.category}</p>
+      <p className="mb-1 text-base font-semibold text-[var(--muted)]">{getCategoryLabel(application.category)}</p>
       <h3 className="text-2xl font-bold">{application.name}</h3>
       <p className="mt-2 flex-1">{application.description}</p>
       <p className="mt-4 font-semibold">

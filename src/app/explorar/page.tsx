@@ -54,7 +54,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   const displayItems = getExplorePresentationItems(filteredItems, q);
   const visibleItems = isGeneralView ? removeExploreItems(displayItems, popular) : displayItems;
   const popularMeasured = popularSelection?.measured ?? false;
-
+  const exploreReturnTo = categoryHref(categoria, q);
   return (
     <main className="guido-home guido-explore min-h-screen">
       <HomeToolbar showAdmin={Boolean(superadminAccess)} activePage="explore" />
@@ -65,7 +65,6 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
             <h1 id="explore-page-title">Explore no seu ritmo.</h1>
             <p>Pesquise uma tarefa ou escolha um assunto. Os guias disponíveis mostram cada passo com calma.</p>
           </header>
-
           <form action="/explorar" method="get" role="search" className="explore-search-form">
             <label htmlFor="explore-search">O que você quer aprender?</label>
             <div className="explore-search-control">
@@ -100,7 +99,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
               <p>{popularMeasured ? "Guias mais abertos pela comunidade." : "Guias disponíveis para conhecer o Guido."}</p>
             </div>
             <div className="explore-guide-grid explore-popular-grid">
-              {popular.map((item) => <ExploreGuideCard key={`popular-${item.task.id}`} item={item} variant="featured" />)}
+              {popular.map((item) => <ExploreGuideCard key={`popular-${item.task.id}`} item={item} variant="featured" returnTo={exploreReturnTo} />)}
             </div>
           </section>
         )}
@@ -111,11 +110,11 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
               <p className="explore-kicker">Em ordem alfabética</p>
               <h2 id="all-guides-title">{q || categoria ? "Resultados" : "Todos os guias"}</h2>
             </div>
-            <p aria-live="polite">{visibleItems.length} {visibleItems.length === 1 ? "guia encontrado" : "guias encontrados"}</p>
+            <p aria-live="polite">{visibleItems.length} {visibleItems.length === 1 ? "opção encontrada" : "opções encontradas"}</p>
           </div>
           {visibleItems.length > 0 ? (
             <div className="explore-guide-grid">
-              {visibleItems.map((item) => <ExploreGuideCard key={item.action ? `action-${item.action.id}` : item.task.id} item={item} />)}
+              {visibleItems.map((item) => <ExploreGuideCard key={item.action ? `action-${item.action.id}` : item.task.id} item={item} returnTo={exploreReturnTo} />)}
             </div>
           ) : (
             <div className="explore-empty" role="status">

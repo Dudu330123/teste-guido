@@ -2374,6 +2374,24 @@ html[data-theme="dark"] .guido-explore {
   margin-top: 0;
 }
 
+.explore-card-cover {
+  display: flex;
+  width: 3.4rem;
+  height: 3.4rem;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.8rem;
+  border: 1px solid rgba(8, 118, 249, 0.22);
+  border-radius: 1rem;
+  background: rgba(8, 118, 249, 0.1);
+  color: var(--home-blue);
+}
+
+.explore-card-cover svg {
+  width: 2rem;
+  height: 2rem;
+}
+
 .explore-guide-card:hover {
   border-color: var(--home-blue);
   background: rgba(255, 255, 255, 0.94);

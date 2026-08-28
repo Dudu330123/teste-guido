@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { actions } from "@/data/actions";
+import { isBankCategory } from "@/data/applications";
 import { ApplicationLogo } from "@/features/applications/application-logo";
 import type { Action, Application, Task } from "@/types/content";
 import { normalizeSearch, rankSearch } from "./search-content";
@@ -40,6 +41,13 @@ function searchTaskHref(task: Task, applications: Application[]) {
   return `/aplicativos/${application?.slug ?? ""}`;
 }
 
+function isBankNicheQuery(query: string) {
+  const normalized = normalizeSearch(query);
+  return ["banco", "bancos", "servicos financeiros", "servico financeiro", "financeiro", "financeira", "servicos bancarios", "servico bancario"]
+    .some((term) => normalized === term)
+    || isBankCategory(normalized);
+}
+
 function taskStatusLabel(task: Task) {
   if (task.availability === "preparing") return "Guia em preparação";
   if (task.availability === "demo") return "Demonstração educativa";
@@ -48,7 +56,7 @@ function taskStatusLabel(task: Task) {
 
 function isBankTask(task: Task, applications: Application[]) {
   if (task.applicationId === "app-demo-bancos") return true;
-  return applications.some((application) => application.id === task.applicationId && application.category === "Serviços financeiros");
+  return applications.some((application) => application.id === task.applicationId && isBankCategory(application.category));
 }
 
 type SearchBankTarget = { action?: Action; task?: Task };
@@ -352,6 +360,10 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
         <form className="guido-search-form" role="search" onSubmit={(event) => {
           event.preventDefault();
           if (!liveQuery || isPending) return;
+          if (isBankNicheQuery(query)) {
+            navigateTo("/explorar?categoria=Bancos");
+            return;
+          }
           const matchingAction = rankSearch(actions, query, (action) => `${action.title} ${action.taskTitle} ${action.description} ${action.searchTerms.join(" ")}`, 1)[0];
           if (matchingAction) {
             openBankModalFromSearch({ action: matchingAction });

@@ -1,6 +1,6 @@
 import { actions } from "@/data/actions";
 import { getAdminScriptSteps } from "@/data/admin-guide-scripts";
-import { financialApplications } from "@/data/applications";
+import { financialApplications, isBankCategory } from "@/data/applications";
 import { getGuide, getStepsForGuide, tasks } from "@/data/guides";
 import { getCatalogFromSupabase, getUploadGuidesFromSupabase } from "@/lib/supabase/catalog";
 import { GuideAdmin, type AdminGuideOption } from "./guide-admin";
@@ -73,7 +73,7 @@ export async function GuideUploadContent({
   const guideOptions = [...guidesBySlug.values()].sort((first, second) =>
     first.title.localeCompare(second.title, "pt-BR"));
   const remoteBankApplications = remoteCatalog?.applications.filter((application) =>
-    application.category === "Serviços financeiros" && application.slug !== "banco-demonstracao");
+    isBankCategory(application.category) && application.slug !== "banco-demonstracao");
   const bankApplications = remoteBankApplications?.length ? remoteBankApplications : financialApplications;
 
   return (
