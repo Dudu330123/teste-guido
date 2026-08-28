@@ -1,39 +1,37 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { applications, isBankCategory } from "@/data/applications";
 import { tasks } from "@/data/guides";
-import { OsSelector } from "@/features/guides/os-selector";
+import { TaskGuideSetup } from "@/features/guides/task-guide-setup";
 import { safeReturnPath, withReturnPath } from "@/lib/navigation/return-path";
 import { getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/supabase/catalog";
 
 interface TaskPageProps {
   params: Promise<{ slug: string }>;
-  searchParams?: Promise<{ app?: string; returnTo?: string }>;
+  searchParams?: Promise<{ app?: string | string[]; returnTo?: string }>;
 }
 
 export const metadata: Metadata = { title: "Escolha seu celular" };
 
 export default async function TaskPage({ params, searchParams }: TaskPageProps) {
   const { slug } = await params;
-  const { app, returnTo } = searchParams ? await searchParams : {};
+  const query = searchParams ? await searchParams : {};
+  const requestedApplicationSlug = Array.isArray(query.app) ? query.app[0] : query.app;
+  const returnTo = query.returnTo;
   const remoteCatalog = await getCatalogFromSupabase();
   const catalog = mergeCatalogWithFallback(remoteCatalog, { applications, tasks });
   const task = catalog.tasks.find((item) => item.slug === slug);
   if (!task) notFound();
   const taskApplication = catalog.applications.find((item) => item.id === task.applicationId);
   if (!taskApplication) notFound();
-  const selectedApplication = app
-    ? catalog.applications.find((item) => item.slug === app && isBankCategory(item.category))
+  const selectedApplication = requestedApplicationSlug
+    ? catalog.applications.find((item) => item.slug === requestedApplicationSlug && isBankCategory(item.category))
     : undefined;
   const application = selectedApplication ?? taskApplication;
   const bankApplications = catalog.applications.filter((item) =>
     isBankCategory(item.category) && item.slug !== "banco-demonstracao");
   const isGenericBankTask = taskApplication.slug === "banco-demonstracao" && !selectedApplication;
-  // O boleto começa pelo aparelho para que a segunda tela possa listar os
-  // aplicativos no mesmo catálogo visual usado pela ação Pix.
-  const chooseApplicationAfterDevice = isGenericBankTask && task.actionId === "boleto";
   const defaultBackHref = isGenericBankTask ? "/" : `/aplicativos/${application.slug}`;
   const backHref = safeReturnPath(returnTo, defaultBackHref);
 
@@ -51,32 +49,22 @@ export default async function TaskPage({ params, searchParams }: TaskPageProps) 
   }
 
   return (
-    <main className="guido-home internal-page min-h-screen">
-      <SiteHeader />
-      <div className="internal-page-content internal-page-content--narrow">
-        <Link href={backHref} className="internal-page-back">← Voltar para tarefas</Link>
-        <header className="internal-page-intro">
-          <p className="internal-page-eyebrow">Guia educativo</p>
-          <h1 className="internal-page-title">{task.title}</h1>
-          <p className="internal-page-description">{task.description}</p>
-        </header>
-        {task.availability !== "preparing" ? (
-          <OsSelector
-            taskSlug={task.slug}
-            applicationOptions={isGenericBankTask && !chooseApplicationAfterDevice
-              ? bankApplications.map(({ slug: applicationSlug, name }) => ({ slug: applicationSlug, name }))
-              : undefined}
-            initialApplicationSlug={selectedApplication?.slug}
-            nextPath={chooseApplicationAfterDevice ? `/acoes/${task.actionId}` : undefined}
-            returnTo={returnTo ? backHref : undefined}
-          />
-        ) : (
-          <div className="glass-panel internal-page-card internal-page-card--preparing">
-            <h2 className="internal-page-card-title">Guia em preparação</h2>
-            <p className="internal-page-card-description">Esta tarefa ainda está em revisão e não possui passos validados.</p>
-          </div>
-        )}
-      </div>
-    </main>
+    <div className="guido-home internal-page task-setup-shell">
+      <SiteHeader showAdmin={false} />
+      <TaskGuideSetup
+        taskId={task.id}
+        taskSlug={task.slug}
+        taskTitle={task.title}
+        description={task.description}
+        safetyWarning={task.safetyWarning}
+        application={{ slug: application.slug, name: application.name, logoPath: application.logoPath }}
+        applicationOptions={taskApplication?.slug === "banco-demonstracao"
+          ? bankApplications.map(({ slug: applicationSlug, name, logoPath }) => ({ slug: applicationSlug, name, logoPath }))
+          : undefined}
+        selectedApplicationSlug={application.slug}
+        canContinue={task.availability !== "preparing"}
+        returnTo={returnTo ? backHref : undefined}
+      />
+    </div>
   );
 }

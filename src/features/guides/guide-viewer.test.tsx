@@ -11,7 +11,9 @@ const guide = getGuide("android")!;
 const steps = getStepsForGuide(guide.id);
 
 describe("visualizador do guia", () => {
-  beforeEach(() => localStorage.clear());
+  beforeEach(() => {
+    localStorage.clear();
+  });
 
   it("expõe os controles principais e permite avançar e voltar", async () => {
     const user = userEvent.setup();
@@ -21,6 +23,11 @@ describe("visualizador do guia", () => {
     expect(screen.getByRole("progressbar", { name: /progresso/i })).toHaveAttribute("aria-valuenow", "1");
     expect(screen.getByRole("button", { name: "Voltar" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Ouvir instrução" })).toBeEnabled();
+    expect(screen.getByRole("link", { name: "Trocar celular" })).toHaveAttribute("href", "/tarefas/pagar-boleto");
+    expect(screen.getByRole("note")).toHaveTextContent(task.safetyWarning);
+    expect(screen.getByRole("button", { name: "Alternar entre modo claro e escuro" })).toBeVisible();
+    expect(screen.getByText("O que fazer agora")).toBeVisible();
+    expect(screen.getByText("1")).toHaveClass("guide-step-number");
     expect(screen.getByText("Preciso de ajuda")).toBeVisible();
     expect(screen.queryByText(/Você está no controle/)).not.toBeInTheDocument();
     expect(screen.getByText("Faltam 5 passos. Continue no seu ritmo.")).toBeVisible();
@@ -57,5 +64,23 @@ describe("visualizador do guia", () => {
     expect(screen.getByText("Passo 4 de 6")).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Começar novamente" }));
     await waitFor(() => expect(screen.getByText("Passo 1 de 6")).toBeVisible());
+  });
+
+  it("encerra um guia parcial em preparação sem fingir conclusão", async () => {
+    const user = userEvent.setup();
+    render(<GuideViewer application={application} guide={{ ...guide, guideStatus: "partial" }} steps={steps} task={task} />);
+    await screen.findByText("Passo 1 de 6");
+
+    for (let index = 1; index < steps.length; index += 1) {
+      await user.click(screen.getByRole("button", { name: "Próximo" }));
+    }
+
+    expect(screen.getByText(/último passo disponível/i)).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Ver próxima etapa" }));
+
+    expect(screen.getByRole("heading", { name: "Próxima etapa em preparação" })).toBeVisible();
+    expect(screen.getByText(/não inventa etapas/i)).toBeVisible();
+    expect(screen.getByRole("link", { name: "Voltar aos guias" })).toHaveAttribute("href", "/explorar");
+    expect(screen.queryByText(/demonstração concluída/i)).not.toBeInTheDocument();
   });
 });

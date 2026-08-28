@@ -1,18 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { applications, getCategoryLabel } from "@/data/applications";
+import { applications } from "@/data/applications";
 import { tasks } from "@/data/guides";
 import {
   buildExploreItems,
   filterExploreItems,
   getExploreCategories,
-  getExploreGuideHref,
   getExplorePresentationItems,
   groupFinancialExploreItems,
   removeExploreItems,
   selectPopularItems,
-  type ExploreGuideItem,
 } from "@/features/explore/explore-content";
+import { ExploreGuideCard } from "@/features/explore/explore-guide-card";
 import { HomeToolbar } from "@/features/theme/home-toolbar";
 import { getSuperadminAccess } from "@/lib/supabase/admin";
 import {
@@ -29,24 +28,6 @@ export const metadata: Metadata = {
   title: "Explorar guias",
   description: "Encontre guias do Guido por assunto, aplicativo ou categoria.",
 };
-
-function GuideCard({ item, returnTo }: { item: ExploreGuideItem; returnTo: string }) {
-  const available = item.task.availability !== "preparing";
-  const title = item.action?.taskTitle ?? item.task.title;
-  const description = item.action?.description ?? item.task.description;
-  return (
-    <Link href={getExploreGuideHref(item, returnTo)} className="explore-guide-card">
-      <span className="explore-card-badge">{item.action ? "Bancos" : getCategoryLabel(item.application.category)}</span>
-      <span className="explore-card-app">{item.action ? "Escolha seu banco" : item.application.name}</span>
-      <h3>{title}</h3>
-      <p>{description}</p>
-      <span className={`explore-card-status ${item.action || available ? "is-available" : "is-preparing"}`}>
-        {item.action ? "Escolha o aplicativo" : item.task.availability === "demo" ? "Demonstração disponível" : available ? "Guia disponível" : "Guia em preparação"}
-      </span>
-      <span aria-hidden="true" className="explore-card-arrow">→</span>
-    </Link>
-  );
-}
 
 function categoryHref(category: string, query: string) {
   const params = new URLSearchParams();
@@ -74,38 +55,39 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   const visibleItems = isGeneralView ? removeExploreItems(displayItems, popular) : displayItems;
   const popularMeasured = popularSelection?.measured ?? false;
   const exploreReturnTo = categoryHref(categoria, q);
-
   return (
     <main className="guido-home guido-explore min-h-screen">
       <HomeToolbar showAdmin={Boolean(superadminAccess)} activePage="explore" />
       <div className="explore-content">
-        <header className="explore-intro">
-          <p className="home-eyebrow">Biblioteca de guias</p>
-          <h1>Explore no seu ritmo.</h1>
-          <p>Pesquise uma tarefa ou escolha um assunto. Em Bancos, escolha primeiro a função e depois o aplicativo.</p>
-        </header>
+        <section className="explore-hero" aria-labelledby="explore-page-title">
+          <header className="explore-intro">
+            <p className="home-eyebrow">Biblioteca de guias</p>
+            <h1 id="explore-page-title">Explore no seu ritmo.</h1>
+            <p>Pesquise uma tarefa ou escolha um assunto. Os guias disponíveis mostram cada passo com calma.</p>
+          </header>
+          <form action="/explorar" method="get" role="search" className="explore-search-form">
+            <label htmlFor="explore-search">O que você quer aprender?</label>
+            <div className="explore-search-control">
+              <svg aria-hidden="true" viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="2.2">
+                <circle cx="10.5" cy="10.5" r="6.5" />
+                <path d="m15.5 15.5 5 5" strokeLinecap="round" />
+              </svg>
+              <input id="explore-search" name="q" type="search" defaultValue={q} placeholder="Ex.: banco, Gov.br ou WhatsApp" />
+              {categoria && <input type="hidden" name="categoria" value={categoria} />}
+              <button type="submit">Pesquisar</button>
+            </div>
+          </form>
 
-        <form action="/explorar" method="get" role="search" className="explore-search-form">
-          <label htmlFor="explore-search">O que você quer aprender?</label>
-          <div className="explore-search-control">
-            <svg aria-hidden="true" viewBox="0 0 24 24" stroke="currentColor" fill="none" strokeWidth="2.2">
-              <circle cx="10.5" cy="10.5" r="6.5" />
-              <path d="m15.5 15.5 5 5" strokeLinecap="round" />
-            </svg>
-            <input id="explore-search" name="q" type="search" defaultValue={q} placeholder="Ex.: banco, Gov.br ou WhatsApp" />
-            {categoria && <input type="hidden" name="categoria" value={categoria} />}
-            <button type="submit">Pesquisar</button>
-          </div>
-        </form>
-
-        <nav aria-label="Filtrar guias por categoria" className="explore-filters">
-          <Link href={categoryHref("", q)} aria-current={!categoria ? "page" : undefined}>Todos</Link>
-          {categories.map((category) => (
-            <Link key={category} href={categoryHref(category, q)} aria-current={categoria === category ? "page" : undefined}>
-              {category}
-            </Link>
-          ))}
-        </nav>
+          <nav aria-label="Filtrar guias por categoria" className="explore-filters">
+            <Link href={categoryHref("", q)} aria-current={!categoria ? "page" : undefined}>Todos</Link>
+            {categories.map((category) => (
+              <Link key={category} href={categoryHref(category, q)} aria-current={categoria === category ? "page" : undefined}>
+                {category}
+              </Link>
+            ))}
+          </nav>
+          {(q || categoria) && <Link href="/explorar" className="explore-clear-link">Limpar pesquisa e filtros</Link>}
+        </section>
 
         {isGeneralView && popular.length > 0 && (
           <section aria-labelledby="popular-guides-title" className="explore-section">
@@ -117,7 +99,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
               <p>{popularMeasured ? "Guias mais abertos pela comunidade." : "Guias disponíveis para conhecer o Guido."}</p>
             </div>
             <div className="explore-guide-grid explore-popular-grid">
-              {popular.map((item) => <GuideCard key={`popular-${item.task.id}`} item={item} returnTo={exploreReturnTo} />)}
+              {popular.map((item) => <ExploreGuideCard key={`popular-${item.task.id}`} item={item} variant="featured" returnTo={exploreReturnTo} />)}
             </div>
           </section>
         )}
@@ -132,7 +114,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
           </div>
           {visibleItems.length > 0 ? (
             <div className="explore-guide-grid">
-              {visibleItems.map((item) => <GuideCard key={item.action ? `action-${item.action.id}` : item.task.id} item={item} returnTo={exploreReturnTo} />)}
+              {visibleItems.map((item) => <ExploreGuideCard key={item.action ? `action-${item.action.id}` : item.task.id} item={item} returnTo={exploreReturnTo} />)}
             </div>
           ) : (
             <div className="explore-empty" role="status">
