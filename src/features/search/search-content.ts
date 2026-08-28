@@ -1,5 +1,18 @@
+const SEARCH_ALIASES: Record<string, string> = {
+  pok: "pix",
+  poki: "pix",
+};
+
 export function normalizeSearch(value: string) {
-  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((term) => SEARCH_ALIASES[term] ?? term)
+    .join(" ");
 }
 
 export function scoreSearch(value: string, query: string) {

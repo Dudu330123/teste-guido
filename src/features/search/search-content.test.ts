@@ -7,6 +7,12 @@ describe("pontuação da busca", () => {
     expect(scoreSearch("Aprenda a enviar um áudio", "enviar áudio")).toBeGreaterThan(0);
   });
 
+  it("entende erros comuns de digitação para Pix", () => {
+    expect(normalizeSearch("poki")).toBe("pix");
+    expect(normalizeSearch("pok banco")).toBe("pix banco");
+    expect(rankSearch(["Fazer Pix"], "poki", (item) => item, 4)).toEqual(["Fazer Pix"]);
+  });
+
   it("prioriza correspondência exata e respeita o limite", () => {
     const items = ["boleto no banco", "pagar boleto", "segunda via de boleto"];
     expect(rankSearch(items, "pagar boleto", (item) => item, 2)).toEqual(["pagar boleto"]);

@@ -19,10 +19,64 @@ interface GuideViewerProps {
   returnTo?: string;
 }
 
-function GuidePageShell({ children }: { children: ReactNode }) {
+function taskSetupHref(task: Task, application: Application, returnTo?: string) {
+  const params = new URLSearchParams();
+  if (application.slug !== "banco-demonstracao") params.set("app", application.slug);
+  if (returnTo) params.set("returnTo", returnTo);
+  const query = params.toString();
+  return `/tarefas/${encodeURIComponent(task.slug)}${query ? `?${query}` : ""}`;
+}
+
+function GuideToolbar({
+  application,
+  guide,
+  task,
+  returnTo,
+  onRestart,
+}: GuideViewerProps & { onRestart: () => void }) {
+  const exitHref = returnTo ?? `/tarefas/${encodeURIComponent(task.slug)}`;
+  const switchHref = taskSetupHref(task, application, returnTo);
+  return (
+    <HomeToolbar
+      variant="guide"
+      guideLeft={(
+        <div className="guide-toolbar-context">
+          <Link href={exitHref} className="guide-toolbar-exit">← Sair do guia</Link>
+          <span className="guide-toolbar-breadcrumb" aria-label="Contexto do guia">
+            <span>{application.name}</span>
+            <span aria-hidden="true">·</span>
+            <span>{task.title}</span>
+            <span aria-hidden="true">·</span>
+            <span>{guide.operatingSystem === "ios" ? "iPhone" : "Android"}</span>
+          </span>
+        </div>
+      )}
+      guideActions={(
+        <>
+          <Link href={switchHref} className="guide-toolbar-action">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="6" y="2.5" width="12" height="19" rx="2.5" />
+              <path d="M10 5h4M11 18.5h2" />
+            </svg>
+            Trocar celular
+          </Link>
+          <button type="button" onClick={onRestart} className="guide-toolbar-action">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20 11a8 8 0 1 0 1 4" />
+              <path d="M20 4v7h-7" />
+            </svg>
+            Começar novamente
+          </button>
+        </>
+      )}
+    />
+  );
+}
+
+function GuidePageShell({ children, toolbar }: { children: ReactNode; toolbar: ReactNode }) {
   return (
     <main className="guido-home internal-page guide-page min-h-screen">
-      <HomeToolbar />
+      {toolbar}
       <div className="internal-page-content internal-page-content--wide guide-page-content guide-reader">
         {children}
       </div>
@@ -41,6 +95,24 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
   const stepTitleRef = useRef<HTMLHeadingElement>(null);
   const previousRenderedStep = useRef(0);
   const step = steps[currentStep];
+  const restart = () => {
+    clearProgress(window.localStorage, guide.id);
+    void saveRemoteProgress(guide.id, 0, "in_progress");
+    setCurrentStep(restartGuide());
+    setCompleted(false);
+    setPreparing(false);
+    setSpeechMessage("");
+  };
+  const guideToolbar = (
+    <GuideToolbar
+      application={application}
+      guide={guide}
+      steps={steps}
+      task={task}
+      returnTo={returnTo}
+      onRestart={restart}
+    />
+  );
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -89,15 +161,13 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
     previousRenderedStep.current = currentStep;
     const frame = window.requestAnimationFrame(() => {
       stepTitleRef.current?.focus({ preventScroll: true });
-      const behavior = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
-      stepTitleRef.current?.scrollIntoView?.({ behavior, block: "start" });
     });
     return () => window.cancelAnimationFrame(frame);
   }, [currentStep, ready, resumeStep]);
 
   if (!ready || (!step && !preparing)) {
     return (
-      <GuidePageShell>
+      <GuidePageShell toolbar={guideToolbar}>
         <p role="status" className="glass-panel guide-loading-state">Carregando o guia…</p>
       </GuidePageShell>
     );
@@ -107,7 +177,7 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
 
   if (resumeStep !== null) {
     return (
-      <GuidePageShell>
+      <GuidePageShell toolbar={guideToolbar}>
         <div className="glass-panel guide-resume-card text-center">
           <h1 className="text-3xl font-bold">Continuar de onde parou?</h1>
           <p className="mt-4 text-xl">Você parou no passo {resumeStep + 1} de {steps.length}. Deseja continuar?</p>
@@ -151,15 +221,6 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
     setSpeechMessage("");
   };
 
-  const restart = () => {
-    clearProgress(window.localStorage, guide.id);
-    void saveRemoteProgress(guide.id, 0, "in_progress");
-    setCurrentStep(restartGuide());
-    setCompleted(false);
-    setPreparing(false);
-    setSpeechMessage("");
-  };
-
   const remainingSteps = steps.length - currentStep - 1;
   const hasUnpublishedNextStep = guide.guideStatus === "partial" || guide.guideStatus === "preparing";
   const progressMessage = preparing
@@ -173,10 +234,10 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
       : `${remainingSteps === 1 ? "Falta 1 passo" : `Faltam ${remainingSteps} passos`}. Continue no seu ritmo.`;
 
   return (
-    <GuidePageShell>
-      <div className="guide-viewer-toolbar">
-        <Link href={returnTo ?? "/tarefas/pagar-boleto"} className="quiet-action min-h-12 px-2 py-2 text-base font-bold underline">← Sair do guia</Link>
-        <button type="button" onClick={restart} className="quiet-action min-h-12 px-2 py-2 text-base font-bold">Começar novamente</button>
+    <GuidePageShell toolbar={guideToolbar}>
+      <div role="note" className="notice-warning guide-safety-notice">
+        <span aria-hidden="true">⚠</span>
+        <span>{task.safetyWarning}</span>
       </div>
 
       <header className="guide-reader-header">

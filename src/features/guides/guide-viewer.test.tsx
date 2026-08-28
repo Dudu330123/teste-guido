@@ -11,7 +11,9 @@ const guide = getGuide("android")!;
 const steps = getStepsForGuide(guide.id);
 
 describe("visualizador do guia", () => {
-  beforeEach(() => localStorage.clear());
+  beforeEach(() => {
+    localStorage.clear();
+  });
 
   it("expõe os controles principais e permite avançar e voltar", async () => {
     const user = userEvent.setup();
@@ -21,6 +23,9 @@ describe("visualizador do guia", () => {
     expect(screen.getByRole("progressbar", { name: /progresso/i })).toHaveAttribute("aria-valuenow", "1");
     expect(screen.getByRole("button", { name: "Voltar" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Ouvir instrução" })).toBeEnabled();
+    expect(screen.getByRole("link", { name: "Trocar celular" })).toHaveAttribute("href", "/tarefas/pagar-boleto");
+    expect(screen.getByRole("note")).toHaveTextContent(task.safetyWarning);
+    expect(screen.getByRole("button", { name: "Alternar entre modo claro e escuro" })).toBeVisible();
     expect(screen.getByText("O que fazer agora")).toBeVisible();
     expect(screen.getByText("1")).toHaveClass("guide-step-number");
     expect(screen.getByText("Preciso de ajuda")).toBeVisible();

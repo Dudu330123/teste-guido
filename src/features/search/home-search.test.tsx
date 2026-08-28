@@ -71,6 +71,13 @@ describe("busca e navegação guiada da página inicial", () => {
     expect(screen.queryByRole("heading", { name: "Qual banco você usa?" })).not.toBeInTheDocument();
   });
 
+  it("exibe os logos locais nas categorias correspondentes", () => {
+    render(<HomeSearch applications={applications} tasks={tasks} />);
+
+    expect(screen.getByRole("img", { name: "Logo do WhatsApp" })).toHaveAttribute("src", "/images/logos/whatsapp-home.png");
+    expect(screen.getByRole("img", { name: "Logo do Gov.br" })).toHaveAttribute("src", "/images/logos/gov-br-home.webp");
+  });
+
   it("preenche a busca ao escolher uma sugestão rápida", async () => {
     const user = userEvent.setup();
     render(<HomeSearch applications={applications} tasks={tasks} />);
@@ -161,6 +168,16 @@ describe("busca e navegação guiada da página inicial", () => {
     expect(suggestionLinks).toHaveLength(4);
     expect(suggestionLinks.every((link) => link.classList.contains("home-task-card"))).toBe(true);
     expect(screen.queryByRole("heading", { name: "Escolha por onde começar" })).not.toBeInTheDocument();
+  });
+
+  it("mostra quatro sugestões de Pix ao digitar um erro comum", async () => {
+    const user = userEvent.setup();
+    render(<HomeSearch applications={applications} tasks={tasks} />);
+    await user.type(screen.getByRole("searchbox", { name: "Pesquisar ajuda" }), "poki");
+
+    const suggestionLinks = screen.getAllByRole("link");
+    expect(suggestionLinks).toHaveLength(4);
+    expect(suggestionLinks.some((link) => /pix/i.test(link.textContent ?? ""))).toBe(true);
   });
 
   it("abre o menu ao selecionar uma sugestão bancária", async () => {

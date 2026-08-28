@@ -34,8 +34,8 @@ const preparingApplications: Array<[string, string, string, string, string[]]> =
 // Mantê-los no repositório evita depender de CDN externa e permite atualizar cada
 // marca de forma controlada, sem transformar o app fictício em uma marca bancária.
 const localLogoPaths: Record<string, string> = {
-  whatsapp: "/images/logos/whatsapp.jpg",
-  "gov-br": "/images/logos/gov-br.jpg",
+  whatsapp: "/images/logos/whatsapp-home.png",
+  "gov-br": "/images/logos/gov-br-home.webp",
   caixa: "/images/logos/caixa.jpg",
   "banco-do-brasil": "/images/logos/banco-do-brasil.jpg",
   itau: "/images/logos/itau.jpg",

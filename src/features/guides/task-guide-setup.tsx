@@ -17,7 +17,7 @@
  *   - Indicadores "Agora"/"Depois" / "Etapa 1 de 2"
  *
  * Preservados:
- *   - Seleção Samsung/iPhone, saveOperatingSystem e contexto do aplicativo
+ *   - Seleção de aparelho, saveOperatingSystem e contexto do aplicativo
  *   - Navegação por teclado (setas ←→↑↓), radiogroup, foco visível
  *   - Rota /guias/[slug]?os=...&app=...
  */
@@ -25,9 +25,10 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { OperatingSystem } from "@/types/content";
 import { detectOperatingSystem, readOperatingSystem, saveOperatingSystem } from "./device";
 import { DevicePickerCard } from "./device-picker-card";
+import { deviceOptions, pairWithDevice, randomDevicePair, type DeviceOption } from "./device-options";
+import { DeviceSwitcherModal } from "./device-switcher-modal";
 
 interface ApplicationOption { slug: string; name: string; logoPath: string | null }
 interface TaskGuideSetupProps {
@@ -44,12 +45,6 @@ interface TaskGuideSetupProps {
   canContinue?: boolean;
   returnTo?: string;
 }
-
-/** Supported devices. Order determines visual position. */
-const DEVICES: Array<{ id: string; name: string; os: OperatingSystem; image: string }> = [
-  { id: "samsung", name: "Samsung", os: "android", image: "/images/devices/samsung.png" },
-  { id: "iphone",  name: "iPhone",  os: "ios",     image: "/images/devices/iphone.png"  },
-];
 
 export function TaskGuideSetup({
   taskId,
@@ -70,11 +65,13 @@ export function TaskGuideSetup({
   /* ── State ─────────────────────────────────────────────────────────── */
   const options = applicationOptions.length ? applicationOptions : [application];
   const applicationSlug = options.find((item) => item.slug === selectedApplicationSlug)?.slug ?? options[0]?.slug ?? application.slug;
+  const [visibleDevices, setVisibleDevices] = useState<DeviceOption[]>(() => deviceOptions.slice(0, 2));
   const [deviceId, setDeviceId] = useState("samsung");
+  const [deviceSwitcherOpen, setDeviceSwitcherOpen] = useState(false);
 
   const selectedApplication =
     options.find((item) => item.slug === applicationSlug) ?? application;
-  const device = DEVICES.find((item) => item.id === deviceId) ?? DEVICES[0]!;
+  const device = deviceOptions.find((item) => item.id === deviceId) ?? deviceOptions[0]!;
 
   /* ── Restore saved preference ──────────────────────────────────────── */
   useEffect(() => {
@@ -82,19 +79,55 @@ export function TaskGuideSetup({
       const saved =
         readOperatingSystem(window.localStorage) ??
         detectOperatingSystem(window.navigator.userAgent);
-      if (saved === "ios") setDeviceId("iphone");
+      const preferredDevice = saved === "ios" ? deviceOptions.find((item) => item.os === saved) : undefined;
+      const pair = preferredDevice ? pairWithDevice(preferredDevice) : randomDevicePair();
+      setVisibleDevices(pair.length === 2 ? pair : deviceOptions.slice(0, 2));
+      setDeviceId(preferredDevice?.id ?? pair[0]?.id ?? "samsung");
     }, 0);
     return () => window.clearTimeout(timer);
   }, [taskId]);
 
   /* ── Navigation ────────────────────────────────────────────────────── */
-  const openGuide = () => {
+  const goBack = () => {
+    if (returnTo) {
+      router.push(returnTo);
+      return;
+    }
+
+    const hasInternalReferrer = (() => {
+      if (!window.document.referrer) return false;
+      try {
+        return new URL(window.document.referrer).origin === window.location.origin;
+      } catch {
+        return false;
+      }
+    })();
+
+    if (hasInternalReferrer && window.history.length > 1) {
+      router.back();
+      return;
+    }
+
+    router.push("/");
+  };
+
+  const openGuideForDevice = (selectedDevice: DeviceOption) => {
     if (!canContinue) return;
-    saveOperatingSystem(window.localStorage, device.os);
-    const search = new URLSearchParams({ os: device.os });
+    setDeviceId(selectedDevice.id);
+    saveOperatingSystem(window.localStorage, selectedDevice.os);
+    const search = new URLSearchParams({ os: selectedDevice.os });
     if (applicationOptions.length) search.set("app", applicationSlug);
     if (returnTo) search.set("returnTo", returnTo);
     router.push(`/guias/${encodeURIComponent(taskSlug)}?${search}`);
+  };
+
+  const openGuide = () => openGuideForDevice(device);
+
+  const chooseDeviceFromSwitcher = (selectedDevice: DeviceOption) => {
+    const pair = pairWithDevice(selectedDevice);
+    setVisibleDevices(pair.length === 2 ? pair : deviceOptions.slice(0, 2));
+    setDeviceId(selectedDevice.id);
+    setDeviceSwitcherOpen(false);
   };
 
   /* ── Render ────────────────────────────────────────────────────────── */
@@ -102,28 +135,51 @@ export function TaskGuideSetup({
     <main className="task-setup-page">
       <div className="task-setup-content">
 
-        {/* ── Compact breadcrumb ──────────────────────────────────── */}
-        <nav className="task-setup-crumb" aria-label="Contexto da tarefa">
-          {selectedApplication.logoPath ? (
-            <Image
-              src={selectedApplication.logoPath}
-              alt=""
-              width={28}
-              height={28}
-              unoptimized
-              className="task-setup-crumb-icon"
-            />
-          ) : (
-            <span className="task-setup-crumb-icon task-setup-crumb-icon--fallback" aria-hidden="true">G</span>
-          )}
-          <span className="task-setup-crumb-app">{selectedApplication.name}</span>
-          <span className="task-setup-crumb-sep" aria-hidden="true">›</span>
-          <span className="task-setup-crumb-task">{taskTitle}</span>
-        </nav>
+        <div className="task-setup-context">
+          {/* ── Compact breadcrumb ──────────────────────────────────── */}
+          <nav className="task-setup-crumb" aria-label="Contexto da tarefa">
+            {selectedApplication.logoPath ? (
+              <Image
+                src={selectedApplication.logoPath}
+                alt=""
+                width={28}
+                height={28}
+                unoptimized
+                className="task-setup-crumb-icon"
+              />
+            ) : (
+              <span className="task-setup-crumb-icon task-setup-crumb-icon--fallback" aria-hidden="true">G</span>
+            )}
+            <span className="task-setup-crumb-app">{selectedApplication.name}</span>
+            <span className="task-setup-crumb-sep" aria-hidden="true">›</span>
+            <span className="task-setup-crumb-task">{taskTitle}</span>
+          </nav>
+
+          <button type="button" className="task-setup-back" onClick={goBack}>
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5m7 7-7-7 7-7" />
+            </svg>
+            Voltar para a página anterior
+          </button>
+
+          <button
+            type="button"
+            className="task-setup-switch"
+            onClick={() => setDeviceSwitcherOpen(true)}
+          >
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="6" y="2.5" width="12" height="19" rx="2.5" />
+              <path d="M10 5h4M11 18.5h2" />
+            </svg>
+            Trocar celular
+          </button>
+        </div>
 
         {/* ── Main card: device selection ─────────────────────────── */}
         <DevicePickerCard
-          devices={DEVICES}
+          devices={visibleDevices}
           selectedDeviceId={deviceId}
           onSelectDevice={setDeviceId}
           onContinue={openGuide}
@@ -131,6 +187,16 @@ export function TaskGuideSetup({
         />
 
       </div>
+      {deviceSwitcherOpen && <DeviceSwitcherModal
+        currentOperatingSystem={device.os}
+        currentDeviceId={deviceId}
+        taskSlug={taskSlug}
+        applicationSlug={applicationOptions.length ? applicationSlug : undefined}
+        returnTo={returnTo}
+        onContinue={chooseDeviceFromSwitcher}
+        continueDisabled={!canContinue}
+        onClose={() => setDeviceSwitcherOpen(false)}
+      />}
     </main>
   );
 }
