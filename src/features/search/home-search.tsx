@@ -14,10 +14,10 @@ import { normalizeSearch, rankSearch } from "./search-content";
 interface HomeSearchProps { applications: Application[]; tasks: Task[]; }
 type GuidedCategory = "banks" | "whatsapp" | "government";
 
-const categoryOptions: Array<{ id: GuidedCategory; title: string; description: string; icon: "bank" | "message" | "government" }> = [
+const categoryOptions: Array<{ id: GuidedCategory; title: string; description: string; icon: "bank" | "message" | "government"; applicationSlug?: string }> = [
   { id: "banks", title: "Bancos", description: "Pix, boleto e cartão", icon: "bank" },
-  { id: "whatsapp", title: "WhatsApp", description: "Mensagens e chamadas", icon: "message" },
-  { id: "government", title: "Gov.br", description: "Conta e serviços", icon: "government" },
+  { id: "whatsapp", title: "WhatsApp", description: "Mensagens e chamadas", icon: "message", applicationSlug: "whatsapp" },
+  { id: "government", title: "Gov.br", description: "Conta e serviços", icon: "government", applicationSlug: "gov-br" },
 ];
 
 const quickQueries = ["Pix", "boleto", "recuperar senha"] as const;
@@ -421,12 +421,20 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
               <section className="home-category-picker" aria-labelledby="category-picker-title">
                 <h2 id="category-picker-title">Escolha uma categoria</h2>
                 <div className="home-category-grid">
-                  {categoryOptions.map((category) => (
+                  {categoryOptions.map((category) => {
+                    const categoryApplication = category.applicationSlug
+                      ? applications.find((application) => application.slug === category.applicationSlug)
+                      : undefined;
+
+                    return (
                     <button ref={(element) => { categoryButtonRefs.current[category.id] = element; }} key={category.id} type="button" onClick={() => chooseCategory(category.id)} className={`home-category-button home-category-button--${category.id}`}>
-                      <span className="home-category-icon"><CategoryIcon type={category.icon} /></span>
+                      <span className={`home-category-icon${categoryApplication ? " home-category-icon--application" : ""}`}>
+                        {categoryApplication ? <ApplicationMark application={categoryApplication} /> : <CategoryIcon type={category.icon} />}
+                      </span>
                       <span><strong>{category.title}</strong><small>{category.description}</small></span><span aria-hidden="true" className="home-card-arrow">→</span>
                     </button>
-                  ))}
+                    );
+                  })}
                 </div>
               </section>
             </>

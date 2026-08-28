@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { SessionNavigation } from "@/features/auth/session-navigation";
 
 type ThemePreference = "light" | "dark" | "system";
@@ -30,11 +30,43 @@ function applyThemePreference(preference: ThemePreference, save = true) {
 
 interface HomeToolbarProps {
   activePage?: "home" | "explore";
+  /** Keeps the home navigation focused by omitting the secondary Sobre action. */
   compactHome?: boolean;
   showAdmin?: boolean;
+  /** Compact toolbar used by the step-by-step guide reader. */
+  variant?: "home" | "guide";
+  guideLeft?: ReactNode;
+  guideActions?: ReactNode;
 }
 
-export function HomeToolbar({ activePage = "home", compactHome = false, showAdmin = false }: HomeToolbarProps) {
+function ThemeToggleButton({ onClick, className = "home-icon-button" }: { onClick: () => void; className?: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label="Alternar entre modo claro e escuro"
+      className={className}
+      title="Alternar modo claro e escuro"
+    >
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="home-theme-sun size-6 fill-none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.64 5.64l1.42 1.42M16.94 16.94l1.42 1.42M18.36 5.64l-1.42 1.42M7.06 16.94l-1.42 1.42" strokeLinecap="round" />
+        <circle cx="12" cy="12" r="4" />
+      </svg>
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="home-theme-moon size-6 fill-none" stroke="currentColor" strokeWidth="2">
+        <path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5 8.5 8.5 0 1 0 20.5 14.6Z" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </button>
+  );
+}
+
+export function HomeToolbar({
+  activePage = "home",
+  compactHome = false,
+  showAdmin = false,
+  variant = "home",
+  guideLeft,
+  guideActions,
+}: HomeToolbarProps) {
   const [helpOpen, setHelpOpen] = useState(false);
   const helpButtonRef = useRef<HTMLButtonElement>(null);
   const helpCloseRef = useRef<HTMLButtonElement>(null);
@@ -79,6 +111,18 @@ export function HomeToolbar({ activePage = "home", compactHome = false, showAdmi
     applyThemePreference(currentTheme === "dark" ? "light" : "dark");
   };
 
+  if (variant === "guide") {
+    return (
+      <header className="guide-toolbar">
+        <div className="guide-toolbar-left">{guideLeft}</div>
+        <div className="guide-toolbar-actions">
+          {guideActions}
+          <ThemeToggleButton onClick={toggleTheme} className="guide-theme-toggle" />
+        </div>
+      </header>
+    );
+  }
+
   return (
     <>
       <header className="home-header">
@@ -104,7 +148,7 @@ export function HomeToolbar({ activePage = "home", compactHome = false, showAdmi
         </Link>
 
         <nav aria-label="Navegação principal" className="home-main-nav">
-          {!compactHome && <Link href="/" aria-current={activePage === "home" ? "page" : undefined}>Início</Link>}
+          <Link href="/" aria-current={activePage === "home" ? "page" : undefined}>Início</Link>
           <Link href="/explorar" aria-current={activePage === "explore" ? "page" : undefined}>Explorar</Link>
           <Link href="/enviar-print">Enviar print</Link>
           {!compactHome && (
@@ -120,21 +164,7 @@ export function HomeToolbar({ activePage = "home", compactHome = false, showAdmi
         </nav>
 
         <nav aria-label="Acesso à conta e aparência" className="home-account-nav">
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label="Alternar entre modo claro e escuro"
-            className="home-icon-button"
-            title="Alternar modo claro e escuro"
-          >
-            <svg aria-hidden="true" viewBox="0 0 24 24" className="home-theme-sun size-6 fill-none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.64 5.64l1.42 1.42M16.94 16.94l1.42 1.42M18.36 5.64l-1.42 1.42M7.06 16.94l-1.42 1.42" strokeLinecap="round" />
-              <circle cx="12" cy="12" r="4" />
-            </svg>
-            <svg aria-hidden="true" viewBox="0 0 24 24" className="home-theme-moon size-6 fill-none" stroke="currentColor" strokeWidth="2">
-              <path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5 8.5 8.5 0 1 0 20.5 14.6Z" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
+          <ThemeToggleButton onClick={toggleTheme} />
           <SessionNavigation loginLabel="Entrar" showAdmin={showAdmin} showUpload={false} />
         </nav>
       </header>

@@ -40,10 +40,11 @@ describe("controles da página inicial", () => {
     expect(screen.getByRole("link", { name: "Início" })).not.toHaveAttribute("aria-current");
   });
 
-  it("oferece a navegação compacta somente para a home", () => {
+  it("mantém Início e omite a ação secundária Sobre na home compacta", () => {
     render(<HomeToolbar compactHome />);
 
-    expect(screen.queryByRole("link", { name: "Início" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Início" })).toHaveAttribute("href", "/");
+    expect(screen.getByRole("link", { name: "Início" })).toHaveAttribute("aria-current", "page");
     expect(screen.queryByRole("button", { name: "Sobre" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Explorar" })).toHaveAttribute("href", "/explorar");
     expect(screen.getByRole("link", { name: "Enviar print" })).toHaveAttribute("href", "/enviar-print");

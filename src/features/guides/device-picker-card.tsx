@@ -4,20 +4,43 @@
  * DevicePickerCard
  *
  * Cartão branco centralizado para a tela de escolha do celular.
- * Exibe Samsung e iPhone lado a lado com imagens grandes, área de toque
- * confortável, estado selecionado explícito (borda azul + check) e um único
- * botão "Continuar" que abre o guia no leitor.
+ * Exibe os aparelhos suportados com imagens grandes, área de toque confortável,
+ * estado selecionado explícito (borda azul + check) e um único botão
+ * "Continuar" que abre o guia no leitor.
  *
- * Design otimizado para o público idoso e para caber em 1366×768 sem scroll.
+ * Design otimizado para o público idoso, com grade responsiva para listas
+ * pequenas e estendidas.
  */
 
 import Image from "next/image";
 import { type KeyboardEvent } from "react";
+import type { DevicePlatform } from "./device-options";
 
 interface Device {
   id:    string;
   name:  string;
+  platform: DevicePlatform;
   image: string;
+}
+
+function PlatformIcon({ platform }: { platform: DevicePlatform }) {
+  if (platform === "android") {
+    return (
+      <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M7.4 9.4h9.2a1.5 1.5 0 0 1 1.5 1.5v6.2a1.5 1.5 0 0 1-1.5 1.5H7.4a1.5 1.5 0 0 1-1.5-1.5v-6.2a1.5 1.5 0 0 1 1.5-1.5Z" />
+        <path d="M5.1 10h13.8v1.8H5.1zM8.2 7.6h7.6a1.6 1.6 0 0 1 1.6 1.6H6.6a1.6 1.6 0 0 1 1.6-1.6ZM8.1 6.7 6.8 4.5l.9-.5L9 6.2l-.9.5Zm7.8 0-.9-.5 1.3-2.2.9.5-1.3 2.2Z" />
+        <circle cx="9.4" cy="10.4" r=".65" fill="currentColor" />
+        <circle cx="14.6" cy="10.4" r=".65" fill="currentColor" />
+        <path d="M3.9 11.4h1.5v4.4a.75.75 0 0 1-1.5 0v-4.4Zm14.7 0h1.5v4.4a.75.75 0 0 1-1.5 0v-4.4ZM8.2 18.2h1.7v2.1a.85.85 0 0 1-1.7 0v-2.1Zm5.9 0h1.7v2.1a.85.85 0 0 1-1.7 0v-2.1Z" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M15.4 4.7c.5-.6.8-1.4.8-2.2-.8.1-1.7.5-2.2 1.1-.5.5-.9 1.4-.8 2.2.9.1 1.7-.4 2.2-1.1Zm3.1 7.8c0-2 1.6-3 1.7-3.1-.9-1.4-2.4-1.5-2.9-1.5-1.2-.1-2.3.7-2.9.7-.6 0-1.5-.7-2.5-.7-1.3 0-2.5.8-3.2 2-1.4 2.4-.4 6 1 8 .7 1 1.5 2 2.5 2 .9 0 1.3-.6 2.4-.6 1.1 0 1.4.6 2.4.6s1.7-.9 2.4-1.9c.8-1.1 1.1-2.2 1.1-2.3-.1 0-2-.8-2-3.2Z" />
+    </svg>
+  );
 }
 
 interface DevicePickerCardProps {
@@ -27,6 +50,11 @@ interface DevicePickerCardProps {
   /** Disparado ao clicar em "Continuar". */
   onContinue:      () => void;
   continueDisabled?: boolean;
+  title?:            string;
+  subtitle?:         string;
+  headingId?:        string;
+  inputIdPrefix?:    string;
+  inputName?:        string;
 }
 
 export function DevicePickerCard({
@@ -35,6 +63,11 @@ export function DevicePickerCard({
   onSelectDevice,
   onContinue,
   continueDisabled = false,
+  title = "Qual é o seu celular?",
+  subtitle = "Escolha o tipo do seu aparelho.",
+  headingId = "device-picker-heading",
+  inputIdPrefix = "device-picker",
+  inputName = "device-picker",
 }: DevicePickerCardProps) {
   /**
    * Navegação por teclado no radiogroup conforme ARIA APG:
@@ -54,7 +87,7 @@ export function DevicePickerCard({
     onSelectDevice(next.id);
     // Mover foco após a re-renderização do React.
     window.requestAnimationFrame(() => {
-      document.getElementById(`device-picker-${next.id}`)?.focus();
+      document.getElementById(`${inputIdPrefix}-${next.id}`)?.focus();
     });
   };
 
@@ -62,18 +95,18 @@ export function DevicePickerCard({
     <div className="device-picker-card">
 
       {/* ── Cabeçalho ─────────────────────────────────────────────── */}
-      <h1 className="device-picker-title" id="device-picker-heading">
-        Qual é o seu celular?
+      <h1 className="device-picker-title" id={headingId}>
+        {title}
       </h1>
       <p className="device-picker-subtitle">
-        Escolha o tipo do seu aparelho.
+        {subtitle}
       </p>
 
       {/* ── Opções ────────────────────────────────────────────────── */}
       <div
-        className="device-picker-options"
+        className={`device-picker-options${devices.length > 2 ? " device-picker-options--extended" : ""}`}
         role="radiogroup"
-        aria-labelledby="device-picker-heading"
+        aria-labelledby={headingId}
       >
         {devices.map((device, index) => {
           const selected = device.id === selectedDeviceId;
@@ -81,13 +114,13 @@ export function DevicePickerCard({
             <label
               key={device.id}
               className={`device-picker-option${selected ? " is-selected" : ""}`}
-              htmlFor={`device-picker-${device.id}`}
+              htmlFor={`${inputIdPrefix}-${device.id}`}
             >
               {/* Input visualmente oculto, presente para a.11y */}
               <input
-                id={`device-picker-${device.id}`}
+                id={`${inputIdPrefix}-${device.id}`}
                 type="radio"
-                name="device-picker"
+                name={inputName}
                 value={device.id}
                 checked={selected}
                 onChange={() => onSelectDevice(device.id)}
@@ -112,14 +145,24 @@ export function DevicePickerCard({
 
               {/* Imagem */}
               <div className="device-picker-image-wrap">
-                <Image
-                  src={device.image}
-                  alt={`Celular ${device.name}`}
-                  width={140}
-                  height={220}
-                  priority={index === 0}
-                  className="device-picker-image"
-                />
+                <div className="device-picker-phone">
+                  <Image
+                    src={device.image}
+                    alt={`Celular ${device.name}`}
+                    width={140}
+                    height={220}
+                    priority={index === 0}
+                    className="device-picker-image"
+                  />
+                  <span
+                    className={`device-platform-cue device-platform-cue--${device.platform}`}
+                    role="img"
+                    aria-label={`Sistema ${device.platform === "android" ? "Android" : "iOS"}`}
+                  >
+                    <PlatformIcon platform={device.platform} />
+                    <span aria-hidden="true">{device.platform === "android" ? "Android" : "iOS"}</span>
+                  </span>
+                </div>
               </div>
 
               {/* Nome */}
