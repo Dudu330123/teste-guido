@@ -26,11 +26,13 @@ describe("controles da página inicial", () => {
     render(<HomeToolbar />);
     expect(screen.getByRole("link", { name: "Entrar" })).toHaveAttribute("href", "/entrar");
     expect(screen.queryByRole("link", { name: "Admin" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Tarefas automáticas" })).not.toBeInTheDocument();
   });
 
   it("mostra a administração somente quando o servidor confirma superadmin", () => {
     render(<HomeToolbar showAdmin />);
     expect(screen.getByRole("link", { name: "Admin" })).toHaveAttribute("href", "/admin");
+    expect(screen.getByRole("link", { name: "Tarefas automáticas" })).toHaveAttribute("href", "/admin/guias/preview");
   });
 
   it("liga a navegação à biblioteca e destaca a página ativa", () => {
