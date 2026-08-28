@@ -30,6 +30,10 @@ export default async function TaskPage({ params, searchParams }: TaskPageProps) 
   const application = selectedApplication ?? taskApplication;
   const bankApplications = catalog.applications.filter((item) =>
     isBankCategory(item.category) && item.slug !== "banco-demonstracao");
+  const isGenericBankTask = taskApplication.slug === "banco-demonstracao" && !selectedApplication;
+  // O boleto começa pelo aparelho para que a segunda tela possa listar os
+  // aplicativos no mesmo catálogo visual usado pela ação Pix.
+  const chooseApplicationAfterDevice = isGenericBankTask && task.actionId === "boleto";
   const backHref = safeReturnPath(returnTo, `/aplicativos/${application.slug}`);
 
   if (task.availability === "preparing" && task.applicationId !== "app-demo-bancos" && task.actionId) {
@@ -58,10 +62,11 @@ export default async function TaskPage({ params, searchParams }: TaskPageProps) 
         {task.availability !== "preparing" ? (
           <OsSelector
             taskSlug={task.slug}
-            applicationOptions={taskApplication.slug === "banco-demonstracao" && !selectedApplication
+            applicationOptions={isGenericBankTask && !chooseApplicationAfterDevice
               ? bankApplications.map(({ slug: applicationSlug, name }) => ({ slug: applicationSlug, name }))
               : undefined}
             initialApplicationSlug={selectedApplication?.slug}
+            nextPath={chooseApplicationAfterDevice ? `/acoes/${task.actionId}` : undefined}
             returnTo={returnTo ? backHref : undefined}
           />
         ) : (

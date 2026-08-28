@@ -40,4 +40,18 @@ describe("página de ação", () => {
       "/tarefas/fazer-pix?app=nubank&returnTo=%2Fexplorar%3Fq%3DPix",
     );
   });
+
+  it("abre o guia de boleto no aparelho escolhido depois da seleção do banco", async () => {
+    render(await ActionPage({
+      params: Promise.resolve({ slug: "boleto" }),
+      searchParams: Promise.resolve({ os: "ios" }),
+    }));
+
+    const caixaCard = screen.getByRole("heading", { name: "Caixa" }).closest("article");
+    expect(caixaCard).not.toBeNull();
+    expect(within(caixaCard!).getByRole("link", { name: "Abrir demonstração" })).toHaveAttribute(
+      "href",
+      "/guias/pagar-boleto?os=ios&app=caixa",
+    );
+  });
 });

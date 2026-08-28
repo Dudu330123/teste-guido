@@ -11,14 +11,15 @@ import { getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/supabase
 
 interface ActionPageProps {
   params: Promise<{ slug: string }>;
-  searchParams?: Promise<{ returnTo?: string }>;
+  searchParams?: Promise<{ os?: string; returnTo?: string }>;
 }
 
 export const metadata: Metadata = { title: "Escolher aplicativo" };
 
 export default async function ActionPage({ params, searchParams }: ActionPageProps) {
   const { slug } = await params;
-  const { returnTo } = searchParams ? await searchParams : {};
+  const { os, returnTo } = searchParams ? await searchParams : {};
+  const selectedOperatingSystem = os === "android" || os === "ios" ? os : undefined;
   const action = getActionBySlug(slug);
   if (!action) notFound();
   const backHref = safeReturnPath(returnTo, "/explorar");
@@ -58,10 +59,17 @@ export default async function ActionPage({ params, searchParams }: ActionPagePro
               && applicationTask.availability === "preparing"
               && genericTask !== undefined;
             const guideTask = usesGenericGuide ? genericTask : applicationTask;
-            const guidePath = usesGenericGuide
-              ? `/tarefas/${guideTask.slug}?app=${encodeURIComponent(application.slug)}`
-              : `/tarefas/${guideTask.slug}`;
+            const guidePath = selectedOperatingSystem
+              ? (() => {
+                const guideSearch = new URLSearchParams({ os: selectedOperatingSystem });
+                if (application.slug !== "banco-demonstracao") guideSearch.set("app", application.slug);
+                return `/guias/${encodeURIComponent(guideTask.slug)}?${guideSearch}`;
+              })()
+              : usesGenericGuide
+                ? `/tarefas/${guideTask.slug}?app=${encodeURIComponent(application.slug)}`
+                : `/tarefas/${guideTask.slug}`;
             const guideAvailable = guideTask.availability !== "preparing";
+            const guideIsDemo = guideTask.availability === "demo";
             return (
               <article key={application.id} className="glass-panel internal-page-card">
                 <div className="internal-page-card-icon application-logo">
@@ -70,13 +78,13 @@ export default async function ActionPage({ params, searchParams }: ActionPagePro
                 <h2 className="internal-page-card-title">{application.name}</h2>
                 <p className="internal-page-card-description">{applicationTask.description}</p>
                 <p className="soft-panel internal-page-card-status">
-                  {isDemo ? "Demonstração disponível" : "Guia em preparação"}
+                  {guideIsDemo ? "Demonstração disponível" : "Guia em preparação"}
                 </p>
                 <Link
                   href={withReturnPath(guidePath, contextReturnTo)}
                   className="secondary-action internal-page-card-action"
                 >
-                  {isDemo ? "Abrir demonstração" : guideAvailable ? (usesGenericGuide ? "Escolher meu celular" : "Ver guias deste banco") : "Guia em preparação"}
+                  {guideIsDemo ? "Abrir demonstração" : guideAvailable ? (usesGenericGuide ? "Escolher meu celular" : "Ver guias deste banco") : "Guia em preparação"}
                 </Link>
               </article>
             );

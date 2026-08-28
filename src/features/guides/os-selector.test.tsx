@@ -50,4 +50,13 @@ describe("seletor de celular", () => {
 
     expect(push).toHaveBeenCalledWith("/guias/pix-nubank?os=android&returnTo=%2Fexplorar%3Fq%3DPix");
   });
+
+  it("entrega a próxima tela quando o fluxo separa aparelho e aplicativo", async () => {
+    const user = userEvent.setup();
+    render(<OsSelector taskSlug="pagar-boleto" nextPath="/acoes/boleto" returnTo="/" />);
+
+    await user.click(screen.getByRole("button", { name: /próximo/i }));
+
+    expect(push).toHaveBeenCalledWith("/acoes/boleto?os=android&returnTo=%2F");
+  });
 });
