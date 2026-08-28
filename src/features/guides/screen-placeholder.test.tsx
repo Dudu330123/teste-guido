@@ -19,4 +19,19 @@ describe("ilustração do passo", () => {
     expect(screen.getByText("Pare antes de confirmar")).toBeVisible();
     expect(screen.getByText("O Guido não realiza pagamentos.")).toBeVisible();
   });
+
+  it("preserva a proporção de um print publicado e mantém sua descrição", () => {
+    const publishedStep = {
+      ...steps[0]!,
+      imagePath: "https://example.supabase.co/storage/v1/object/public/guides/step-1.webp",
+      imageAlt: "Tela publicada do primeiro passo",
+      evidenceStatus: "VERIFIED" as const,
+    };
+
+    const { container } = render(<ScreenPlaceholder step={publishedStep} />);
+
+    expect(screen.getByRole("img", { name: publishedStep.imageAlt })).toBeVisible();
+    expect(container.querySelector(".guide-evidence-viewport")).toBeInTheDocument();
+    expect(screen.getByText(/publicada pela administração/i)).toBeVisible();
+  });
 });

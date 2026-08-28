@@ -2,6 +2,17 @@ export type OperatingSystem = "android" | "ios";
 export type ContentStatus = "draft" | "under_review" | "published" | "outdated";
 export type ApplicationAvailability = "available" | "preparing";
 export type TaskAvailability = "available" | "demo" | "preparing";
+export type GuideAvailability = "complete" | "partial" | "preparing";
+export type EvidenceDisplayStatus = "VERIFIED" | "PARTIAL" | "NOT_VERIFIED" | "INCOMPATIBLE";
+
+export interface TouchTarget {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  label?: string;
+  labelPosition?: "top" | "bottom" | "left" | "right";
+}
 
 export interface Action {
   id: string;
@@ -47,6 +58,8 @@ export interface Guide {
   guideVersion: string;
   lastReviewedAt: string | null;
   status: ContentStatus;
+  /** Estado editorial explícito; ausência mantém compatibilidade com o catálogo legado. */
+  guideStatus?: GuideAvailability;
   estimatedMinutes: number;
 }
 
@@ -61,4 +74,6 @@ export interface GuideStep {
   audioPath?: string;
   warning?: string;
   confirmationMessage?: string;
+  touchTarget?: TouchTarget;
+  evidenceStatus?: EvidenceDisplayStatus;
 }

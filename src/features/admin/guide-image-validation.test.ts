@@ -13,7 +13,8 @@ describe("validação de prints dos guias", () => {
   });
 
   it("limita dimensões para evitar imagens desnecessariamente pesadas", () => {
+    expect(validateGuideImageDimensions({ width: 837, height: 1880 })).toBeNull();
     expect(validateGuideImageDimensions({ width: 1080, height: 2400 })).toBeNull();
-    expect(validateGuideImageDimensions({ width: 9000, height: 2400 })).toContain("8192");
+    expect(validateGuideImageDimensions({ width: 9000, height: 1880 })).toContain("8192");
   });
 });
