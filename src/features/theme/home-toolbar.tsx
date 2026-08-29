@@ -28,8 +28,10 @@ function applyThemePreference(preference: ThemePreference, save = true) {
   if (save) window.localStorage.setItem(storageKey, preference);
 }
 
+export type HomeActivePage = "home" | "explore" | "upload";
+
 interface HomeToolbarProps {
-  activePage?: "home" | "explore";
+  activePage?: HomeActivePage;
   /** Keeps the home navigation focused by omitting the secondary Sobre action. */
   compactHome?: boolean;
   showAdmin?: boolean;
@@ -60,7 +62,7 @@ function ThemeToggleButton({ onClick, className = "home-icon-button" }: { onClic
 }
 
 export function HomeToolbar({
-  activePage = "home",
+  activePage,
   compactHome = false,
   showAdmin = false,
   variant = "home",
@@ -150,13 +152,15 @@ export function HomeToolbar({
         <nav aria-label="Navegação principal" className="home-main-nav">
           <Link href="/" aria-current={activePage === "home" ? "page" : undefined}>Início</Link>
           <Link href="/explorar" aria-current={activePage === "explore" ? "page" : undefined}>Explorar</Link>
-          <Link href="/enviar-print">Enviar print</Link>
+          <Link href="/enviar-print" aria-current={activePage === "upload" ? "page" : undefined}>Enviar print</Link>
           {!compactHome && (
             <button
               ref={helpButtonRef}
               type="button"
               onClick={() => setHelpOpen(true)}
               className="home-nav-button"
+              aria-current={helpOpen ? "page" : undefined}
+              aria-expanded={helpOpen}
             >
               Sobre
             </button>

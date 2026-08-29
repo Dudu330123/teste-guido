@@ -7,23 +7,18 @@ export interface DeviceOption {
   name: string;
   os: OperatingSystem;
   platform: DevicePlatform;
-  image: string;
 }
 
 /**
  * Opções de aparelho que possuem fluxo de guia suportado pelo produto.
  *
  * O conteúdo dos guias varia por sistema operacional, não por fabricante.
- * Enquanto não houver imagens específicas para cada modelo, os aparelhos
- * Android usam a silhueta local já aprovada para Android.
+ * Enquanto não houver imagens específicas para cada modelo, a opção Android
+ * usa a silhueta local já aprovada para Android.
  */
 export const deviceOptions: DeviceOption[] = [
-  { id: "samsung", name: "Samsung", os: "android", platform: "android", image: "/images/devices/samsung.png" },
-  { id: "moto-g", name: "Moto G", os: "android", platform: "android", image: "/images/devices/samsung.png" },
-  { id: "lg", name: "LG", os: "android", platform: "android", image: "/images/devices/samsung.png" },
-  { id: "xiaomi", name: "Xiaomi", os: "android", platform: "android", image: "/images/devices/samsung.png" },
-  { id: "realme", name: "Realme", os: "android", platform: "android", image: "/images/devices/samsung.png" },
-  { id: "iphone", name: "iPhone", os: "ios", platform: "ios", image: "/images/devices/iphone.png" },
+  { id: "samsung", name: "Outro", os: "android", platform: "android" },
+  { id: "iphone", name: "iPhone", os: "ios", platform: "ios" },
 ];
 
 /** Escolhe dois aparelhos sem executar aleatoriedade durante o SSR. */

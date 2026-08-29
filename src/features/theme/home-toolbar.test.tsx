@@ -42,14 +42,33 @@ describe("controles da página inicial", () => {
     expect(screen.getByRole("link", { name: "Início" })).not.toHaveAttribute("aria-current");
   });
 
+  it("destaca Enviar print quando a página de colaboração está ativa", () => {
+    render(<HomeToolbar activePage="upload" />);
+
+    expect(screen.getByRole("link", { name: "Enviar print" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Início" })).not.toHaveAttribute("aria-current");
+    expect(screen.getByRole("link", { name: "Explorar" })).not.toHaveAttribute("aria-current");
+  });
+
   it("mantém Início e omite a ação secundária Sobre na home compacta", () => {
-    render(<HomeToolbar compactHome />);
+    render(<HomeToolbar compactHome activePage="home" />);
 
     expect(screen.getByRole("link", { name: "Início" })).toHaveAttribute("href", "/");
     expect(screen.getByRole("link", { name: "Início" })).toHaveAttribute("aria-current", "page");
     expect(screen.queryByRole("button", { name: "Sobre" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Explorar" })).toHaveAttribute("href", "/explorar");
     expect(screen.getByRole("link", { name: "Enviar print" })).toHaveAttribute("href", "/enviar-print");
+  });
+
+  it("indica Sobre enquanto a ajuda está aberta", async () => {
+    const user = userEvent.setup();
+    render(<HomeToolbar />);
+
+    const about = screen.getByRole("button", { name: "Sobre" });
+    expect(about).not.toHaveAttribute("aria-current");
+    await user.click(about);
+
+    expect(screen.getByRole("button", { name: "Sobre" })).toHaveAttribute("aria-current", "page");
   });
 
   it("alterna e salva o modo de cor", async () => {

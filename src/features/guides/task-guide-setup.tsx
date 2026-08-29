@@ -28,7 +28,6 @@ import { useRouter } from "next/navigation";
 import { detectOperatingSystem, readOperatingSystem, saveOperatingSystem } from "./device";
 import { DevicePickerCard } from "./device-picker-card";
 import { deviceOptions, pairWithDevice, randomDevicePair, type DeviceOption } from "./device-options";
-import { DeviceSwitcherModal } from "./device-switcher-modal";
 
 interface ApplicationOption { slug: string; name: string; logoPath: string | null }
 interface TaskGuideSetupProps {
@@ -67,7 +66,6 @@ export function TaskGuideSetup({
   const applicationSlug = options.find((item) => item.slug === selectedApplicationSlug)?.slug ?? options[0]?.slug ?? application.slug;
   const [visibleDevices, setVisibleDevices] = useState<DeviceOption[]>(() => deviceOptions.slice(0, 2));
   const [deviceId, setDeviceId] = useState("samsung");
-  const [deviceSwitcherOpen, setDeviceSwitcherOpen] = useState(false);
 
   const selectedApplication =
     options.find((item) => item.slug === applicationSlug) ?? application;
@@ -123,13 +121,6 @@ export function TaskGuideSetup({
 
   const openGuide = () => openGuideForDevice(device);
 
-  const chooseDeviceFromSwitcher = (selectedDevice: DeviceOption) => {
-    const pair = pairWithDevice(selectedDevice);
-    setVisibleDevices(pair.length === 2 ? pair : deviceOptions.slice(0, 2));
-    setDeviceId(selectedDevice.id);
-    setDeviceSwitcherOpen(false);
-  };
-
   /* ── Render ────────────────────────────────────────────────────────── */
   return (
     <main className="task-setup-page">
@@ -163,18 +154,6 @@ export function TaskGuideSetup({
             Voltar para a página anterior
           </button>
 
-          <button
-            type="button"
-            className="task-setup-switch"
-            onClick={() => setDeviceSwitcherOpen(true)}
-          >
-            <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="6" y="2.5" width="12" height="19" rx="2.5" />
-              <path d="M10 5h4M11 18.5h2" />
-            </svg>
-            Trocar celular
-          </button>
         </div>
 
         {/* ── Main card: device selection ─────────────────────────── */}
@@ -187,16 +166,6 @@ export function TaskGuideSetup({
         />
 
       </div>
-      {deviceSwitcherOpen && <DeviceSwitcherModal
-        currentOperatingSystem={device.os}
-        currentDeviceId={deviceId}
-        taskSlug={taskSlug}
-        applicationSlug={applicationOptions.length ? applicationSlug : undefined}
-        returnTo={returnTo}
-        onContinue={chooseDeviceFromSwitcher}
-        continueDisabled={!canContinue}
-        onClose={() => setDeviceSwitcherOpen(false)}
-      />}
     </main>
   );
 }
