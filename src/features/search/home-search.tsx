@@ -437,7 +437,7 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
                       <span className={`home-category-icon${categoryApplication ? " home-category-icon--application" : ""}`}>
                         {categoryApplication ? <ApplicationMark application={categoryApplication} /> : <CategoryIcon type={category.icon} />}
                       </span>
-                      <span><strong>{category.title}</strong><small>{category.description}</small></span><span aria-hidden="true" className="home-card-arrow">→</span>
+                      <span><strong>{category.title}</strong><small>{category.description}</small></span>
                     </button>
                     );
                   })}

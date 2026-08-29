@@ -898,7 +898,7 @@ html[data-theme="dark"] .home-theme-moon {
   gap: 0.8rem;
   border: 1px solid rgba(120, 163, 213, 0.58);
   border-radius: 1rem;
-  padding: 1rem 2rem 1rem 1rem;
+  padding: 1rem;
   background: rgba(248, 252, 255, 0.94);
   box-shadow: 0 12px 28px rgba(13, 48, 91, 0.12);
   text-align: left;
@@ -958,7 +958,6 @@ html[data-theme="dark"] .home-theme-moon {
   object-fit: cover;
 }
 
-.home-category-button .home-card-arrow,
 .home-bank-button .home-card-arrow,
 .home-task-card .home-card-arrow,
 .home-bank-modal-option .home-card-arrow {
@@ -1299,7 +1298,6 @@ html[data-theme="dark"] .home-panel-back {
     background: #12325e;
   }
 
-  .home-category-button:hover .home-card-arrow,
   .home-bank-button:hover .home-card-arrow,
   .home-task-card:hover .home-card-arrow,
   .home-bank-modal-option:hover .home-card-arrow {
@@ -3373,7 +3371,6 @@ html[data-theme="dark"] .explore-card-status.is-preparing {
   .home-bank-button:hover,
   .home-task-card:hover,
   .home-bank-modal-option:hover,
-  .home-category-button:hover .home-card-arrow,
   .home-bank-button:hover .home-card-arrow,
   .home-task-card:hover .home-card-arrow,
   .home-bank-modal-option:hover .home-card-arrow,
@@ -4088,7 +4085,7 @@ html[data-theme="dark"] .task-setup-shell .device-picker-continue:disabled {
   min-height: 10.5rem;
   grid-template-columns: 3.7rem minmax(0, 1fr);
   gap: 0.9rem;
-  padding: 1.15rem 3.1rem 1.15rem 1.15rem;
+  padding: 1.15rem;
   border-radius: 1.1rem;
 }
 
@@ -4118,26 +4115,6 @@ html[data-theme="dark"] .task-setup-shell .device-picker-continue:disabled {
   max-width: 12rem;
   font-size: 0.98rem;
   line-height: 1.35;
-}
-
-.guido-home--landing .home-category-button .home-card-arrow {
-  display: grid;
-  width: 2.25rem;
-  height: 2.25rem;
-  place-items: center;
-  right: 1rem;
-  bottom: 1.5rem;
-  border-radius: 50%;
-  background: rgba(27, 103, 211, 0.18);
-  color: var(--home-blue);
-  font-size: 1.4rem;
-  line-height: 1;
-  padding-top: 2px;
-}
-
-.guido-home--landing .home-category-button:hover .home-card-arrow {
-  background: var(--home-blue);
-  color: #fff;
 }
 
 .guido-home--landing .home-mascot {
