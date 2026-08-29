@@ -1,0 +1,86 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Publicação é deliberadamente um fluxo de fast-forward/merge normal: isso
+# preserva histórico e impede que uma branch local seja sobrescrita por força.
+project_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$project_dir"
+
+fail() {
+  printf 'Erro: %s\n' "$1" >&2
+  exit 1
+}
+
+repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" || fail 'esta pasta não é um repositório Git.'
+[[ "$repo_root" == "$project_dir" ]] || fail "o script deve ser executado na raiz $project_dir."
+[[ "$(git branch --show-current)" == "main" ]] || fail 'mude para a branch main antes de publicar.'
+[[ -z "$(git status --porcelain)" ]] || fail 'a árvore de trabalho não está limpa; preserve suas alterações e tente novamente.'
+git rev-parse -q --verify MERGE_HEAD >/dev/null 2>&1 && fail 'há um merge em andamento; conclua ou aborte-o manualmente antes de publicar.'
+git remote get-url origin >/dev/null 2>&1 || fail 'o remoto origin não está configurado.'
+
+printf '%s\n' 'Buscando branches remotas...'
+git fetch --prune origin '+refs/heads/*:refs/remotes/origin/*'
+git show-ref --verify --quiet refs/remotes/origin/main || fail 'origin/main não foi encontrado após o fetch.'
+
+# Atualiza a main local sem apagar commits locais. Se houver divergência, a
+# publicação para aqui para que a equipe decida como reconciliar o histórico.
+git merge --ff-only origin/main >/dev/null || fail 'main local diverge de origin/main; reconcilie o histórico manualmente (sem force push).'
+initial_head="$(git rev-parse HEAD)"
+candidates=()
+
+while IFS= read -r ref; do
+  case "$ref" in
+    origin/main|origin/HEAD|origin/backup/*|origin/agent/*)
+      continue
+      ;;
+  esac
+
+  if ! git merge-base --is-ancestor "$ref" HEAD; then
+    candidates+=("$ref")
+  fi
+done < <(git for-each-ref --format='%(refname:short)' refs/remotes/origin/)
+
+if ((${#candidates[@]} == 0)); then
+  printf '%s\n' 'Nenhuma branch nova de colaborador encontrada.'
+else
+  printf 'Branches candidatas (%d):\n' "${#candidates[@]}"
+  for ref in "${candidates[@]}"; do
+    printf '\n--- %s ---\n' "$ref"
+    git log --oneline --decorate --no-renames "HEAD..$ref"
+    git diff --stat "HEAD...$ref" || true
+  done
+fi
+
+if [[ "${PUBLIC_DRY_RUN:-0}" == "1" ]]; then
+  printf '%s\n' 'Modo de simulação: nenhuma integração, validação, commit ou publicação foi executada.'
+  exit 0
+fi
+
+for ref in "${candidates[@]}"; do
+  printf '\nIntegrando %s...\n' "$ref"
+  if ! git merge --no-edit "$ref"; then
+    # Aborta somente o merge iniciado por este script para não deixar a árvore
+    # presa em estado intermediário nem exigir uma ação destrutiva do usuário.
+    git merge --abort >/dev/null 2>&1 || true
+    fail "não foi possível integrar $ref; o merge foi abortado e nenhuma branch foi forçada."
+  fi
+done
+
+printf '%s\n' 'Executando lint...'
+npm run lint
+printf '%s\n' 'Verificando tipos...'
+npm run typecheck
+printf '%s\n' 'Executando testes...'
+npm test -- --run
+printf '%s\n' 'Construindo produção...'
+npm run build
+
+# Um push com commits integrados já aciona a Vercel. Se nada mudou, um commit
+# vazio mantém /public idempotente e ainda solicita um novo deploy pelo Git.
+if [[ "$(git rev-parse HEAD)" == "$initial_head" ]]; then
+  git commit --allow-empty -m 'chore: acionar deploy da Vercel'
+fi
+
+git push origin main
+printf '\nPublicado em origin/main: %s\n' "$(git rev-parse --short HEAD)"
+printf '%s\n' 'O deploy será iniciado pela integração Git da Vercel.'
