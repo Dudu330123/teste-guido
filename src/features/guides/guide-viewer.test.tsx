@@ -55,6 +55,21 @@ describe("visualizador do guia", () => {
     expect(screen.getByRole("button", { name: "Concluir demonstração" })).toBeVisible();
   });
 
+  it("troca o aviso vermelho pela confirmação verde ao concluir", async () => {
+    const user = userEvent.setup();
+    render(<GuideViewer application={application} guide={guide} steps={steps} task={task} />);
+    await screen.findByText("Passo 1 de 6");
+    for (let index = 1; index < steps.length; index += 1) {
+      await user.click(screen.getByRole("button", { name: "Próximo" }));
+    }
+
+    expect(screen.getByRole("alert")).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Concluir demonstração" }));
+
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("Demonstração concluída sem realizar qualquer operação bancária.");
+  });
+
   it("recupera um progresso e oferece continuar ou reiniciar", async () => {
     localStorage.setItem(`guido:progress:${guide.id}`, JSON.stringify({
       guideId: guide.id, currentStep: 3, status: "in_progress", lastAccessedAt: new Date().toISOString(),
