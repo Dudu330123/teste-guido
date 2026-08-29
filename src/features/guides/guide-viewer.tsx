@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import type { Application, Guide, GuideStep, Task } from "@/types/content";
 import { clearProgress, loadProgress, saveProgress } from "@/features/progress/progress-storage";
 import { nextStep, previousStep, restartGuide } from "@/features/progress/guide-navigation";
@@ -84,6 +85,86 @@ function GuidePageShell({ children, toolbar }: { children: ReactNode; toolbar: R
   );
 }
 
+function GuideHelpModal({ onClose }: { onClose: () => void }) {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const modal = modalRef.current;
+    if (!modal) return;
+    const backgroundElements = Array.from(document.body.children).filter((element) => element !== modal) as HTMLElement[];
+    const previousStates = backgroundElements.map((element) => ({ element, ariaHidden: element.getAttribute("aria-hidden"), inert: element.inert }));
+    backgroundElements.forEach((element) => { element.inert = true; element.setAttribute("aria-hidden", "true"); });
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    closeRef.current?.focus({ preventScroll: true });
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { event.preventDefault(); onClose(); return; }
+      if (event.key !== "Tab") return;
+      const focusable = Array.from(modal.querySelectorAll<HTMLElement>('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'));
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      previousStates.forEach(({ element, ariaHidden, inert }) => {
+        element.inert = inert;
+        if (ariaHidden === null) element.removeAttribute("aria-hidden"); else element.setAttribute("aria-hidden", ariaHidden);
+      });
+    };
+  }, [onClose]);
+
+  return createPortal(
+    <div ref={modalRef} className="home-bank-modal-backdrop guide-help-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section role="dialog" aria-modal="true" aria-labelledby="guide-help-modal-title" className="home-bank-modal guide-help-modal">
+        <header>
+          <div>
+            <h2 id="guide-help-modal-title">Preciso de ajuda</h2>
+            <p>Orientações rápidas para seguir esta etapa com segurança.</p>
+          </div>
+          <button ref={closeRef} type="button" onClick={onClose} aria-label="Fechar ajuda" className="home-modal-close">
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" /></svg>
+          </button>
+        </header>
+        <div className="guide-help-modal-intro">
+          <h3>Como seguir este passo</h3>
+          <p>Você não precisa ter pressa.</p>
+          <p>Faça uma coisa de cada vez e avance somente quando estiver seguro.</p>
+        </div>
+        <div className="guide-help-modal-list">
+          <div className="guide-help-modal-option">
+            <span className="guide-help-modal-number" data-number="1" aria-hidden="true" />
+            <div><strong>Leia com calma</strong><p>Confira o título e a explicação antes de tocar em qualquer opção.</p></div>
+          </div>
+          <div className="guide-help-modal-option">
+            <span className="guide-help-modal-number" data-number="2" aria-hidden="true" />
+            <div><strong>Ouça novamente</strong><p>Use “Ouvir instrução” para escutar este passo quantas vezes precisar.</p></div>
+          </div>
+          <div className="guide-help-modal-option">
+            <span className="guide-help-modal-number" data-number="3" aria-hidden="true" />
+            <div><strong>Volte quando quiser</strong><p>Use “Voltar” para rever o passo anterior sem perder o controle.</p></div>
+          </div>
+          <div className="guide-help-modal-option">
+            <span className="guide-help-modal-number" data-number="4" aria-hidden="true" />
+            <div><strong>Peça ajuda se precisar</strong><p>Se ainda tiver dúvida, pare e procure uma pessoa de confiança.</p></div>
+          </div>
+        </div>
+        <div className="guide-help-modal-safety notice-info">
+          <strong>Se algo estiver diferente, pare.</strong>
+          <p>Não compartilhe senha, código de segurança ou dados do boleto. O Guido não confirma pagamentos por você.</p>
+        </div>
+      </section>
+    </div>, document.body,
+  );
+}
+
 export function GuideViewer({ application, guide, steps, task, returnTo }: GuideViewerProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [ready, setReady] = useState(false);
@@ -92,6 +173,7 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
   const [speechMessage, setSpeechMessage] = useState("");
   const [completed, setCompleted] = useState(false);
   const [preparing, setPreparing] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const stepTitleRef = useRef<HTMLHeadingElement>(null);
   const previousRenderedStep = useRef(0);
   const step = steps[currentStep];
@@ -264,7 +346,7 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
           </div>
           <p className="guide-step-instruction">{activeStep.instruction}</p>
           {activeStep.warning && !completed && (
-            <div role="alert" className="notice-danger mt-6 rounded-2xl border-4 p-5 text-xl font-bold">
+            <div role="alert" className="notice-danger mt-5 rounded-xl border-2 p-4 text-lg font-bold">
               <p>Antes de continuar</p>
               <p className="mt-2">{activeStep.warning}</p>
             </div>
@@ -292,21 +374,17 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
             </button>
           </div>
 
-          <details className="soft-panel mt-7 rounded-2xl p-4">
-            <summary className="min-h-12 cursor-pointer py-2 text-xl font-bold">Preciso de ajuda</summary>
-            <div className="mt-3 space-y-3">
-              <p>Você não precisa ter pressa.</p>
-              <ol className="list-decimal space-y-2 pl-6">
-                <li>Use “Ouvir instrução” para escutar este passo novamente.</li>
-                <li>Use “Voltar” para rever o passo anterior.</li>
-                <li>Se ainda tiver dúvida, pare e peça ajuda a uma pessoa de confiança.</li>
-              </ol>
-              <p className="font-bold">Não compartilhe senha, código de segurança ou dados do boleto.</p>
-            </div>
-          </details>
+          <button type="button" className="guide-help-trigger mt-7" aria-haspopup="dialog" onClick={() => setHelpOpen(true)}>
+            <span className="guide-help-trigger-label">
+              <span className="guide-help-trigger-icon" aria-hidden="true">?</span>
+              <span><strong>Preciso de ajuda</strong><small>Orientações rápidas</small></span>
+            </span>
+            <span className="guide-help-trigger-arrow" aria-hidden="true">→</span>
+          </button>
           </section>}
         </div>
       </div>
+      {helpOpen && <GuideHelpModal onClose={() => setHelpOpen(false)} />}
     </GuidePageShell>
   );
 }

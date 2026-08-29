@@ -153,6 +153,7 @@ export function HomeToolbar({
           <Link href="/" aria-current={activePage === "home" ? "page" : undefined}>Início</Link>
           <Link href="/explorar" aria-current={activePage === "explore" ? "page" : undefined}>Explorar</Link>
           <Link href="/enviar-print" aria-current={activePage === "upload" ? "page" : undefined}>Enviar print</Link>
+          <Link href="/admin/guias/preview">Criar guias</Link>
           {!compactHome && (
             <button
               ref={helpButtonRef}
