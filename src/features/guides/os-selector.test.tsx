@@ -11,10 +11,11 @@ describe("seletor de celular", () => {
 
   it("oferece controles nomeados e confirma a escolha do iPhone", async () => {
     const user = userEvent.setup();
-    render(<OsSelector taskSlug="pagar-boleto" />);
+    const { container } = render(<OsSelector taskSlug="pagar-boleto" />);
     const other = screen.getByRole("radio", { name: /outro/i });
     const ios = screen.getByRole("radio", { name: /iphone/i });
     expect(other).toBeChecked();
+    expect(container.querySelectorAll("img")).toHaveLength(2);
     await user.click(ios);
     expect(ios).toBeChecked();
     await user.click(screen.getByRole("button", { name: /próximo/i }));
@@ -58,5 +59,19 @@ describe("seletor de celular", () => {
     await user.click(screen.getByRole("button", { name: /próximo/i }));
 
     expect(push).toHaveBeenCalledWith("/acoes/boleto?os=android&returnTo=%2F");
+  });
+
+  it("permite mudar de celular pelo teclado com foco visível no card", async () => {
+    const user = userEvent.setup();
+    render(<OsSelector taskSlug="pagar-boleto" />);
+    const other = screen.getByRole("radio", { name: /outro/i });
+    const ios = screen.getByRole("radio", { name: /iphone/i });
+
+    await user.tab();
+    expect(other).toHaveFocus();
+    expect(other.closest("label")).toHaveClass("focus-within:outline");
+    await user.keyboard("[ArrowUp]");
+    expect(ios).toHaveFocus();
+    expect(ios).toBeChecked();
   });
 });
