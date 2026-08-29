@@ -263,7 +263,7 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
             </div>
           </div>
           <p className="guide-step-instruction">{activeStep.instruction}</p>
-          {activeStep.warning && (
+          {activeStep.warning && !completed && (
             <div role="alert" className="notice-danger mt-6 rounded-2xl border-4 p-5 text-xl font-bold">
               <p>Antes de continuar</p>
               <p className="mt-2">{activeStep.warning}</p>
