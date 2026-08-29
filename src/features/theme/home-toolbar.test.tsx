@@ -25,6 +25,7 @@ describe("controles da página inicial", () => {
   it("oferece login, mas não revela a administração ao visitante", () => {
     render(<HomeToolbar />);
     expect(screen.getByRole("link", { name: "Entrar" })).toHaveAttribute("href", "/entrar");
+    expect(screen.getByRole("link", { name: "Criar guias" })).toHaveAttribute("href", "/admin/guias/preview");
     expect(screen.queryByRole("link", { name: "Admin" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Tarefas automáticas" })).not.toBeInTheDocument();
   });

@@ -37,6 +37,11 @@ describe("visualizador do guia", () => {
 
     await user.click(screen.getByText("Preciso de ajuda"));
     expect(screen.getByText("Você não precisa ter pressa.")).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Como seguir este passo" })).toBeVisible();
+    expect(screen.getByText("Se algo estiver diferente, pare.")).toBeVisible();
+    expect(screen.getByRole("dialog", { name: "Preciso de ajuda" })).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Fechar ajuda" }));
+    expect(screen.queryByRole("dialog", { name: "Preciso de ajuda" })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Próximo" }));
     expect(screen.getByText("Passo 2 de 6")).toBeVisible();
