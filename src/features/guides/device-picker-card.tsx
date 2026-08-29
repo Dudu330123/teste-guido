@@ -4,12 +4,12 @@
  * DevicePickerCard
  *
  * Cartão branco centralizado para a tela de escolha do celular.
- * Exibe os aparelhos suportados com imagens grandes, área de toque confortável,
+ * Exibe as plataformas suportadas com ícones grandes, área de toque confortável,
  * estado selecionado explícito (borda azul + check) e um único botão
  * "Continuar" que abre o guia no leitor.
  *
- * Design otimizado para o público idoso, com grade responsiva para listas
- * pequenas e estendidas.
+ * Design otimizado para o público idoso, com grade responsiva para as duas
+ * plataformas suportadas.
  */
 
 import Image from "next/image";
@@ -20,7 +20,6 @@ interface Device {
   id:    string;
   name:  string;
   platform: DevicePlatform;
-  image: string;
 }
 
 function PlatformIcon({ platform }: { platform: DevicePlatform }) {
@@ -104,7 +103,7 @@ export function DevicePickerCard({
 
       {/* ── Opções ────────────────────────────────────────────────── */}
       <div
-        className={`device-picker-options${devices.length > 2 ? " device-picker-options--extended" : ""}`}
+        className="device-picker-options"
         role="radiogroup"
         aria-labelledby={headingId}
       >
@@ -143,25 +142,24 @@ export function DevicePickerCard({
                 )}
               </span>
 
-              {/* Imagem */}
-              <div className="device-picker-image-wrap">
-                <div className="device-picker-phone">
-                  <Image
-                    src={device.image}
-                    alt={`Celular ${device.name}`}
-                    width={140}
-                    height={220}
-                    priority={index === 0}
-                    className="device-picker-image"
-                  />
-                  <span
-                    className={`device-platform-cue device-platform-cue--${device.platform}`}
-                    role="img"
-                    aria-label={`Sistema ${device.platform === "android" ? "Android" : "iOS"}`}
-                  >
+              {/* Ícone da plataforma */}
+              <div className="device-picker-platform-wrap">
+                <div
+                  className={`device-picker-platform-icon device-picker-platform-icon--${device.platform}`}
+                  role="img"
+                  aria-label={`Sistema ${device.platform === "android" ? "Android" : "iOS"}`}
+                >
+                  {device.platform === "android" ? (
+                    <Image
+                      src="/images/platform/android.png"
+                      alt=""
+                      width={96}
+                      height={96}
+                      className="device-picker-platform-image"
+                    />
+                  ) : (
                     <PlatformIcon platform={device.platform} />
-                    <span aria-hidden="true">{device.platform === "android" ? "Android" : "iOS"}</span>
-                  </span>
+                  )}
                 </div>
               </div>
 

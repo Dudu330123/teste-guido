@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Enviar print" };
 export default async function SendGuideImagePage() {
   return (
     <main className="guido-home internal-page min-h-screen">
-      <SiteHeader />
+      <SiteHeader activePage="upload" />
       <GuideUploadContent
         eyebrow="Colabore com os guias"
         title="Enviar um print"

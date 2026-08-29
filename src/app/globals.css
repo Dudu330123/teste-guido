@@ -485,9 +485,14 @@ html[data-theme="dark"] .home-brand-logo .home-logo-dark {
   color: var(--home-blue);
 }
 
-.home-main-nav a[aria-current="page"]::after {
+.home-main-nav a[aria-current="page"]::after,
+.home-main-nav .home-nav-button[aria-current="page"]::after {
   opacity: 1;
   transform: scaleX(1);
+}
+
+.home-main-nav .home-nav-button[aria-current="page"] {
+  color: var(--home-blue);
 }
 
 .home-main-nav a:hover,
@@ -3425,7 +3430,7 @@ html[data-theme="dark"] .explore-card-status.is-preparing {
   height: 1.65rem;
 }
 
-.device-picker-image-wrap {
+.device-picker-platform-wrap {
   display: flex;
   flex: 1;
   width: 100%;
@@ -3434,72 +3439,44 @@ html[data-theme="dark"] .explore-card-status.is-preparing {
   padding-top: 0.5rem;
 }
 
-.device-picker-phone {
-  position: relative;
-  display: flex;
-  max-width: 100%;
-  align-items: center;
-  justify-content: center;
+.device-picker-platform-icon {
+  display: grid;
+  width: clamp(6.5rem, 12vw, 9rem);
+  aspect-ratio: 1;
+  place-items: center;
+  border: 1px solid #cfdeef;
+  border-radius: 1.35rem;
+  background: #f8fbff;
+  box-shadow: 0 8px 18px rgba(24, 55, 89, 0.14);
+  transition: transform 160ms var(--ease-out-ui), box-shadow 160ms ease, border-color 160ms ease;
 }
 
-.device-picker-image {
-  width: auto;
-  height: auto;
+.device-picker-platform-icon svg {
   display: block;
+  margin: 0 auto;
+  width: 58%;
+  height: 58%;
+}
+
+.device-picker-platform-image {
+  display: block;
+  width: 62%;
+  height: auto;
   object-fit: contain;
-  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.17));
-  transition: transform 160ms var(--ease-out-ui);
 }
 
-.device-platform-cue {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  display: inline-flex;
-  max-width: calc(100% - 1rem);
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  padding: 0.38rem 0.65rem;
-  overflow: hidden;
-  border: 2px solid #78b6ff;
-  border-radius: 999px;
-  background: rgba(5, 20, 45, 0.88);
-  color: #fff;
-  font-size: 0.78rem;
-  font-weight: 900;
-  line-height: 1;
-  text-align: center;
-  white-space: nowrap;
-  pointer-events: none;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.42);
+.device-picker-platform-icon--android {
+  color: #22b85f;
 }
 
-.device-platform-cue svg {
-  width: 1rem;
-  height: 1rem;
-  flex: 0 0 auto;
+.device-picker-platform-icon--ios {
+  color: #162a4b;
 }
 
-.device-platform-cue--android {
-  border-color: #63e59b;
-}
-
-.device-platform-cue--android svg {
-  color: #63e59b;
-}
-
-.device-platform-cue--ios {
-  border-color: #a8cfff;
-}
-
-.device-platform-cue--ios svg {
-  color: #fff;
-}
-
-.device-picker-option.is-selected .device-picker-image {
+.device-picker-option.is-selected .device-picker-platform-icon {
   transform: translateY(-3px);
+  border-color: #8bb7ea;
+  box-shadow: 0 10px 22px rgba(21, 89, 199, 0.2);
 }
 
 .device-picker-name {
@@ -3553,16 +3530,7 @@ html[data-theme="dark"] .explore-card-status.is-preparing {
   .device-picker-card { padding: 1.15rem 1rem 1.15rem; }
   .device-picker-options { gap: 0.6rem; }
   .device-picker-option { min-height: 11rem; padding: 0.8rem 0.6rem 0.9rem; }
-  .device-picker-image { max-height: 9.5rem; }
-  .device-platform-cue {
-    width: 2rem;
-    height: 2rem;
-    padding: 0;
-    border-width: 1px;
-    border-radius: 50%;
-  }
-  .device-platform-cue svg { width: 1.15rem; height: 1.15rem; }
-  .device-platform-cue > span { display: none; }
+  .device-picker-platform-icon { width: 5.75rem; }
   .device-picker-name { font-size: 1.05rem; }
   .device-picker-title { font-size: 1.45rem; }
   .device-picker-continue { min-height: 3.65rem; font-size: 1.05rem; }
@@ -3571,17 +3539,17 @@ html[data-theme="dark"] .explore-card-status.is-preparing {
 @media (max-width: 24.375rem) {
   .device-picker-options { grid-template-columns: 1fr; }
   .device-picker-option { min-height: 5rem; flex-direction: row; justify-content: flex-start; gap: 1rem; padding: 0.75rem 1rem; }
-  .device-picker-image-wrap { flex: 0 0 auto; width: 3.5rem; padding-top: 0; align-items: center; }
-  .device-picker-image { max-height: 4rem; }
+  .device-picker-platform-wrap { flex: 0 0 auto; width: 3.5rem; padding-top: 0; align-items: center; }
+  .device-picker-platform-icon { width: 3.5rem; border-radius: 0.85rem; }
   .device-picker-name { margin-top: 0; text-align: left; font-size: 1.1rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .device-picker-option,
-  .device-picker-image,
+  .device-picker-platform-icon,
   .device-picker-continue { transition-duration: 0.01ms; }
   .device-picker-option:hover,
-  .device-picker-option.is-selected .device-picker-image,
+  .device-picker-option.is-selected .device-picker-platform-icon,
   .device-picker-continue:hover,
   .device-picker-option:active,
   .device-picker-continue:active { transform: none; }
@@ -3686,44 +3654,6 @@ html[data-theme="dark"] .explore-card-status.is-preparing {
 
 .task-setup-back:active { transform: scale(0.98); }
 
-.task-setup-switch {
-  display: inline-flex;
-  width: fit-content;
-  max-width: 100%;
-  min-height: 2.75rem;
-  align-items: center;
-  gap: 0.55rem;
-  border: 1px solid rgba(166, 202, 246, 0.36);
-  border-radius: 0.7rem;
-  padding: 0.6rem 0.8rem;
-  background: rgba(5, 18, 43, 0.68);
-  color: #edf5ff;
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.9rem;
-  font-weight: 800;
-  line-height: 1.25;
-  text-align: left;
-  transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease, transform 160ms var(--ease-out-ui);
-}
-
-.task-setup-switch svg {
-  width: 1.1rem;
-  height: 1.1rem;
-  flex: 0 0 auto;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .task-setup-switch:hover {
-    border-color: rgba(166, 202, 246, 0.7);
-    background: rgba(18, 48, 91, 0.86);
-    box-shadow: 0 5px 14px rgba(0, 5, 18, 0.2);
-    transform: translateY(-1px);
-  }
-}
-
-.task-setup-switch:active { transform: scale(0.98); }
-
 .device-picker-card {
   width: 100%;
   min-height: 34rem;
@@ -3753,10 +3683,6 @@ html[data-theme="dark"] .explore-card-status.is-preparing {
 .device-picker-option {
   min-height: 20rem;
   padding: 1.25rem 1.2rem 1.35rem;
-}
-
-.device-picker-image {
-  max-height: 11rem;
 }
 
 .device-picker-name {
@@ -4464,62 +4390,6 @@ html[data-theme="dark"] .device-switcher-close:hover {
   }
 }
 
-/* Seis aparelhos: três colunas preservam a leitura no desktop e o modal
-   continua cabendo na altura disponível sem reduzir as opções a miniaturas. */
-.device-picker-options--extended {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.device-picker-options--extended .device-picker-option {
-  min-height: 13.5rem;
-  padding: 0.95rem 0.8rem 1rem;
-}
-
-.device-picker-options--extended .device-picker-image {
-  max-height: 7.5rem;
-}
-
-.device-picker-options--extended .device-picker-name {
-  margin-top: 0.65rem;
-  font-size: 1.15rem;
-}
-
-.device-picker-options--extended .device-platform-cue {
-  font-size: 0.7rem;
-}
-
-@media (max-width: 52rem) {
-  .device-picker-options--extended {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 30rem) {
-  .device-picker-options--extended .device-picker-option {
-    min-height: 10.25rem;
-    padding: 0.7rem 0.5rem 0.8rem;
-  }
-
-  .device-picker-options--extended .device-picker-image {
-    max-height: 6.5rem;
-  }
-
-  .device-picker-options--extended .device-picker-name {
-    margin-top: 0.45rem;
-    font-size: 1rem;
-  }
-}
-
-@media (max-width: 24.375rem) {
-  .device-picker-options--extended {
-    grid-template-columns: 1fr;
-  }
-
-  .device-picker-options--extended .device-picker-option {
-    min-height: 5rem;
-  }
-}
-
 /* Leitor de guias: shell compacto para manter o primeiro passo na viewport
    sem alterar o layout da home ou das páginas de catálogo. */
 .guide-page {
@@ -5019,5 +4889,37 @@ html[data-theme="dark"] .guide-progress-status {
   .guide-page .guide-reader-visual .guide-evidence-viewport {
     width: 100%;
     height: 100%;
+  }
+}
+
+/*
+ * Guardrail para monitores grandes: a composição aprovada em notebooks usa
+ * um bloco de leitura compacto. Sem este limite, os valores fluidos de vw/vh
+ * ampliam título, cards e mascote ao mesmo tempo e o hero deixa de parecer a
+ * mesma página. O breakpoint começa acima de 1440px, portanto a referência
+ * de 1366px permanece intocada; o espaço adicional passa a ficar nas bordas.
+ */
+@media (min-width: 87.5rem) {
+  .guido-home--landing .home-header,
+  .guido-home--landing .home-hero {
+    max-width: 86rem;
+  }
+
+  .guido-home--landing .home-hero {
+    min-height: min(calc(100vh - 6.5rem), 45.25rem);
+  }
+
+  .guido-home--landing .home-title {
+    font-size: 4.4rem;
+  }
+
+  .guido-home--landing .home-hero-copy,
+  .guido-home--landing .guido-search-form,
+  .guido-home--landing .home-guided-area {
+    max-width: 39rem;
+  }
+
+  .guido-home--landing .home-mascot img {
+    width: 38rem;
   }
 }

@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { TaskGuideSetup } from "./task-guide-setup";
@@ -41,19 +41,16 @@ describe("preparação do guia", () => {
     expect(screen.getByRole("button", { name: /continuar com/i })).toBeEnabled();
   });
 
-  it("retorna do menu com o aparelho escolhido e mantém apenas duas opções", async () => {
-    const user = userEvent.setup();
+  it("mantém somente Outro/Android e iPhone/iOS na tela inicial", () => {
     render(<TaskGuideSetup {...defaultProps} />);
 
-    await user.click(screen.getByRole("button", { name: "Trocar celular" }));
-    const dialog = screen.getByRole("dialog", { name: "Escolha o seu celular" });
-    await user.click(within(dialog).getByRole("radio", { name: "Xiaomi" }));
-    await user.click(within(dialog).getByRole("button", { name: "Continuar com Xiaomi" }));
-
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    expect(screen.getAllByRole("radio")).toHaveLength(2);
-    expect(screen.getByRole("radio", { name: "Xiaomi" })).toBeChecked();
-    expect(push).not.toHaveBeenCalled();
+    expect(screen.getByRole("radio", { name: "Outro" })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "iPhone" })).toBeInTheDocument();
+    expect(screen.queryByRole("radio", { name: "Moto G" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("radio", { name: "LG" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("radio", { name: "Xiaomi" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("radio", { name: "Realme" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Trocar celular" })).not.toBeInTheDocument();
   });
 
   it("identifica o aplicativo escolhido sem alterar o nome da tarefa", () => {
@@ -73,24 +70,14 @@ describe("preparação do guia", () => {
     expect(back).not.toHaveBeenCalled();
   });
 
-  it("abre o menu de troca e continua com o aparelho escolhido", async () => {
+  it("seleciona iPhone e continua com o sistema iOS", async () => {
     const user = userEvent.setup();
     render(<TaskGuideSetup {...defaultProps} />);
 
-    await user.click(screen.getByRole("button", { name: "Trocar celular" }));
-    const dialog = screen.getByRole("dialog", { name: "Escolha o seu celular" });
-    expect(dialog).toBeVisible();
-    expect(within(dialog).getAllByRole("radio")).toHaveLength(6);
-    await user.click(within(dialog).getByRole("radio", { name: "Samsung" }));
-    expect(within(dialog).getByRole("radio", { name: "Samsung" })).toBeChecked();
-
-    await user.click(within(dialog).getByRole("radio", { name: "iPhone" }));
-    await user.click(within(dialog).getByRole("button", { name: "Continuar com iPhone" }));
-
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    expect(screen.getAllByRole("radio")).toHaveLength(2);
+    await user.click(screen.getByRole("radio", { name: "iPhone" }));
     expect(screen.getByRole("radio", { name: "iPhone" })).toBeChecked();
     await user.click(screen.getByRole("button", { name: "Continuar com iPhone" }));
+
     expect(localStorage.getItem("guido:preferred-os")).toBe("ios");
     expect(push).toHaveBeenCalledWith("/guias/pagar-boleto?os=ios&app=caixa");
   });
@@ -103,24 +90,6 @@ describe("preparação do guia", () => {
     expect(continueButton).toBeDisabled();
     await user.click(continueButton);
     expect(push).not.toHaveBeenCalled();
-  });
-
-  it("atualiza a escolha pelo menu, salva o sistema e abre o guia correto", async () => {
-    const user = userEvent.setup();
-    render(<TaskGuideSetup {...defaultProps} />);
-
-    await user.click(screen.getByRole("button", { name: "Trocar celular" }));
-    const dialog = screen.getByRole("dialog", { name: "Escolha o seu celular" });
-    await user.click(within(dialog).getByRole("radio", { name: "iPhone" }));
-    await user.click(within(dialog).getByRole("button", { name: "Continuar com iPhone" }));
-
-    // Após escolher iPhone no menu, o botão da tela principal reflete a seleção.
-    expect(screen.getByRole("button", { name: /continuar com iphone/i })).toBeEnabled();
-
-    await user.click(screen.getByRole("button", { name: /continuar com iphone/i }));
-
-    expect(localStorage.getItem("guido:preferred-os")).toBe("ios");
-    expect(push).toHaveBeenCalledWith("/guias/pagar-boleto?os=ios&app=caixa");
   });
 
   it("permite trocar de celular com as setas do teclado", async () => {
