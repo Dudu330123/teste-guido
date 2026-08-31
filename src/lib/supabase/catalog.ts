@@ -16,6 +16,7 @@ const guideRowSchema = z.object({
   id: z.string().uuid(),
   tutorial_id: z.string().uuid(),
   platform: z.enum(["android", "ios"]),
+  public_for_upload: z.boolean(),
   app_version: z.string().min(1),
   guide_version: z.string().min(1),
   reviewed_at: z.string().nullable(),
@@ -67,8 +68,10 @@ const applicationRowsSchema = z.array(z.object({
   description: z.string().min(1),
   status: publicationStatusSchema,
   is_demo: z.boolean(),
-  created_at: z.string().datetime(),
-  updated_at: z.string().datetime(),
+  // O Postgres retorna timestamps com deslocamento `+00:00`; restringir a `Z`
+  // descartava silenciosamente todo o catálogo remoto válido.
+  created_at: z.string().datetime({ offset: true }),
+  updated_at: z.string().datetime({ offset: true }),
   categories: z.object({ name: z.string().min(1) }),
 }));
 const tutorialRowsSchema = z.array(z.object({
@@ -83,7 +86,10 @@ const tutorialRowsSchema = z.array(z.object({
   is_demo: z.boolean(),
   image_context_slug: z.string().min(1),
   tutorial_search_terms: z.array(z.object({ term: z.string().min(1) })),
-  guide_versions: z.array(z.object({ status: publicationStatusSchema })),
+  guide_versions: z.array(z.object({
+    status: publicationStatusSchema,
+    public_for_upload: z.boolean(),
+  })),
 }));
 const popularityRowsSchema = z.array(z.object({
   tutorial_id: z.string().uuid(),
@@ -120,6 +126,18 @@ export interface SupabaseUploadGuide {
 }
 
 type MediaLocation = z.infer<typeof mediaSchema>;
+
+/**
+ * Rascunhos habilitados para colaboração podem ser vistos como prévia, mas
+ * continuam editorialmente distintos de uma publicação revisada.
+ */
+export function canOpenGuideVersion(
+  status: "draft" | "under_review" | "published" | "outdated",
+  isDemo: boolean,
+  publicForUpload: boolean,
+) {
+  return status === "published" || isDemo || publicForUpload;
+}
 
 function mediaLocationKey(media: MediaLocation) {
   return `${media.storage_bucket}/${media.storage_key}`;
@@ -158,7 +176,7 @@ export function parseSupabaseGuideRow(
       difficulty: tutorial.difficulty,
       safetyWarning: tutorial.safety_warning,
       searchTerms: tutorial.tutorial_search_terms.map(({ term }) => term),
-      availability: tutorial.is_demo ? "demo" : "preparing",
+      availability: tutorial.is_demo || row.status !== "published" ? "demo" : "available",
       status: tutorial.status,
     },
     guide: {
@@ -208,7 +226,7 @@ export async function getGuideFromSupabase(
   const loadRow = async (status: "draft" | "published") => supabase
       .from("guide_versions")
       .select(`
-      id, tutorial_id, platform, app_version, guide_version, reviewed_at, status, estimated_minutes,
+      id, tutorial_id, platform, app_version, guide_version, reviewed_at, status, estimated_minutes, public_for_upload,
       tutorials!inner(
         id, application_id, title, slug, description, difficulty, safety_warning, status, is_demo, image_context_slug,
         tutorial_search_terms(term),
@@ -231,9 +249,13 @@ export async function getGuideFromSupabase(
   if (!data && !error) {
     const draft = await loadRow("draft");
     const parsedDraft = guideRowSchema.safeParse(draft.data);
-    // Roteiros colaborativos podem ser lidos para receber prints, mas somente
-    // uma demonstração explícita pode ser aberta antes da publicação humana.
-    if (parsedDraft.success && parsedDraft.data.tutorials.is_demo) {
+    // A prévia pública permite conferir texto e prints durante a colaboração.
+    // O status permanece draft e a interface informa que falta revisão humana.
+    if (parsedDraft.success && canOpenGuideVersion(
+      parsedDraft.data.status,
+      parsedDraft.data.tutorials.is_demo,
+      parsedDraft.data.public_for_upload,
+    )) {
       data = draft.data;
       error = draft.error;
     }
@@ -261,6 +283,49 @@ export async function getGuideFromSupabase(
 export interface SupabaseCatalog {
   applications: Application[];
   tasks: Task[];
+}
+
+/** Valida a resposta completa antes que dados remotos cheguem aos componentes. */
+export function parseSupabaseCatalogRows(
+  applicationPayload: unknown,
+  tutorialPayload: unknown,
+): SupabaseCatalog | null {
+  const applicationRows = applicationRowsSchema.safeParse(applicationPayload);
+  const tutorialRows = tutorialRowsSchema.safeParse(tutorialPayload);
+  if (!applicationRows.success || !tutorialRows.success) return null;
+
+  return {
+    applications: applicationRows.data.map((row) => ({
+      id: row.id,
+      name: row.name,
+      slug: row.slug,
+      description: row.description,
+      category: row.categories.name,
+      logoPath: null,
+      searchTerms: [],
+      status: "available",
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    })),
+    tasks: tutorialRows.data.map((row) => ({
+      id: row.id,
+      applicationId: row.application_id,
+      title: row.title,
+      slug: row.slug,
+      description: row.description,
+      difficulty: row.difficulty,
+      safetyWarning: row.safety_warning,
+      searchTerms: row.tutorial_search_terms.map(({ term }) => term),
+      availability: row.is_demo
+        ? "demo"
+        : row.guide_versions.some(({ status }) => status === "published")
+          ? "available"
+          : row.guide_versions.some(({ status, public_for_upload }) => status === "draft" && public_for_upload)
+            ? "demo"
+            : "preparing",
+      status: row.status,
+    })),
+  };
 }
 
 export function mergeCatalogWithFallback(
@@ -293,42 +358,11 @@ export async function getCatalogFromSupabase(): Promise<SupabaseCatalog | null> 
       .order("name", { ascending: true }),
     supabase
       .from("tutorials")
-      .select("id, application_id, title, slug, description, difficulty, safety_warning, status, is_demo, image_context_slug, tutorial_search_terms(term), guide_versions(status)")
+      .select("id, application_id, title, slug, description, difficulty, safety_warning, status, is_demo, image_context_slug, tutorial_search_terms(term), guide_versions(status, public_for_upload)")
       .order("title", { ascending: true }),
   ]);
   if (applicationsResult.error || tutorialsResult.error) return null;
-  const applicationRows = applicationRowsSchema.safeParse(applicationsResult.data);
-  const tutorialRows = tutorialRowsSchema.safeParse(tutorialsResult.data);
-  if (!applicationRows.success || !tutorialRows.success) return null;
-
-  return {
-    applications: applicationRows.data.map((row) => ({
-      id: row.id,
-      name: row.name,
-      slug: row.slug,
-      description: row.description,
-      category: row.categories.name,
-      logoPath: null,
-      searchTerms: [],
-      status: "available",
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    })),
-    tasks: tutorialRows.data.map((row) => ({
-      id: row.id,
-      applicationId: row.application_id,
-      title: row.title,
-      slug: row.slug,
-      description: row.description,
-      difficulty: row.difficulty,
-      safetyWarning: row.safety_warning,
-      searchTerms: row.tutorial_search_terms.map(({ term }) => term),
-      availability: row.is_demo
-        ? "demo"
-        : row.guide_versions.some(({ status }) => status === "published") ? "available" : "preparing",
-      status: row.status,
-    })),
-  };
+  return parseSupabaseCatalogRows(applicationsResult.data, tutorialsResult.data);
 }
 
 /** Converte os roteiros públicos para upload mantendo a chave editorial antiga. */

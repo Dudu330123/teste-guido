@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { getGuide, getStepsForGuide } from "@/data/guides";
-import { applyPublicGuideImages, mergePublicGuideImages, shouldUseAndroidImageFallback } from "./public-guide-images";
+import {
+  applyPublicGuideImages,
+  mergePublicGuideImages,
+  publicGuideImageScopes,
+  shouldUseAndroidImageFallback,
+} from "./public-guide-images";
 
 describe("imagens públicas do guia", () => {
   const guide = getGuide("android")!;
@@ -30,6 +35,18 @@ describe("imagens públicas do guia", () => {
     const result = applyPublicGuideImages(steps, mergePublicGuideImages(new Map(), new Map()));
 
     expect(result.map((step) => step.imagePath)).toEqual(steps.map((step) => step.imagePath));
+  });
+
+  it("consulta o escopo compartilhado antes do escopo específico do aplicativo", () => {
+    expect(publicGuideImageScopes("whatsapp")).toEqual([null, "whatsapp"]);
+    expect(publicGuideImageScopes(null)).toEqual([null]);
+
+    const recovered = mergePublicGuideImages(
+      new Map([[2, "https://example.com/whatsapp-step-2.png"]]),
+      new Map([[1, "https://example.com/legacy-step-1.png"], [2, "https://example.com/legacy-step-2.png"]]),
+    );
+    expect(recovered.get(1)).toBe("https://example.com/legacy-step-1.png");
+    expect(recovered.get(2)).toBe("https://example.com/whatsapp-step-2.png");
   });
 
   it("não adiciona imagens iOS ao mapa usado pelo Android", () => {

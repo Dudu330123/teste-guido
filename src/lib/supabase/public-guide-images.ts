@@ -31,6 +31,15 @@ export function shouldUseAndroidImageFallback(operatingSystem: OperatingSystem, 
     && (applicationCategory === "Serviços financeiros" || applicationCategory === "Serviços públicos");
 }
 
+/**
+ * Mantém compatibilidade com prints anteriores ao catálogo remoto: nesses
+ * registros, guias não bancários usam application_slug nulo. O escopo do app
+ * continua sendo consultado por último para substituir o compartilhado.
+ */
+export function publicGuideImageScopes(applicationSlug: string | null) {
+  return applicationSlug ? [null, applicationSlug] as const : [null] as const;
+}
+
 async function loadPublicGuideImages(
   guideSlug: string,
   applicationSlug: string | null,
@@ -38,15 +47,11 @@ async function loadPublicGuideImages(
 ) {
   const supabase = await getSupabaseServerClient();
   if (!supabase) return new Map<number, string>();
-  // Os prints bancários são imagens de referência da tarefa, não uma promessa
-  // de que a tela muda entre plataformas. O Android é a fonte comum escolhida
-  // para iPhone; outros nichos continuam usando a plataforma selecionada.
-  const imageOperatingSystem = applicationSlug ? "android" : operatingSystem;
   let query = supabase
     .from("guide_public_images")
     .select("step_order, storage_bucket, storage_key")
     .eq("guide_slug", guideSlug)
-    .eq("operating_system", imageOperatingSystem);
+    .eq("operating_system", operatingSystem);
   query = applicationSlug
     ? query.eq("application_slug", applicationSlug)
     : query.is("application_slug", null);
@@ -60,6 +65,21 @@ async function loadPublicGuideImages(
   ]));
 }
 
+async function loadScopedPublicGuideImages(
+  guideSlug: string,
+  applicationSlug: string | null,
+  operatingSystem: OperatingSystem,
+) {
+  const imagesByScope = await Promise.all(
+    publicGuideImageScopes(applicationSlug).map((scope) =>
+      loadPublicGuideImages(guideSlug, scope, operatingSystem)),
+  );
+  return imagesByScope.reduce(
+    (merged, current) => mergePublicGuideImages(current, merged),
+    new Map<number, string>(),
+  );
+}
+
 /** Lê as imagens que colaboradores, inclusive visitantes sem login, tornaram públicas. */
 export async function getPublicGuideImages(
   guideSlug: string,
@@ -67,13 +87,18 @@ export async function getPublicGuideImages(
   operatingSystem: OperatingSystem,
   applicationCategory?: string,
 ) {
+  const selectedSystemImages = loadScopedPublicGuideImages(
+    guideSlug,
+    applicationSlug,
+    operatingSystem,
+  );
   if (!shouldUseAndroidImageFallback(operatingSystem, applicationCategory)) {
-    return loadPublicGuideImages(guideSlug, applicationSlug, operatingSystem);
+    return selectedSystemImages;
   }
 
   const [specificImages, androidImages] = await Promise.all([
-    loadPublicGuideImages(guideSlug, applicationSlug, operatingSystem),
-    loadPublicGuideImages(guideSlug, applicationSlug, "android"),
+    selectedSystemImages,
+    loadScopedPublicGuideImages(guideSlug, applicationSlug, "android"),
   ]);
   return mergePublicGuideImages(specificImages, androidImages);
 }

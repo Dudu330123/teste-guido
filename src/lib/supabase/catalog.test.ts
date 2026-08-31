@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { mergeCatalogWithFallback, parseSupabaseGuideRow, parseSupabaseUploadGuides } from "./catalog";
+import {
+  canOpenGuideVersion,
+  mergeCatalogWithFallback,
+  parseSupabaseCatalogRows,
+  parseSupabaseGuideRow,
+  parseSupabaseUploadGuides,
+} from "./catalog";
 
 const ids = {
   application: "20000000-0000-4000-8000-000000000001",
@@ -12,6 +18,7 @@ const row = {
   id: ids.guide,
   tutorial_id: ids.tutorial,
   platform: "android",
+  public_for_upload: true,
   app_version: "genérica",
   guide_version: "0.1-demo",
   reviewed_at: null,
@@ -53,10 +60,47 @@ const row = {
 };
 
 describe("catálogo Supabase", () => {
+  it("abre rascunhos colaborativos somente como prévia", () => {
+    expect(canOpenGuideVersion("draft", false, true)).toBe(true);
+    expect(canOpenGuideVersion("draft", false, false)).toBe(false);
+    expect(canOpenGuideVersion("published", false, false)).toBe(true);
+  });
+
+  it("aceita timestamps reais do Supabase e libera a prévia colaborativa no catálogo", () => {
+    const catalog = parseSupabaseCatalogRows([{
+      id: ids.application,
+      name: "Gov.br",
+      slug: "gov-br",
+      description: "Serviços públicos.",
+      status: "published",
+      is_demo: false,
+      created_at: "2026-08-13T17:48:38.658249+00:00",
+      updated_at: "2026-08-25T23:09:58.604393+00:00",
+      categories: { name: "Serviços públicos" },
+    }], [{
+      id: ids.tutorial,
+      application_id: ids.application,
+      title: "Acessar o Gov.br",
+      slug: "acessar-gov-br",
+      description: "Aprenda a acessar.",
+      difficulty: "easy",
+      safety_warning: "Não compartilhe sua senha.",
+      status: "published",
+      is_demo: false,
+      image_context_slug: "acessar-gov-br",
+      tutorial_search_terms: [{ term: "entrar gov" }],
+      guide_versions: [{ status: "draft", public_for_upload: true }],
+    }]);
+
+    expect(catalog?.tasks[0]?.availability).toBe("demo");
+    expect(catalog?.applications[0]?.createdAt).toContain("+00:00");
+  });
+
   it("converte uma linha validada para o visualizador", () => {
     const content = parseSupabaseGuideRow(row);
     expect(content?.application.category).toBe("Serviços financeiros");
     expect(content?.guide.id).toBe(ids.guide);
+    expect(content?.task.availability).toBe("demo");
     expect(content?.imageContext).toEqual({
       applicationSlug: null,
       guideSlug: "pagar-boleto",
