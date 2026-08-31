@@ -108,6 +108,8 @@ interface CreatedApplicationGuide {
 
 type CreationMode = "existing" | "new";
 
+export type GuidePreviewAction = "open" | "images" | "new";
+
 const localPreviewCategoryId = "00000000-0000-4000-8000-000000000099";
 
 function emptyStep(): GuideEditorStepValue {
@@ -200,7 +202,9 @@ export function GuideCreationForm({
   previewOnly = false,
   backHref = "/admin",
   backLabel = "← Voltar para administração",
+  hidePageIntro = false,
   onPreviewValidated,
+  onPreviewAction,
   mode = "create",
   initialValues,
   editId,
@@ -211,7 +215,9 @@ export function GuideCreationForm({
   previewOnly?: boolean;
   backHref?: string;
   backLabel?: string;
+  hidePageIntro?: boolean;
   onPreviewValidated?: (draft: GuidePreviewDraft) => void;
+  onPreviewAction?: (action: GuidePreviewAction) => void;
   mode?: "create" | "edit";
   initialValues?: GuideEditorInitialValue;
   editId?: string;
@@ -316,6 +322,24 @@ export function GuideCreationForm({
     setPreviewResult(null);
     setSavedEdit(null);
     setFieldErrors({});
+  };
+
+  const resetForNewGuide = () => {
+    setForm(initialForm(applications));
+    setCreationMode("existing");
+    setNewApplication(initialNewApplication(applications, categories, previewOnly));
+    setNewApplicationSlugEdited(false);
+    setSlugEdited(false);
+    setStepCount(GUIDE_STEP_MIN);
+    setStepCountMessage("");
+    setFieldErrors({});
+    setSubmitting(false);
+    setMessage("");
+    setCreatedGuide(null);
+    setCreatedApplicationSlug("");
+    setPreviewResult(null);
+    setSavedEdit(null);
+    onPreviewAction?.("new");
   };
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
@@ -472,20 +496,24 @@ export function GuideCreationForm({
 
   return (
     <div className="internal-page-content internal-page-content--compact guide-editor-page">
-      <Link href={backHref} className="internal-page-back">{backLabel}</Link>
-      <header className="guide-editor-intro">
-        <div>
-          <h1 className="internal-page-title">{previewOnly ? "Prévia do editor de guias" : isEditing ? "Editar rascunho" : "Criar um guia"}</h1>
-          <p className="internal-page-description">
-            {previewOnly
-              ? "Preencha um exemplo e veja como o cadastro funciona. Nada será enviado ou salvo."
-              : isEditing
-                ? "Atualize o conteúdo com segurança. O guia continua como rascunho até a revisão humana."
-                : "Monte o roteiro em poucos passos. O guia começa como rascunho para revisão humana."}
-          </p>
-        </div>
-        <span className="guide-editor-mode">{previewOnly ? "Modo local" : "Rascunho"}</span>
-      </header>
+      {!hidePageIntro && (
+        <>
+          <Link href={backHref} className="internal-page-back">{backLabel}</Link>
+          <header className="guide-editor-intro">
+            <div>
+              <h1 className="internal-page-title">{previewOnly ? "Prévia do editor de guias" : isEditing ? "Editar rascunho" : "Criar um guia"}</h1>
+              <p className="internal-page-description">
+                {previewOnly
+                  ? "Preencha um exemplo e veja como o cadastro funciona. Nada será enviado ou salvo."
+                  : isEditing
+                    ? "Atualize o conteúdo com segurança. O guia continua como rascunho até a revisão humana."
+                    : "Monte o roteiro em poucos passos. O guia começa como rascunho para revisão humana."}
+              </p>
+            </div>
+            <span className="guide-editor-mode">{previewOnly ? "Modo local" : "Rascunho"}</span>
+          </header>
+        </>
+      )}
 
       <div className="guide-editor-overview" role="note">
         <strong>Você só precisa preencher:</strong>
@@ -498,7 +526,7 @@ export function GuideCreationForm({
           <strong>{creationMode === "new" ? newApplication.name || "Novo aplicativo" : selectedApplication?.name || "Ainda não selecionado"}</strong>
         </div>
         <div>
-          <span>Nicho</span>
+          <span>Categoria</span>
           <strong>{creationMode === "new" ? categoryOptions.find((category) => category.id === newApplication.categoryId)?.name || "Ainda não selecionado" : selectedApplication?.category || "Vinculado ao aplicativo"}</strong>
         </div>
         <div>
@@ -526,9 +554,9 @@ export function GuideCreationForm({
               <div>
                 <span>Aplicativo vinculado</span>
                 <strong>{selectedApplication?.name ?? initialValues?.applicationName ?? form.applicationSlug}</strong>
-                <small>{selectedApplication?.category ?? initialValues?.applicationCategory ?? "Nicho preservado"}</small>
+                <small>{selectedApplication?.category ?? initialValues?.applicationCategory ?? "Categoria preservada"}</small>
               </div>
-              <small>O aplicativo e o nicho não são alterados nesta edição.</small>
+              <small>O aplicativo e a categoria não são alterados nesta edição.</small>
             </div>
           ) : (
           <>
@@ -575,13 +603,13 @@ export function GuideCreationForm({
                 {fieldErrors["application.name"] && <span id="application-name-error" className="guide-editor-error" role="alert">{fieldErrors["application.name"]}</span>}
               </label>
               <label className="guide-editor-field">
-                Nicho existente
+                Categoria existente
                 <select value={newApplication.categoryId} onChange={(event) => { setFieldErrors((current) => { const next = { ...current }; delete next["application.categoryId"]; return next; }); setNewApplication((current) => ({ ...current, categoryId: event.target.value })); }} className="glass-control" required aria-invalid={Boolean(fieldErrors["application.categoryId"])} aria-describedby={fieldErrors["application.categoryId"] ? "application-category-error" : undefined}>
-                  <option value="">Selecione o nicho</option>
+                  <option value="">Selecione a categoria</option>
                   {categoryOptions.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
                 </select>
                 {fieldErrors["application.categoryId"] && <span id="application-category-error" className="guide-editor-error" role="alert">{fieldErrors["application.categoryId"]}</span>}
-                {categoryOptions.length === 0 && <span className="guide-editor-help" role="status">Nenhum nicho existente foi carregado. Recarregue o catálogo antes de criar um aplicativo.</span>}
+                {categoryOptions.length === 0 && <span className="guide-editor-help" role="status">Nenhuma categoria existente foi carregada. Recarregue o catálogo antes de criar um aplicativo.</span>}
               </label>
               <label className="guide-editor-field">
                 Identificador do aplicativo
@@ -747,11 +775,20 @@ export function GuideCreationForm({
             <strong>Segurança primeiro</strong>
             <span> Não use senha, código, CPF, saldo ou imagem com dado real.</span>
           </div>
-          <button type="submit" disabled={submitting || (!isEditing && creationMode === "existing" && !selectedApplication) || (!isEditing && creationMode === "new" && categoryOptions.length === 0)} aria-busy={submitting} className="primary-action guide-editor-submit-button">{submitting ? "Salvando…" : previewOnly ? "Validar prévia local" : isEditing ? "Salvar alterações" : creationMode === "new" ? "Criar aplicativo e rascunho" : "Criar guia como rascunho"}</button>
+          <button type="submit" disabled={submitting || (!isEditing && creationMode === "existing" && !selectedApplication) || (!isEditing && creationMode === "new" && categoryOptions.length === 0)} aria-busy={submitting} className="primary-action guide-editor-submit-button">{submitting ? "Salvando…" : previewOnly ? "Validar e criar rascunho local" : isEditing ? "Salvar alterações" : creationMode === "new" ? "Criar aplicativo e rascunho" : "Criar guia como rascunho"}</button>
         </div>
         {(submitting || message) && <p role={submitting || createdGuide || previewResult || savedEdit ? "status" : "alert"} aria-live={submitting || createdGuide || previewResult || savedEdit ? "polite" : "assertive"} className={`guide-editor-feedback ${submitting ? "notice-info" : createdGuide || previewResult || savedEdit ? "notice-success" : "notice-danger"}`}>{submitting ? isEditing ? "Salvando alterações…" : "Criando o rascunho…" : message}</p>}
         {createdGuide && <div className="guide-editor-result glass-panel"><p className="font-bold">Rascunho criado: {createdGuide.stepCount} passo(s) nas duas versões.</p><p className="mt-2 text-[var(--muted)]">Slug: <strong>{createdGuide.slug}</strong>. O roteiro ainda não está publicado e nenhum placeholder de imagem foi criado.</p><div className="mt-4 flex flex-wrap gap-3"><Link href={`/admin?guide=${encodeURIComponent(createdGuide.slug)}${createdApplicationSlug ? `&application=${encodeURIComponent(createdApplicationSlug)}` : ""}&os=android&androidVersionId=${encodeURIComponent(createdGuide.guideVersionIds.android)}&iosVersionId=${encodeURIComponent(createdGuide.guideVersionIds.ios)}`} className="primary-action inline-flex min-h-12 items-center rounded-xl px-4 py-2 font-bold">Enviar prints Android e iPhone</Link><Link href="/admin" className="secondary-action inline-flex min-h-12 items-center rounded-xl px-4 py-2 font-bold">Voltar ao painel</Link><Link href={`/tarefas/${createdGuide.slug}`} className="secondary-action inline-flex min-h-12 items-center rounded-xl px-4 py-2 font-bold">Abrir prévia</Link></div></div>}
-        {previewResult && <div className="guide-editor-result notice-success" role="status"><p className="font-bold">Prévia pronta para revisão visual</p><p className="mt-2">{previewResult.stepCount} passo(s) preenchido(s). {previewResult.applicationName ? `Aplicativo: ${previewResult.applicationName}. ` : ""}Slug: <strong>{previewResult.slug}</strong>.</p><p className="mt-2">Nada foi enviado ao Supabase e nenhuma alteração foi salva.</p></div>}
+        {previewResult && <div className="guide-editor-result notice-success guide-preview-confirmation" role="status" aria-labelledby="guide-preview-confirmation-title">
+          <p id="guide-preview-confirmation-title" className="font-bold">Rascunho local criado</p>
+          <p className="mt-2">{previewResult.stepCount} passo(s) preenchido(s). {previewResult.applicationName ? `Aplicativo: ${previewResult.applicationName}. ` : ""}Slug: <strong>{previewResult.slug}</strong>.</p>
+          <p className="mt-2">Nada foi enviado ao Supabase e nenhuma alteração foi salva.</p>
+          <div className="guide-preview-confirmation-actions">
+            <button type="button" className="primary-action" onClick={() => onPreviewAction?.("images")}>Continuar para adicionar prints</button>
+            <button type="button" className="secondary-action" onClick={() => onPreviewAction?.("open")}>Revisar roteiro</button>
+            <button type="button" className="guide-preview-tertiary-action" onClick={resetForNewGuide}>Criar outro guia</button>
+          </div>
+        </div>}
         {savedEdit && <div className="guide-editor-result notice-success" role="status"><p className="font-bold">Rascunho atualizado com sucesso.</p><p className="mt-2">O conteúdo continua em rascunho. Confira os prints antes de qualquer revisão ou publicação.</p><div className="mt-4 flex flex-wrap gap-3"><Link href={savedEdit.reviewHref ?? initialValues?.reviewHref ?? "/admin"} className="primary-action inline-flex min-h-12 items-center rounded-xl px-4 py-2 font-bold">Revisar prints</Link><Link href="/admin" className="secondary-action inline-flex min-h-12 items-center rounded-xl px-4 py-2 font-bold">Voltar ao painel</Link></div></div>}
       </form>
     </div>

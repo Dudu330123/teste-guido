@@ -61,6 +61,9 @@ export default async function TaskPage({ params, searchParams }: TaskPageProps) 
         applicationOptions={taskApplication?.slug === "banco-demonstracao"
           ? bankApplications.map(({ slug: applicationSlug, name, logoPath }) => ({ slug: applicationSlug, name, logoPath }))
           : undefined}
+        taskOptions={catalog.tasks
+          .filter((item) => item.applicationId === task.applicationId)
+          .map(({ id, slug: taskSlug, title, availability }) => ({ id, slug: taskSlug, title, availability }))}
         selectedApplicationSlug={application.slug}
         canContinue={task.availability !== "preparing"}
         returnTo={returnTo ? backHref : undefined}
