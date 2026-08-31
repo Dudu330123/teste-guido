@@ -13,7 +13,7 @@ export function ApplicationCard({ application, taskCount }: ApplicationCardProps
 
   return (
     <article className="glass-panel flex h-full flex-col rounded-2xl p-6">
-      <div className="soft-panel application-logo mb-4">
+      <div className={`soft-panel application-logo application-logo--${application.slug} mb-4`}>
         <ApplicationLogo application={application} />
       </div>
       <p className="mb-1 text-base font-semibold text-[var(--muted)]">{getCategoryLabel(application.category)}</p>

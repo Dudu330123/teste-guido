@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   getGuidePreviewCompleteness,
   type GuidePreviewDraft,
@@ -99,6 +99,10 @@ export function GuideLibrary({
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<GuideLibraryStatusFilter>("all");
   const [applicationFilter, setApplicationFilter] = useState("all");
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
+  const deleteTriggerRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const openerIdRef = useRef<string | null>(null);
 
   const applicationOptions = useMemo(() => {
     const unique = new Map<string, GuideLibraryApplicationOption>();
@@ -137,6 +141,52 @@ export function GuideLibrary({
     setApplicationFilter("all");
   };
 
+  const pendingDeleteDraft = guides.find((guide) => guide.id === pendingDeleteId);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    if (pendingDeleteDraft) {
+      if (!dialog.open) {
+        try {
+          dialog.showModal();
+        } catch {
+          dialog.setAttribute("open", "");
+        }
+      }
+      cancelButtonRef.current?.focus();
+    } else if (dialog.open) {
+      dialog.close();
+    }
+  }, [pendingDeleteDraft]);
+
+  const restoreDeleteFocus = () => {
+    const opener = openerIdRef.current ? deleteTriggerRefs.current[openerIdRef.current] : null;
+    window.requestAnimationFrame(() => {
+      if (opener && document.contains(opener)) {
+        opener.focus();
+        return;
+      }
+      document.querySelector<HTMLButtonElement>(".guide-local-delete")?.focus();
+    });
+  };
+
+  const closeDeleteDialog = () => {
+    onCancelDelete();
+    restoreDeleteFocus();
+  };
+
+  const requestDelete = (draft: GuidePreviewDraft) => {
+    openerIdRef.current = draft.id;
+    onRequestDelete(draft);
+  };
+
+  const confirmDelete = (draft: GuidePreviewDraft) => {
+    onConfirmDelete(draft);
+    restoreDeleteFocus();
+  };
+
   if (guides.length === 0) {
     return (
       <div className="guide-local-empty" role="status">
@@ -156,7 +206,7 @@ export function GuideLibrary({
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Título, aplicativo, nicho ou palavra-chave"
+            placeholder="Título, aplicativo, categoria ou palavra-chave"
           />
         </label>
         <label>
@@ -231,27 +281,44 @@ export function GuideLibrary({
                     type="button"
                     className="guide-local-delete"
                     aria-label={`Apagar rascunho: ${draft.title}`}
-                    onClick={() => onRequestDelete(draft)}
+                    ref={(element) => { deleteTriggerRefs.current[draft.id] = element; }}
+                    onClick={() => requestDelete(draft)}
                     aria-expanded={isPendingDelete}
                   >
                     Apagar rascunho
                   </button>
                 </div>
 
-                {isPendingDelete && (
-                  <div className="guide-local-confirm" role="alertdialog" aria-label={`Confirmar exclusão de ${draft.title}`}>
-                    <strong>Apagar este rascunho?</strong>
-                    <p>Isso remove somente este item do navegador. O Supabase não será alterado.</p>
-                    <div>
-                      <button type="button" className="secondary-action" onClick={onCancelDelete}>Cancelar</button>
-                      <button type="button" className="guide-local-confirm-delete" aria-label={`Confirmar apagar rascunho: ${draft.title}`} onClick={() => onConfirmDelete(draft)}>Apagar agora</button>
-                    </div>
-                  </div>
-                )}
               </article>
             );
           })}
         </div>
+      )}
+
+      {pendingDeleteDraft && (
+        <dialog
+          ref={dialogRef}
+          className="guide-local-confirm"
+          aria-labelledby="guide-local-delete-title"
+          aria-describedby="guide-local-delete-description"
+          onCancel={(event) => {
+            event.preventDefault();
+            closeDeleteDialog();
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              event.preventDefault();
+              closeDeleteDialog();
+            }
+          }}
+        >
+          <h2 id="guide-local-delete-title">Apagar este rascunho?</h2>
+          <p id="guide-local-delete-description">Isso remove somente “{pendingDeleteDraft.title}” deste navegador. O Supabase não será alterado.</p>
+          <div>
+            <button type="button" className="secondary-action" ref={cancelButtonRef} onClick={closeDeleteDialog}>Cancelar</button>
+            <button type="button" className="guide-local-confirm-delete" aria-label={`Confirmar apagar rascunho: ${pendingDeleteDraft.title}`} onClick={() => confirmDelete(pendingDeleteDraft)}>Apagar agora</button>
+          </div>
+        </dialog>
       )}
     </>
   );

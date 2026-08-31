@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getCategoryLabel } from "@/data/applications";
+import { ActionIcon } from "@/features/actions/action-card";
 import { ApplicationLogo } from "@/features/applications/application-logo";
 import { getExploreGuideHref, type ExploreGuideItem } from "./explore-content";
 
@@ -15,6 +16,14 @@ function getCardStatus(item: ExploreGuideItem) {
   if (item.action) return "Escolha o aplicativo";
   if (item.task.availability === "demo") return "Demonstração disponível";
   return item.task.availability === "preparing" ? "Guia em preparação" : "Guia disponível";
+}
+
+function ExploreCardIcon({ item }: { item: ExploreGuideItem }) {
+  if (item.action) {
+    return <span className={`explore-card-cover explore-card-cover--action explore-card-cover--${item.action.slug}`} aria-hidden="true"><ActionIcon slug={item.action.slug} /></span>;
+  }
+
+  return <span className={`explore-card-cover explore-card-cover--application explore-card-cover--${item.application.slug}`} aria-hidden="true"><ApplicationLogo application={item.application} /></span>;
 }
 
 export function ExploreGuideCard({ item, variant = "standard", returnTo }: ExploreGuideCardProps) {
@@ -37,7 +46,7 @@ export function ExploreGuideCard({ item, variant = "standard", returnTo }: Explo
     >
       {variant === "featured" ? (
         <div className="explore-card-identity">
-          <span className="explore-card-app-mark">
+          <span className={`explore-card-app-mark explore-card-app-mark--${item.application.slug}`}>
             <ApplicationLogo application={item.application} />
           </span>
           <span className="explore-card-badge">
@@ -49,6 +58,7 @@ export function ExploreGuideCard({ item, variant = "standard", returnTo }: Explo
         </div>
       ) : (
         <>
+          <ExploreCardIcon item={item} />
           <span className="explore-card-badge">
             {item.action ? "Bancos" : getCategoryLabel(item.application.category)}
           </span>

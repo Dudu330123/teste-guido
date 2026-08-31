@@ -62,7 +62,7 @@ describe("formulário de criação de guias", () => {
     await user.type(screen.getByRole("textbox", { name: "Título do passo" }), "Abra o aplicativo");
     await user.type(screen.getByRole("textbox", { name: "Instrução" }), "Toque no aplicativo oficial.");
     await user.type(screen.getByRole("textbox", { name: "Descrição da imagem esperada" }), "Tela inicial fictícia do aplicativo.");
-    await user.click(screen.getByRole("button", { name: "Validar prévia local" }));
+    await user.click(screen.getByRole("button", { name: "Validar e criar rascunho local" }));
 
     expect(fetchMock).not.toHaveBeenCalled();
     expect(await screen.findByText(/Prévia local validada/)).toBeVisible();
@@ -77,14 +77,14 @@ describe("formulário de criação de guias", () => {
     render(<GuideCreationForm applications={[{ slug: "caixa", name: "Caixa", category: "Bancos" }]} previewOnly />);
     await user.click(screen.getByRole("radio", { name: /Cadastrar novo aplicativo/ }));
     await user.type(screen.getByRole("textbox", { name: "Nome do aplicativo" }), "Banco Aurora");
-    await user.selectOptions(screen.getByRole("combobox", { name: "Nicho existente" }), "preview-bancos");
+    await user.selectOptions(screen.getByRole("combobox", { name: "Categoria existente" }), "preview-bancos");
     await user.type(screen.getByRole("textbox", { name: "Descrição do aplicativo" }), "Serviços bancários educativos.");
     await user.type(screen.getByRole("textbox", { name: "Nome do guia" }), "Consultar saldo");
     await user.type(screen.getByRole("textbox", { name: "Descrição" }), "Aprenda a localizar o saldo.");
     await user.type(screen.getByRole("textbox", { name: "Título do passo" }), "Abra o aplicativo");
     await user.type(screen.getByRole("textbox", { name: "Instrução" }), "Toque no aplicativo oficial.");
     await user.type(screen.getByRole("textbox", { name: "Descrição da imagem esperada" }), "Tela inicial fictícia do aplicativo.");
-    await user.click(screen.getByRole("button", { name: "Validar prévia local" }));
+    await user.click(screen.getByRole("button", { name: "Validar e criar rascunho local" }));
 
     expect(fetchMock).not.toHaveBeenCalled();
     expect(await screen.findByText(/Aplicativo: Banco Aurora/)).toBeVisible();
@@ -165,7 +165,7 @@ describe("formulário de criação de guias", () => {
   it("mostra validação inline para campos vazios do passo", async () => {
     const user = userEvent.setup();
     render(<GuideCreationForm applications={[{ slug: "caixa", name: "Caixa", category: "Bancos" }]} previewOnly />);
-    await user.click(screen.getByRole("button", { name: "Validar prévia local" }));
+    await user.click(screen.getByRole("button", { name: "Validar e criar rascunho local" }));
 
     expect(screen.getByText("Informe o título do passo.")).toBeVisible();
     expect(screen.getByRole("textbox", { name: /Título do passo/ })).toHaveAttribute("aria-invalid", "true");
@@ -190,7 +190,7 @@ describe("formulário de criação de guias", () => {
     await user.type(screen.getByRole("textbox", { name: "Instrução" }), "Toque no aplicativo oficial.");
     await user.type(screen.getByRole("textbox", { name: "Descrição da imagem esperada" }), "Tela inicial fictícia do aplicativo.");
 
-    const submit = screen.getByRole("button", { name: "Validar prévia local" });
+    const submit = screen.getByRole("button", { name: "Validar e criar rascunho local" });
     expect(submit).toBeEnabled();
     await user.click(submit);
 
@@ -233,7 +233,7 @@ describe("formulário de criação de guias", () => {
     await user.type(screen.getByRole("textbox", { name: "Título do passo" }), "Abra o aplicativo");
     await user.type(screen.getByRole("textbox", { name: "Instrução" }), "Toque no aplicativo oficial.");
     await user.type(screen.getByRole("textbox", { name: "Descrição da imagem esperada" }), "Tela inicial fictícia do aplicativo.");
-    await user.click(screen.getByRole("button", { name: "Validar prévia local" }));
+    await user.click(screen.getByRole("button", { name: "Validar e criar rascunho local" }));
 
     expect(await screen.findByText(/Já existe um guia com este identificador/, { selector: "p.guide-editor-feedback" })).toBeVisible();
     expect(fetchMock).not.toHaveBeenCalled();
