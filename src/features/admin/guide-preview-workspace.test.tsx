@@ -31,11 +31,10 @@ describe("área de rascunhos locais da prévia", () => {
     await user.type(screen.getByRole("textbox", { name: "Descrição" }), "Aprenda a localizar o saldo.");
     await user.type(screen.getByRole("textbox", { name: "Título do passo" }), "Abra o aplicativo");
     await user.type(screen.getByRole("textbox", { name: "Instrução" }), "Toque no aplicativo oficial.");
-    await user.type(screen.getByRole("textbox", { name: "Descrição da imagem esperada" }), "Tela demonstrativa segura.");
-    await user.click(screen.getByRole("button", { name: "Validar prévia local" }));
+    await user.click(screen.getByRole("button", { name: "Salvar rascunho local" }));
 
     expect(await screen.findByRole("heading", { name: "Consultar saldo", level: 2 })).toBeVisible();
-    expect(screen.getByText("Rascunho local")).toBeVisible();
+    expect(screen.getAllByText("Rascunho local").some((element) => element.classList.contains("guide-local-badge"))).toBe(true);
     expect(screen.getByText("1 etapa")).toBeVisible();
   }, 15000);
 });

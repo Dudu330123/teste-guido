@@ -25,7 +25,7 @@ describe("controles da página inicial", () => {
   it("oferece login, mas não revela a administração ao visitante", () => {
     render(<HomeToolbar />);
     expect(screen.getByRole("link", { name: "Entrar" })).toHaveAttribute("href", "/entrar");
-    expect(screen.getByRole("link", { name: "Criar guias" })).toHaveAttribute("href", "/admin/guias/preview");
+    expect(screen.getByRole("link", { name: "Criar e editar guias" })).toHaveAttribute("href", "/admin/guias/preview");
     expect(screen.queryByRole("link", { name: "Admin" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Tarefas automáticas" })).not.toBeInTheDocument();
   });
@@ -43,12 +43,11 @@ describe("controles da página inicial", () => {
     expect(screen.getByRole("link", { name: "Início" })).not.toHaveAttribute("aria-current");
   });
 
-  it("destaca Enviar print quando a página de colaboração está ativa", () => {
-    render(<HomeToolbar activePage="upload" />);
+  it("destaca a central de criação e edição de guias", () => {
+    render(<HomeToolbar activePage="guides" />);
 
-    expect(screen.getByRole("link", { name: "Enviar print" })).toHaveAttribute("aria-current", "page");
-    expect(screen.getByRole("link", { name: "Início" })).not.toHaveAttribute("aria-current");
-    expect(screen.getByRole("link", { name: "Explorar" })).not.toHaveAttribute("aria-current");
+    expect(screen.getByRole("link", { name: "Criar e editar guias" })).toHaveAttribute("aria-current", "page");
+    expect(screen.queryByRole("link", { name: "Enviar print" })).not.toBeInTheDocument();
   });
 
   it("mantém Início e omite a ação secundária Sobre na home compacta", () => {
@@ -58,7 +57,7 @@ describe("controles da página inicial", () => {
     expect(screen.getByRole("link", { name: "Início" })).toHaveAttribute("aria-current", "page");
     expect(screen.queryByRole("button", { name: "Sobre" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Explorar" })).toHaveAttribute("href", "/explorar");
-    expect(screen.getByRole("link", { name: "Enviar print" })).toHaveAttribute("href", "/enviar-print");
+    expect(screen.getByRole("link", { name: "Criar e editar guias" })).toHaveAttribute("href", "/admin/guias/preview");
   });
 
   it("indica Sobre enquanto a ajuda está aberta", async () => {

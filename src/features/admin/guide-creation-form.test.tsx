@@ -31,24 +31,17 @@ describe("formulário de criação de guias", () => {
     await user.type(screen.getByRole("textbox", { name: "Descrição" }), "Aprenda a localizar o saldo.");
     await user.type(screen.getByRole("textbox", { name: "Título do passo" }), "Abra o aplicativo");
     await user.type(screen.getByRole("textbox", { name: "Instrução" }), "Toque no aplicativo oficial.");
-    await user.type(screen.getByRole("textbox", { name: "Descrição da imagem esperada" }), "Tela inicial fictícia do aplicativo.");
     await user.click(screen.getByRole("button", { name: "Criar guia como rascunho" }));
 
     expect(fetchMock).toHaveBeenCalledWith("/api/admin/guides", expect.objectContaining({ method: "POST" }));
     const request = fetchMock.mock.calls[0]?.[1] as RequestInit;
-    const body = JSON.parse(String(request.body)) as { applicationSlug: string; slug: string; steps: Array<{ title: string }> };
+    const body = JSON.parse(String(request.body)) as { applicationSlug: string; slug: string; steps: Array<{ title: string; imageAlt: string }> };
     expect(body.applicationSlug).toBe("caixa");
     expect(body.slug).toBe("consultar-saldo");
     expect(body.steps[0]?.title).toBe("Abra o aplicativo");
+    expect(body.steps[0]?.imageAlt).toContain("passo 1: Abra o aplicativo");
     expect(await screen.findByText(/Guia criado como rascunho/)).toBeVisible();
-    expect(screen.getByRole("link", { name: "Enviar prints Android e iPhone" })).toHaveAttribute(
-      "href",
-      expect.stringContaining("androidVersionId=00000000-0000-4000-8000-000000000002"),
-    );
-    expect(screen.getByRole("link", { name: "Enviar prints Android e iPhone" })).toHaveAttribute(
-      "href",
-      expect.stringContaining("iosVersionId=00000000-0000-4000-8000-000000000003"),
-    );
+    expect(screen.getByRole("link", { name: "Adicionar prints ao guia" })).toHaveAttribute("href", "#prints-dos-guias");
   }, 15000);
 
   it("valida a prévia local sem chamar a API", async () => {
@@ -61,11 +54,10 @@ describe("formulário de criação de guias", () => {
     await user.type(screen.getByRole("textbox", { name: "Descrição" }), "Aprenda a localizar o saldo.");
     await user.type(screen.getByRole("textbox", { name: "Título do passo" }), "Abra o aplicativo");
     await user.type(screen.getByRole("textbox", { name: "Instrução" }), "Toque no aplicativo oficial.");
-    await user.type(screen.getByRole("textbox", { name: "Descrição da imagem esperada" }), "Tela inicial fictícia do aplicativo.");
-    await user.click(screen.getByRole("button", { name: "Validar prévia local" }));
+    await user.click(screen.getByRole("button", { name: "Salvar rascunho local" }));
 
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(await screen.findByText(/Prévia local validada/)).toBeVisible();
+    expect(await screen.findByText(/Rascunho local validado/)).toBeVisible();
     expect(screen.getByText(/Nada foi enviado ao Supabase/)).toBeVisible();
   }, 15000);
 
@@ -83,8 +75,7 @@ describe("formulário de criação de guias", () => {
     await user.type(screen.getByRole("textbox", { name: "Descrição" }), "Aprenda a localizar o saldo.");
     await user.type(screen.getByRole("textbox", { name: "Título do passo" }), "Abra o aplicativo");
     await user.type(screen.getByRole("textbox", { name: "Instrução" }), "Toque no aplicativo oficial.");
-    await user.type(screen.getByRole("textbox", { name: "Descrição da imagem esperada" }), "Tela inicial fictícia do aplicativo.");
-    await user.click(screen.getByRole("button", { name: "Validar prévia local" }));
+    await user.click(screen.getByRole("button", { name: "Salvar rascunho local" }));
 
     expect(fetchMock).not.toHaveBeenCalled();
     expect(await screen.findByText(/Aplicativo: Banco Aurora/)).toBeVisible();
@@ -102,6 +93,17 @@ describe("formulário de criação de guias", () => {
       "image/png,image/jpeg,image/webp",
     );
     expect(screen.getByText(/não é enviada ao Supabase/)).toBeVisible();
+  });
+
+  it("oferece upload direto do print sem pedir uma descrição duplicada", () => {
+    render(<GuideCreationForm applications={[{ slug: "caixa", name: "Caixa", category: "Bancos" }]} previewOnly />);
+
+    expect(screen.getByLabelText(/Escolher print/)).toHaveAttribute(
+      "accept",
+      "image/png,image/jpeg,image/webp",
+    );
+    expect(screen.queryByRole("textbox", { name: "Descrição da imagem esperada" })).not.toBeInTheDocument();
+    expect(screen.getByText(/texto alternativo.*automaticamente/i)).toBeVisible();
   });
 
   it("cria 1, 2 e 50 editores sem perder a etapa existente", async () => {
@@ -179,7 +181,7 @@ describe("formulário de criação de guias", () => {
   it("mostra validação inline para campos vazios do passo", async () => {
     const user = userEvent.setup();
     render(<GuideCreationForm applications={[{ slug: "caixa", name: "Caixa", category: "Bancos" }]} previewOnly />);
-    await user.click(screen.getByRole("button", { name: "Validar prévia local" }));
+    await user.click(screen.getByRole("button", { name: "Salvar rascunho local" }));
 
     expect(screen.getByText("Informe o título do passo.")).toBeVisible();
     expect(screen.getByRole("textbox", { name: /Título do passo/ })).toHaveAttribute("aria-invalid", "true");
@@ -202,9 +204,7 @@ describe("formulário de criação de guias", () => {
     await user.type(screen.getByRole("textbox", { name: "Descrição" }), "Aprenda a localizar o saldo.");
     await user.type(screen.getByRole("textbox", { name: "Título do passo" }), "Abra o aplicativo");
     await user.type(screen.getByRole("textbox", { name: "Instrução" }), "Toque no aplicativo oficial.");
-    await user.type(screen.getByRole("textbox", { name: "Descrição da imagem esperada" }), "Tela inicial fictícia do aplicativo.");
-
-    const submit = screen.getByRole("button", { name: "Validar prévia local" });
+    const submit = screen.getByRole("button", { name: "Salvar rascunho local" });
     expect(submit).toBeEnabled();
     await user.click(submit);
 
@@ -221,7 +221,6 @@ describe("formulário de criação de guias", () => {
     await user.type(screen.getByRole("textbox", { name: "Descrição" }), "Aprenda a localizar o saldo.");
     await user.type(screen.getByRole("textbox", { name: "Título do passo" }), "Abra o aplicativo");
     await user.type(screen.getByRole("textbox", { name: "Instrução" }), "Toque no aplicativo oficial.");
-    await user.type(screen.getByRole("textbox", { name: "Descrição da imagem esperada" }), "Tela inicial fictícia do aplicativo.");
     await user.click(screen.getByRole("button", { name: "Criar guia como rascunho" }));
 
     expect(await screen.findByText("Falha de rede")).toBeVisible();
@@ -246,8 +245,7 @@ describe("formulário de criação de guias", () => {
     await user.type(screen.getByRole("textbox", { name: "Descrição" }), "Aprenda a localizar o saldo.");
     await user.type(screen.getByRole("textbox", { name: "Título do passo" }), "Abra o aplicativo");
     await user.type(screen.getByRole("textbox", { name: "Instrução" }), "Toque no aplicativo oficial.");
-    await user.type(screen.getByRole("textbox", { name: "Descrição da imagem esperada" }), "Tela inicial fictícia do aplicativo.");
-    await user.click(screen.getByRole("button", { name: "Validar prévia local" }));
+    await user.click(screen.getByRole("button", { name: "Salvar rascunho local" }));
 
     expect(await screen.findByText(/Já existe um guia com este identificador/, { selector: "p.guide-editor-feedback" })).toBeVisible();
     expect(fetchMock).not.toHaveBeenCalled();

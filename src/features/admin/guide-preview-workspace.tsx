@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import {
   GuideCreationForm,
   type GuideCreationApplicationOption,
+  type GuideEditorInitialValue,
 } from "./guide-creation-form";
 import { GuideLibrary } from "./guide-library";
 import {
@@ -98,6 +99,7 @@ export function GuidePreviewWorkspace({
   const [drafts, setDrafts] = useState<GuidePreviewDraft[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [editingDraft, setEditingDraft] = useState<GuidePreviewDraft | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const [importMessage, setImportMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -125,6 +127,7 @@ export function GuidePreviewWorkspace({
     ))]);
     setSelectedId(draft.id);
     setPendingDeleteId(null);
+    setEditingDraft(null);
   };
 
   const handleDelete = (draft: GuidePreviewDraft) => {
@@ -134,6 +137,34 @@ export function GuidePreviewWorkspace({
   };
 
   const selectedDraft = drafts.find((draft) => draft.id === selectedId);
+
+  const editorInitialValues: GuideEditorInitialValue | undefined = editingDraft
+    ? {
+        tutorialId: editingDraft.taskId,
+        applicationSlug: editingDraft.applicationSlug,
+        applicationName: editingDraft.applicationName,
+        applicationCategory: editingDraft.applicationCategory,
+        title: editingDraft.title,
+        slug: editingDraft.slug,
+        description: editingDraft.description,
+        difficulty: editingDraft.difficulty,
+        safetyWarning: editingDraft.safetyWarning,
+        appVersion: editingDraft.appVersion,
+        guideVersion: editingDraft.guideVersion,
+        estimatedMinutes: editingDraft.estimatedMinutes,
+        searchTerms: editingDraft.searchTerms,
+        updatedAt: editingDraft.updatedAt,
+        steps: editingDraft.steps.map((step) => ({
+          id: step.id,
+          title: step.title,
+          instruction: step.instruction,
+          imageAlt: step.imageAlt,
+          warning: step.warning,
+          confirmationMessage: step.confirmationMessage,
+          hasPrint: step.imageStatus !== "pending",
+        })),
+      }
+    : undefined;
 
   const reviewSummary = useMemo(() => ({
     total: drafts.length,
@@ -190,11 +221,15 @@ export function GuidePreviewWorkspace({
   return (
     <>
       <GuideCreationForm
+        key={editingDraft?.id ?? "new-guide"}
         applications={applications}
         previewOnly
         backHref="/"
         backLabel="← Voltar para o início"
         onPreviewValidated={handlePreviewValidated}
+        mode={editingDraft ? "edit" : "create"}
+        editId={editingDraft?.id}
+        initialValues={editorInitialValues}
       />
 
       <section className="guide-local-workspace internal-page-content internal-page-content--compact" id="rascunhos-locais" aria-labelledby="local-drafts-title">
@@ -274,6 +309,16 @@ export function GuidePreviewWorkspace({
               </div>
               <div className="guide-local-detail-actions">
                 <span className={`guide-local-status ${reviewStatusClass(selectedDraft.reviewStatus)}`}>{statusLabel(selectedDraft.reviewStatus)}</span>
+                <button
+                  type="button"
+                  className="primary-action"
+                  onClick={() => {
+                    setEditingDraft(selectedDraft);
+                    document.getElementById("criar-guia")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
+                >
+                  Editar roteiro
+                </button>
                 <button type="button" className="secondary-action guide-local-export-action" onClick={() => downloadJson([selectedDraft], `${selectedDraft.slug}.json`)}>Exportar JSON</button>
                 <button type="button" className="secondary-action" onClick={() => setSelectedId(null)}>Fechar detalhes</button>
               </div>

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type FormEvent } from "react";
 import { ApplicationSearch, type ApplicationSearchOption } from "./application-search";
 import {
   normalizeApplicationCreationInput,
@@ -22,6 +22,11 @@ import {
   type GuideCreationInput,
   type GuideEditInput,
 } from "./guide-creation-validation";
+import {
+  readImageDimensions,
+  validateGuideImageDimensions,
+  validateGuideImageFile,
+} from "./guide-image-validation";
 import { createGuidePreviewDraft, type GuidePreviewDraft } from "./guide-preview-draft";
 
 export type { GuidePreviewDraft } from "./guide-preview-draft";
@@ -95,6 +100,13 @@ interface NewApplicationState {
 }
 
 interface NewApplicationLogoState {
+  file: File;
+  previewUrl: string;
+  width: number;
+  height: number;
+}
+
+interface StepPrintState {
   file: File;
   previewUrl: string;
   width: number;
@@ -203,6 +215,13 @@ function getGuidePayload(form: GuideFormState, applicationSlug: string) {
     applicationSlug,
     estimatedMinutes: Number(form.estimatedMinutes),
     searchTerms: form.searchTerms.split(",").map((term) => term.trim()).filter(Boolean),
+    // O texto alternativo continua obrigatório para leitores de tela, mas é
+    // derivado do roteiro para não obrigar a equipe a descrever o print duas vezes.
+    steps: form.steps.map((step, index) => ({
+      ...step,
+      imageAlt: step.imageAlt.trim()
+        || `Print do aplicativo referente ao passo ${index + 1}: ${step.title.trim() || "instrução do guia"}.`,
+    })),
   };
 }
 
@@ -235,6 +254,10 @@ export function GuideCreationForm({
   const [newApplication, setNewApplication] = useState<NewApplicationState>(() => initialNewApplication(applications, categories, previewOnly));
   const [newApplicationLogo, setNewApplicationLogo] = useState<NewApplicationLogoState | null>(null);
   const [newApplicationLogoError, setNewApplicationLogoError] = useState("");
+  const [stepPrints, setStepPrints] = useState<Array<StepPrintState | null>>(() =>
+    Array.from({ length: initialValues?.steps.length || GUIDE_STEP_MIN }, () => null));
+  const [stepPrintErrors, setStepPrintErrors] = useState<Record<number, string>>({});
+  const stepPrintsRef = useRef(stepPrints);
   const [newApplicationSlugEdited, setNewApplicationSlugEdited] = useState(false);
   const [slugEdited, setSlugEdited] = useState(false);
   const [stepCount, setStepCount] = useState<number | "">(initialValues?.steps.length || GUIDE_STEP_MIN);
@@ -243,7 +266,6 @@ export function GuideCreationForm({
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [createdGuide, setCreatedGuide] = useState<CreatedGuide | null>(null);
-  const [createdApplicationSlug, setCreatedApplicationSlug] = useState("");
   const [previewResult, setPreviewResult] = useState<PreviewResult | null>(null);
   const [savedEdit, setSavedEdit] = useState<SavedGuideEdit | null>(null);
 
@@ -272,6 +294,16 @@ export function GuideCreationForm({
   useEffect(() => () => {
     if (newApplicationLogo?.previewUrl) URL.revokeObjectURL(newApplicationLogo.previewUrl);
   }, [newApplicationLogo?.previewUrl]);
+
+  useEffect(() => {
+    stepPrintsRef.current = stepPrints;
+  }, [stepPrints]);
+
+  useEffect(() => () => {
+    stepPrintsRef.current.forEach((print) => {
+      if (print) URL.revokeObjectURL(print.previewUrl);
+    });
+  }, []);
 
   const selectNewApplicationLogo = (event: ChangeEvent<HTMLInputElement>) => {
     const input = event.currentTarget;
@@ -319,6 +351,62 @@ export function GuideCreationForm({
     setNewApplicationLogoError("");
   };
 
+  const selectStepPrint = async (index: number, event: ChangeEvent<HTMLInputElement>) => {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+    setStepPrintErrors((current) => {
+      const next = { ...current };
+      delete next[index];
+      return next;
+    });
+    if (!file) return;
+
+    const fileError = validateGuideImageFile(file);
+    if (fileError) {
+      input.value = "";
+      setStepPrintErrors((current) => ({ ...current, [index]: fileError }));
+      return;
+    }
+
+    try {
+      const dimensions = await readImageDimensions(file);
+      const dimensionError = validateGuideImageDimensions(dimensions);
+      if (dimensionError) {
+        input.value = "";
+        setStepPrintErrors((current) => ({ ...current, [index]: dimensionError }));
+        return;
+      }
+      const previewUrl = URL.createObjectURL(file);
+      setStepPrints((current) => {
+        const next = [...current];
+        const previous = next[index];
+        if (previous) URL.revokeObjectURL(previous.previewUrl);
+        next[index] = { file, previewUrl, ...dimensions };
+        return next;
+      });
+    } catch {
+      input.value = "";
+      setStepPrintErrors((current) => ({
+        ...current,
+        [index]: "Não foi possível abrir esta imagem. Escolha outro arquivo.",
+      }));
+    }
+  };
+
+  const removeStepPrint = (index: number) => {
+    setStepPrints((current) => {
+      const next = [...current];
+      if (next[index]) URL.revokeObjectURL(next[index]!.previewUrl);
+      next[index] = null;
+      return next;
+    });
+    setStepPrintErrors((current) => {
+      const next = { ...current };
+      delete next[index];
+      return next;
+    });
+  };
+
   const updateStep = (index: number, field: keyof Pick<GuideEditorStepValue, "title" | "instruction" | "imageAlt" | "warning" | "confirmationMessage">, value: string) => {
     setFieldErrors((current) => {
       const next = { ...current };
@@ -361,6 +449,19 @@ export function GuideCreationForm({
         ? [...current.steps, ...Array.from({ length: nextCount - current.steps.length }, emptyStep)]
         : current.steps.slice(0, nextCount),
     }));
+    setStepPrints((current) => {
+      if (nextCount < current.length) {
+        current.slice(nextCount).forEach((print) => {
+          if (print) URL.revokeObjectURL(print.previewUrl);
+        });
+      }
+      return nextCount > current.length
+        ? [...current, ...Array.from({ length: nextCount - current.length }, () => null)]
+        : current.slice(0, nextCount);
+    });
+    setStepPrintErrors((current) => Object.fromEntries(
+      Object.entries(current).filter(([key]) => Number(key) < nextCount),
+    ));
     setStepCount(nextCount);
     setStepCountMessage("");
     setFieldErrors((current) => Object.fromEntries(
@@ -377,7 +478,6 @@ export function GuideCreationForm({
     setCreationMode(mode);
     setMessage("");
     setCreatedGuide(null);
-    setCreatedApplicationSlug("");
     setPreviewResult(null);
     setSavedEdit(null);
     setFieldErrors({});
@@ -387,7 +487,6 @@ export function GuideCreationForm({
     event.preventDefault();
     setMessage("");
     setCreatedGuide(null);
-    setCreatedApplicationSlug("");
     setPreviewResult(null);
     setSavedEdit(null);
 
@@ -466,7 +565,7 @@ export function GuideCreationForm({
         stepCount: previewGuide.data.steps.length,
         applicationName,
       });
-      setMessage("Prévia local validada. Nada foi enviado ou salvo.");
+      setMessage("Rascunho local validado. Ele será salvo somente neste navegador e nada será enviado ao Supabase.");
       return;
     }
 
@@ -524,7 +623,6 @@ export function GuideCreationForm({
 
       const guide = creationMode === "new" ? (payload.data as CreatedApplicationGuide).guide : payload.data as CreatedGuide;
       setCreatedGuide(guide);
-      setCreatedApplicationSlug(guideApplicationSlug);
       setMessage(creationMode === "new"
         ? "Aplicativo e guia criados como rascunho. Agora você pode revisar o roteiro e adicionar os prints."
         : "Guia criado como rascunho. Agora você pode revisar o roteiro e adicionar os prints.");
@@ -540,16 +638,18 @@ export function GuideCreationForm({
       <Link href={backHref} className="internal-page-back">{backLabel}</Link>
       <header className="guide-editor-intro">
         <div>
-          <h1 className="internal-page-title">{previewOnly ? "Prévia do editor de guias" : isEditing ? "Editar rascunho" : "Criar um guia"}</h1>
+          <h1 className="internal-page-title">{previewOnly ? isEditing ? "Editar rascunho local" : "Criar um guia" : isEditing ? "Editar rascunho" : "Criar um guia"}</h1>
           <p className="internal-page-description">
             {previewOnly
-              ? "Preencha um exemplo e veja como o cadastro funciona. Nada será enviado ou salvo."
+              ? isEditing
+                ? "Atualize o texto e confira os prints. As mudanças ficam somente neste navegador."
+                : "Monte o roteiro e confira os prints antes de publicar no Supabase."
               : isEditing
                 ? "Atualize o conteúdo com segurança. O guia continua como rascunho até a revisão humana."
                 : "Monte o roteiro em poucos passos. O guia começa como rascunho para revisão humana."}
           </p>
         </div>
-        <span className="guide-editor-mode">{previewOnly ? "Modo local" : "Rascunho"}</span>
+        <span className="guide-editor-mode">{previewOnly ? isEditing ? "Edição local" : "Rascunho local" : "Rascunho"}</span>
       </header>
 
       <div className="guide-editor-overview" role="note">
@@ -767,7 +867,7 @@ export function GuideCreationForm({
             <span className="guide-editor-index" aria-hidden="true">3</span>
             <div>
               <h2 id="guide-steps-title">Passos do roteiro</h2>
-              <p>Escreva uma ação simples por vez. Os prints entram depois.</p>
+              <p>Escreva uma ação simples e adicione o print correspondente em cada passo.</p>
             </div>
           </div>
 
@@ -804,9 +904,9 @@ export function GuideCreationForm({
               <fieldset key={index} className="guide-editor-step">
                 <legend><span>Passo {index + 1}</span><small>Obrigatório</small></legend>
                 <div className="guide-editor-field-grid">
-                  {(["title", "instruction", "imageAlt"] as const).map((field) => {
-                    const labels = { title: "Título do passo", instruction: "Instrução", imageAlt: "Descrição da imagem esperada" };
-                    const placeholders = { title: "Ex.: Abra o aplicativo oficial", instruction: "Explique uma ação por vez, com palavras simples.", imageAlt: "Descreva o print seguro que deve aparecer." };
+                  {(["title", "instruction"] as const).map((field) => {
+                    const labels = { title: "Título do passo", instruction: "Instrução" };
+                    const placeholders = { title: "Ex.: Abra o aplicativo oficial", instruction: "Explique uma ação por vez, com palavras simples." };
                     const error = stepError(index, field);
                     const errorId = `step-${index}-${field}-error`;
                     return (
@@ -821,6 +921,41 @@ export function GuideCreationForm({
                       </label>
                     );
                   })}
+                  <div className="guide-editor-field guide-editor-step-print">
+                    <span>Upload do print</span>
+                    {stepPrints[index] ? (
+                      <div className="guide-editor-step-print-preview">
+                        <div className="guide-editor-step-print-image">
+                          <Image
+                            src={stepPrints[index]!.previewUrl}
+                            alt={`Prévia do print do passo ${index + 1}`}
+                            fill
+                            unoptimized
+                            sizes="(max-width: 768px) 100vw, 40vw"
+                          />
+                        </div>
+                        <div>
+                          <strong>{stepPrints[index]!.file.name}</strong>
+                          <span>{stepPrints[index]!.width} × {stepPrints[index]!.height} pixels</span>
+                          <button type="button" className="guide-editor-inline-action" onClick={() => removeStepPrint(index)}>Remover print</button>
+                        </div>
+                      </div>
+                    ) : (
+                      <label className="guide-editor-step-print-picker" htmlFor={`guide-step-print-${index}`}>
+                        <strong>{step.hasPrint ? "Substituir o print atual" : "Escolher print"}</strong>
+                        <span>PNG, JPEG ou WebP · até 10 MB</span>
+                        <input
+                          id={`guide-step-print-${index}`}
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp"
+                          onChange={(event) => void selectStepPrint(index, event)}
+                        />
+                      </label>
+                    )}
+                    <small className="guide-editor-help">O texto alternativo para acessibilidade será criado automaticamente a partir do título deste passo.</small>
+                    {previewOnly && <small className="guide-editor-help">Nesta prévia local, a imagem serve para conferência nesta sessão. Para publicá-la, use “Adicionar prints” nesta mesma página.</small>}
+                    {stepPrintErrors[index] && <span className="guide-editor-error" role="alert">{stepPrintErrors[index]}</span>}
+                  </div>
                 </div>
                 <details className="guide-editor-details guide-editor-step-details">
                   <summary>Adicionar aviso ou mensagem (opcional)</summary>
@@ -849,11 +984,11 @@ export function GuideCreationForm({
             <strong>Segurança primeiro</strong>
             <span> Não use senha, código, CPF, saldo ou imagem com dado real.</span>
           </div>
-          <button type="submit" disabled={submitting || (!isEditing && creationMode === "existing" && !selectedApplication) || (!isEditing && creationMode === "new" && categoryOptions.length === 0)} aria-busy={submitting} className="primary-action guide-editor-submit-button">{submitting ? "Salvando…" : previewOnly ? "Validar prévia local" : isEditing ? "Salvar alterações" : creationMode === "new" ? "Criar aplicativo e rascunho" : "Criar guia como rascunho"}</button>
+          <button type="submit" disabled={submitting || (!isEditing && creationMode === "existing" && !selectedApplication) || (!isEditing && creationMode === "new" && categoryOptions.length === 0)} aria-busy={submitting} className="primary-action guide-editor-submit-button">{submitting ? "Salvando…" : previewOnly ? isEditing ? "Salvar edição local" : "Salvar rascunho local" : isEditing ? "Salvar alterações" : creationMode === "new" ? "Criar aplicativo e rascunho" : "Criar guia como rascunho"}</button>
         </div>
         {(submitting || message) && <p role={submitting || createdGuide || previewResult || savedEdit ? "status" : "alert"} aria-live={submitting || createdGuide || previewResult || savedEdit ? "polite" : "assertive"} className={`guide-editor-feedback ${submitting ? "notice-info" : createdGuide || previewResult || savedEdit ? "notice-success" : "notice-danger"}`}>{submitting ? isEditing ? "Salvando alterações…" : "Criando o rascunho…" : message}</p>}
-        {createdGuide && <div className="guide-editor-result glass-panel"><p className="font-bold">Rascunho criado: {createdGuide.stepCount} passo(s) nas duas versões.</p><p className="mt-2 text-[var(--muted)]">Slug: <strong>{createdGuide.slug}</strong>. O roteiro ainda não está publicado e nenhum placeholder de imagem foi criado.</p><div className="mt-4 flex flex-wrap gap-3"><Link href={`/admin?guide=${encodeURIComponent(createdGuide.slug)}${createdApplicationSlug ? `&application=${encodeURIComponent(createdApplicationSlug)}` : ""}&os=android&androidVersionId=${encodeURIComponent(createdGuide.guideVersionIds.android)}&iosVersionId=${encodeURIComponent(createdGuide.guideVersionIds.ios)}`} className="primary-action inline-flex min-h-12 items-center rounded-xl px-4 py-2 font-bold">Enviar prints Android e iPhone</Link><Link href="/admin" className="secondary-action inline-flex min-h-12 items-center rounded-xl px-4 py-2 font-bold">Voltar ao painel</Link><Link href={`/tarefas/${createdGuide.slug}`} className="secondary-action inline-flex min-h-12 items-center rounded-xl px-4 py-2 font-bold">Abrir prévia</Link></div></div>}
-        {previewResult && <div className="guide-editor-result notice-success" role="status"><p className="font-bold">Prévia pronta para revisão visual</p><p className="mt-2">{previewResult.stepCount} passo(s) preenchido(s). {previewResult.applicationName ? `Aplicativo: ${previewResult.applicationName}. ` : ""}Slug: <strong>{previewResult.slug}</strong>.</p><p className="mt-2">Nada foi enviado ao Supabase e nenhuma alteração foi salva.</p></div>}
+        {createdGuide && <div className="guide-editor-result glass-panel"><p className="font-bold">Rascunho criado: {createdGuide.stepCount} passo(s) nas duas versões.</p><p className="mt-2 text-[var(--muted)]">Slug: <strong>{createdGuide.slug}</strong>. O roteiro ainda não está publicado e nenhum placeholder de imagem foi criado.</p><div className="mt-4 flex flex-wrap gap-3"><Link href="#prints-dos-guias" className="primary-action inline-flex min-h-12 items-center rounded-xl px-4 py-2 font-bold">Adicionar prints ao guia</Link><Link href="/admin" className="secondary-action inline-flex min-h-12 items-center rounded-xl px-4 py-2 font-bold">Voltar ao painel</Link><Link href={`/tarefas/${createdGuide.slug}`} className="secondary-action inline-flex min-h-12 items-center rounded-xl px-4 py-2 font-bold">Abrir prévia</Link></div></div>}
+        {previewResult && <div className="guide-editor-result notice-success" role="status"><p className="font-bold">Rascunho pronto para revisão visual</p><p className="mt-2">{previewResult.stepCount} passo(s) preenchido(s). {previewResult.applicationName ? `Aplicativo: ${previewResult.applicationName}. ` : ""}Slug: <strong>{previewResult.slug}</strong>.</p><p className="mt-2">O roteiro foi salvo somente neste navegador. Nada foi enviado ao Supabase.</p></div>}
         {savedEdit && <div className="guide-editor-result notice-success" role="status"><p className="font-bold">Rascunho atualizado com sucesso.</p><p className="mt-2">O conteúdo continua em rascunho. Confira os prints antes de qualquer revisão ou publicação.</p><div className="mt-4 flex flex-wrap gap-3"><Link href={savedEdit.reviewHref ?? initialValues?.reviewHref ?? "/admin"} className="primary-action inline-flex min-h-12 items-center rounded-xl px-4 py-2 font-bold">Revisar prints</Link><Link href="/admin" className="secondary-action inline-flex min-h-12 items-center rounded-xl px-4 py-2 font-bold">Voltar ao painel</Link></div></div>}
       </form>
     </div>

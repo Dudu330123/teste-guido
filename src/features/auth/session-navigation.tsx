@@ -58,8 +58,8 @@ export function SessionNavigation({
           <Link href="/admin" className="home-header-link">Admin</Link>
         )}
         {showUpload && (
-          <Link href="/enviar-print" className="secondary-action min-h-12 px-4 py-2 font-semibold">
-            Enviar print
+          <Link href="/admin/guias/preview#prints-dos-guias" className="secondary-action min-h-12 px-4 py-2 font-semibold">
+            Gerenciar guias
           </Link>
         )}
         <Link href="/entrar" className="secondary-action min-h-12 px-4 py-2 font-semibold">
@@ -141,7 +141,7 @@ function AuthenticatedNavigation({
           Olá{displayName ? `, ${displayName}` : "!"}
         </span>
         <Link href="/conta" className="secondary-action min-h-12 px-4 py-2 font-semibold">Minha conta</Link>
-        {showUpload && <Link href="/enviar-print" className="secondary-action min-h-12 px-4 py-2 font-semibold">Enviar print</Link>}
+        {showUpload && <Link href="/admin/guias/preview#prints-dos-guias" className="secondary-action min-h-12 px-4 py-2 font-semibold">Gerenciar guias</Link>}
         {showHistory && <Link href="/historico" className="secondary-action min-h-12 px-4 py-2 font-semibold">Histórico</Link>}
         <button type="button" className="quiet-action min-h-12 px-4 py-2 font-semibold underline decoration-2 underline-offset-4" onClick={() => void signOut()}>
           Sair
@@ -168,7 +168,7 @@ function AuthenticatedNavigation({
           </p>
           {showAdmin && <Link href="/admin" onClick={() => setMenuOpen(false)}>Administração</Link>}
           <Link href="/conta" onClick={() => setMenuOpen(false)}>Minha conta</Link>
-          {showUpload && <Link href="/enviar-print" onClick={() => setMenuOpen(false)}>Enviar print</Link>}
+          {showUpload && <Link href="/admin/guias/preview#prints-dos-guias" onClick={() => setMenuOpen(false)}>Gerenciar guias</Link>}
           {showHistory && <Link href="/historico" onClick={() => setMenuOpen(false)}>Histórico</Link>}
           <button type="button" onClick={() => void signOut()}>Sair</button>
         </div>

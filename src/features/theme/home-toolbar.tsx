@@ -28,7 +28,7 @@ function applyThemePreference(preference: ThemePreference, save = true) {
   if (save) window.localStorage.setItem(storageKey, preference);
 }
 
-export type HomeActivePage = "home" | "explore" | "upload";
+export type HomeActivePage = "home" | "explore" | "guides";
 
 interface HomeToolbarProps {
   activePage?: HomeActivePage;
@@ -152,8 +152,7 @@ export function HomeToolbar({
         <nav aria-label="Navegação principal" className="home-main-nav">
           <Link href="/" aria-current={activePage === "home" ? "page" : undefined}>Início</Link>
           <Link href="/explorar" aria-current={activePage === "explore" ? "page" : undefined}>Explorar</Link>
-          <Link href="/enviar-print" aria-current={activePage === "upload" ? "page" : undefined}>Enviar print</Link>
-          <Link href="/admin/guias/preview">Criar guias</Link>
+          <Link href="/admin/guias/preview" aria-current={activePage === "guides" ? "page" : undefined}>Criar e editar guias</Link>
           {!compactHome && (
             <button
               ref={helpButtonRef}

@@ -6028,6 +6028,121 @@ html[data-theme="dark"] .guide-help-modal-option p {
   margin-top: 1rem;
 }
 
+.guide-management-intro {
+  padding-top: clamp(2rem, 5vw, 4rem);
+  padding-bottom: 0;
+}
+
+.guide-management-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.guide-management-actions a {
+  display: inline-flex;
+  min-height: 3rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.8rem;
+  padding: 0.65rem 1rem;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.guide-management-upload {
+  scroll-margin-top: 1rem;
+  padding-bottom: 3rem;
+}
+
+.guide-editor-step-print {
+  min-width: 0;
+}
+
+.guide-editor-step-print-picker {
+  display: grid;
+  min-height: 7rem;
+  align-content: center;
+  gap: 0.35rem;
+  border: 1px dashed color-mix(in srgb, var(--primary) 70%, var(--border));
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, var(--primary) 5%, var(--surface-soft));
+  cursor: pointer;
+  padding: 1rem;
+}
+
+.guide-editor-step-print-picker span,
+.guide-editor-step-print-preview span {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 650;
+}
+
+.guide-editor-step-print-picker input {
+  width: 100%;
+  margin-top: 0.35rem;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.guide-editor-step-print-picker input::file-selector-button {
+  min-height: 2.75rem;
+  margin-right: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.7rem;
+  background: var(--surface);
+  color: var(--primary-dark);
+  cursor: pointer;
+  padding: 0.55rem 0.85rem;
+  font: inherit;
+  font-weight: 850;
+}
+
+.guide-editor-step-print-picker input:focus-visible {
+  outline: 4px solid var(--primary);
+  outline-offset: 4px;
+}
+
+.guide-editor-step-print-preview {
+  display: grid;
+  grid-template-columns: minmax(7rem, 10rem) 1fr;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  background: var(--surface-soft);
+  padding: 0.75rem;
+}
+
+.guide-editor-step-print-image {
+  position: relative;
+  width: 100%;
+  min-height: 10rem;
+  overflow: hidden;
+  border-radius: 0.7rem;
+  background: var(--surface-solid);
+}
+
+.guide-editor-step-print-image img {
+  object-fit: contain;
+}
+
+.guide-editor-step-print-preview > div:last-child {
+  display: grid;
+  min-width: 0;
+  gap: 0.45rem;
+}
+
+.guide-editor-step-print-preview strong {
+  overflow-wrap: anywhere;
+}
+
+.guide-editor-step-print-preview .guide-editor-inline-action {
+  width: fit-content;
+}
+
 .guide-editor-submit {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(14rem, 22rem);
@@ -6848,6 +6963,10 @@ html[data-theme="dark"] .guide-help-modal-option p {
   }
 
   .guide-editor-submit {
+    grid-template-columns: 1fr;
+  }
+
+  .guide-editor-step-print-preview {
     grid-template-columns: 1fr;
   }
 }
