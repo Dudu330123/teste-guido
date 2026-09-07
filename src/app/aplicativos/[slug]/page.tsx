@@ -2,10 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
-import { getActionForTask } from "@/data/actions";
 import { applications, getApplicationBySlug, getCategoryLabel } from "@/data/applications";
 import { tasks } from "@/data/guides";
-import { ActionIcon } from "@/features/actions/action-card";
 import { getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/supabase/catalog";
 import { safeReturnPath, withReturnPath } from "@/lib/navigation/return-path";
 
@@ -47,29 +45,22 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
           <h2 id="tasks-title" className="internal-page-section-title">Tarefas</h2>
           {applicationTasks.length > 0 ? (
             <div className="internal-page-list">
-              {applicationTasks.map((task) => {
-                const actionSlug = getActionForTask(task)?.slug ?? "comprovante";
-                const iconTone = application.slug === "whatsapp" ? "whatsapp" : actionSlug;
-                return (
-                  <article key={task.id} className="glass-panel internal-page-card internal-page-card--task">
-                    <div className={`internal-page-card-icon action-card-icon action-card-icon--${iconTone}`}>
-                      <ActionIcon slug={actionSlug} />
-                    </div>
-                    <h3 className="internal-page-card-title">{task.title}</h3>
-                    <p className="internal-page-card-description">{task.description}</p>
-                    <p className="notice-info internal-page-card-notice">{task.safetyWarning}</p>
-                    {task.availability !== "preparing" ? (
-                      <Link href={withReturnPath(`/tarefas/${task.slug}`, returnTo ? backHref : undefined)} className="primary-action internal-page-card-action internal-page-card-action--start">
-                        Escolher meu celular
-                      </Link>
-                    ) : (
-                      <p className="soft-panel internal-page-card-status internal-page-card-status--inline">
-                        Guia em preparação
-                      </p>
-                    )}
-                  </article>
-                );
-              })}
+              {applicationTasks.map((task) => (
+                <article key={task.id} className="glass-panel internal-page-card internal-page-card--task">
+                  <h3 className="internal-page-card-title">{task.title}</h3>
+                  <p className="internal-page-card-description">{task.description}</p>
+                  <p className="notice-info internal-page-card-notice">{task.safetyWarning}</p>
+                  {task.availability !== "preparing" ? (
+                    <Link href={withReturnPath(`/tarefas/${task.slug}`, returnTo ? backHref : undefined)} className="primary-action internal-page-card-action internal-page-card-action--start">
+                      Escolher meu celular
+                    </Link>
+                  ) : (
+                    <p className="soft-panel internal-page-card-status internal-page-card-status--inline">
+                      Guia em preparação
+                    </p>
+                  )}
+                </article>
+              ))}
             </div>
           ) : (
             <div className="glass-panel internal-page-card">

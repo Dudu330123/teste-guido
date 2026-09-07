@@ -48,6 +48,14 @@ const localLogoPaths: Record<string, string> = {
   "c6-bank": "/images/logos/c6-bank.jpg",
 };
 
+/**
+ * Mantém as marcas conhecidas disponíveis quando o catálogo remoto ainda não
+ * possui uma mídia associada ao aplicativo.
+ */
+export function getLocalApplicationLogoPath(slug: string) {
+  return localLogoPaths[slug] ?? null;
+}
+
 export const applications: Application[] = [
   {
     id: "app-demo-bancos",
@@ -67,7 +75,7 @@ export const applications: Application[] = [
     slug,
     description,
     category,
-    logoPath: localLogoPaths[slug] ?? null,
+    logoPath: getLocalApplicationLogoPath(slug),
     searchTerms,
     status: "preparing" as const,
     createdAt: baseDate,

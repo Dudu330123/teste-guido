@@ -60,7 +60,7 @@ export function ActionIcon({ slug }: { slug: string }) {
 export function ActionCard({ action, taskCount }: { action: Action; taskCount: number }) {
   return (
     <article className="glass-panel internal-page-card">
-      <div className={`internal-page-card-icon action-card-icon action-card-icon--${action.slug}`}>
+      <div className="internal-page-card-icon action-card-icon">
         <ActionIcon slug={action.slug} />
       </div>
       <p className="internal-page-eyebrow">Tarefa digital</p>

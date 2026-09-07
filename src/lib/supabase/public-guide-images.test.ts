@@ -37,7 +37,7 @@ describe("imagens públicas do guia", () => {
     expect(result.map((step) => step.imagePath)).toEqual(steps.map((step) => step.imagePath));
   });
 
-  it("consulta o escopo compartilhado antes do escopo específico do aplicativo", () => {
+  it("recupera o escopo antigo e permite substituição específica do aplicativo", () => {
     expect(publicGuideImageScopes("whatsapp")).toEqual([null, "whatsapp"]);
     expect(publicGuideImageScopes(null)).toEqual([null]);
 
@@ -49,9 +49,8 @@ describe("imagens públicas do guia", () => {
     expect(recovered.get(2)).toBe("https://example.com/whatsapp-step-2.png");
   });
 
-  it("não adiciona imagens iOS ao mapa usado pelo Android", () => {
-    expect(shouldUseAndroidImageFallback("android", "Serviços financeiros")).toBe(false);
-    expect(shouldUseAndroidImageFallback("ios", "Comunicação")).toBe(false);
-    expect(shouldUseAndroidImageFallback("ios", "Serviços financeiros")).toBe(true);
+  it("usa o print Android como fallback para qualquer guia ainda sem captura de iPhone", () => {
+    expect(shouldUseAndroidImageFallback("android")).toBe(false);
+    expect(shouldUseAndroidImageFallback("ios")).toBe(true);
   });
 });

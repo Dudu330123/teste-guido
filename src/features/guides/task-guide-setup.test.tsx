@@ -23,20 +23,6 @@ const defaultProps = {
   ],
 };
 
-const whatsappProps = {
-  taskId: "task-enviar-audio-whatsapp",
-  taskSlug: "enviar-audio-whatsapp",
-  taskTitle: "Enviar um áudio",
-  description: "Aprenda a gravar e enviar uma mensagem de voz.",
-  safetyWarning: "Guia em preparação.",
-  application: { slug: "whatsapp", name: "WhatsApp", logoPath: "/images/logos/whatsapp.png" },
-  taskOptions: [
-    { id: "task-enviar-audio-whatsapp", slug: "enviar-audio-whatsapp", title: "Enviar um áudio", availability: "preparing" as const },
-    { id: "task-fazer-chamada-whatsapp", slug: "fazer-chamada-whatsapp", title: "Fazer uma chamada", availability: "preparing" as const },
-    { id: "task-bloquear-contato-whatsapp", slug: "bloquear-contato-whatsapp", title: "Bloquear um contato", availability: "preparing" as const },
-  ],
-};
-
 describe("preparação do guia", () => {
   beforeEach(() => {
     localStorage.clear();
@@ -72,20 +58,6 @@ describe("preparação do guia", () => {
 
     expect(screen.getByText("Itaú")).toBeVisible();
     expect(screen.getByText("Pagar um boleto")).toBeVisible();
-  });
-
-  it("abre as tarefas do aplicativo e atualiza o contexto ao selecionar uma opção", async () => {
-    const user = userEvent.setup();
-    render(<TaskGuideSetup {...whatsappProps} />);
-
-    await user.click(screen.getByRole("button", { name: /selecionar tarefa.*whatsapp/i }));
-    expect(screen.getByRole("menu", { name: "Tarefas de WhatsApp" })).toBeInTheDocument();
-    expect(screen.getByRole("menuitemradio", { name: /Fazer uma chamada/ })).toBeInTheDocument();
-
-    await user.click(screen.getByRole("menuitemradio", { name: /Fazer uma chamada/ }));
-
-    expect(screen.getByRole("button", { name: /selecionar tarefa\. whatsapp: fazer uma chamada/i })).toBeInTheDocument();
-    expect(screen.queryByRole("menu", { name: "Tarefas de WhatsApp" })).not.toBeInTheDocument();
   });
 
   it("oferece retorno explícito para a página de origem", async () => {

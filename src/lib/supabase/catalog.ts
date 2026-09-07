@@ -68,8 +68,8 @@ const applicationRowsSchema = z.array(z.object({
   description: z.string().min(1),
   status: publicationStatusSchema,
   is_demo: z.boolean(),
-  // O Postgres retorna timestamps com deslocamento `+00:00`; restringir a `Z`
-  // descartava silenciosamente todo o catálogo remoto válido.
+  // O Postgres serializa timestamptz com deslocamento (por exemplo +00:00).
+  // Rejeitar esse formato fazia todo o catálogo remoto cair no fallback local.
   created_at: z.string().datetime({ offset: true }),
   updated_at: z.string().datetime({ offset: true }),
   categories: z.object({ name: z.string().min(1) }),
@@ -128,8 +128,8 @@ export interface SupabaseUploadGuide {
 type MediaLocation = z.infer<typeof mediaSchema>;
 
 /**
- * Rascunhos habilitados para colaboração podem ser vistos como prévia, mas
- * continuam editorialmente distintos de uma publicação revisada.
+ * Rascunhos abertos à colaboração podem ser conferidos como prévia. O status
+ * continua sendo exibido como não revisado e não equivale a publicação oficial.
  */
 export function canOpenGuideVersion(
   status: "draft" | "under_review" | "published" | "outdated",
@@ -249,8 +249,7 @@ export async function getGuideFromSupabase(
   if (!data && !error) {
     const draft = await loadRow("draft");
     const parsedDraft = guideRowSchema.safeParse(draft.data);
-    // A prévia pública permite conferir texto e prints durante a colaboração.
-    // O status permanece draft e a interface informa que falta revisão humana.
+    // A prévia permite revisar texto e prints sem alterar o status editorial.
     if (parsedDraft.success && canOpenGuideVersion(
       parsedDraft.data.status,
       parsedDraft.data.tutorials.is_demo,
@@ -333,8 +332,23 @@ export function mergeCatalogWithFallback(
   fallback: SupabaseCatalog,
 ): SupabaseCatalog {
   if (!remote) return fallback;
-  const applicationsBySlug = new Map(fallback.applications.map((application) => [application.slug, application]));
-  remote.applications.forEach((application) => applicationsBySlug.set(application.slug, application));
+  const fallbackApplicationsBySlug = new Map(
+    fallback.applications.map((application) => [application.slug, application]),
+  );
+  const applicationsBySlug = new Map(fallbackApplicationsBySlug);
+  remote.applications.forEach((application) => {
+    const localApplication = fallbackApplicationsBySlug.get(application.slug);
+    applicationsBySlug.set(application.slug, {
+      ...application,
+      // O banco ainda não possui logos cadastradas. Dados editoriais remotos
+      // prevalecem, mas os assets locais conhecidos não podem desaparecer.
+      logoPath: application.logoPath ?? localApplication?.logoPath ?? null,
+      searchTerms: [...new Set([
+        ...(localApplication?.searchTerms ?? []),
+        ...application.searchTerms,
+      ])],
+    });
+  });
   const mergedApplications = [...applicationsBySlug.values()];
   const replacementIds = new Map(fallback.applications.map((application) => [
     application.id,

@@ -24,7 +24,7 @@ describe("visualizador do guia", () => {
     expect(screen.getByRole("button", { name: "Voltar" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Ouvir instrução" })).toBeEnabled();
     expect(screen.getByRole("link", { name: "Trocar celular" })).toHaveAttribute("href", "/tarefas/pagar-boleto");
-    expect(screen.getByRole("note")).toHaveTextContent("Prévia em revisão");
+    expect(screen.queryByRole("note")).not.toBeInTheDocument();
     expect(screen.queryByText("Caixa · Outro")).not.toBeInTheDocument();
     expect(screen.getByText("Trilha do guia")).toBeVisible();
     expect(screen.getByText("Passo 1 de 6")).toBeVisible();

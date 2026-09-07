@@ -26,15 +26,15 @@ export function mergePublicGuideImages(
   return merged;
 }
 
-export function shouldUseAndroidImageFallback(operatingSystem: OperatingSystem, applicationCategory?: string) {
-  return operatingSystem === "ios"
-    && (applicationCategory === "Serviços financeiros" || applicationCategory === "Serviços públicos");
+export function shouldUseAndroidImageFallback(operatingSystem: OperatingSystem) {
+  // A coleção histórica possui vários guias apenas em Android. Enquanto uma
+  // captura própria do iPhone não existir, ela é usada como referência visual.
+  return operatingSystem === "ios";
 }
 
 /**
- * Mantém compatibilidade com prints anteriores ao catálogo remoto: nesses
- * registros, guias não bancários usam application_slug nulo. O escopo do app
- * continua sendo consultado por último para substituir o compartilhado.
+ * Preserva os uploads antigos, gravados sem application_slug, e permite que
+ * uma imagem específica do aplicativo substitua a compartilhada por passo.
  */
 export function publicGuideImageScopes(applicationSlug: string | null) {
   return applicationSlug ? [null, applicationSlug] as const : [null] as const;
@@ -85,14 +85,13 @@ export async function getPublicGuideImages(
   guideSlug: string,
   applicationSlug: string | null,
   operatingSystem: OperatingSystem,
-  applicationCategory?: string,
 ) {
   const selectedSystemImages = loadScopedPublicGuideImages(
     guideSlug,
     applicationSlug,
     operatingSystem,
   );
-  if (!shouldUseAndroidImageFallback(operatingSystem, applicationCategory)) {
+  if (!shouldUseAndroidImageFallback(operatingSystem)) {
     return selectedSystemImages;
   }
 

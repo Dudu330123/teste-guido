@@ -317,12 +317,6 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
 
   return (
     <GuidePageShell toolbar={guideToolbar}>
-      {guide.status !== "published" ? (
-        <div role="note" className="notice-info guide-safety-notice guide-editorial-preview-notice">
-          <strong>Prévia em revisão</strong>
-          <span>Este roteiro ainda não foi validado como guia oficial. Use-o somente para avaliar os passos e os prints.</span>
-        </div>
-      ) : null}
       <div className="guide-reader-layout">
         <div className="guide-reader-visual">
           {preparing ? <GuidePreparationPhoneScreen /> : <ScreenPlaceholder step={activeStep} />}

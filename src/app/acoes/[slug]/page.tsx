@@ -71,8 +71,8 @@ export default async function ActionPage({ params, searchParams }: ActionPagePro
             const guideAvailable = guideTask.availability !== "preparing";
             const guideIsDemo = guideTask.availability === "demo";
             return (
-              <article key={application.id} className={`glass-panel internal-page-card internal-page-card--application application-card--${application.slug}`}>
-                <div className={`internal-page-card-icon application-logo application-logo--${application.slug}`}>
+              <article key={application.id} className="glass-panel internal-page-card">
+                <div className="internal-page-card-icon application-logo">
                   <ApplicationLogo application={application} />
                 </div>
                 <h2 className="internal-page-card-title">{application.name}</h2>

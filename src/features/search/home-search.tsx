@@ -7,7 +7,6 @@ import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 import { actions } from "@/data/actions";
 import { isBankCategory } from "@/data/applications";
-import { ActionIcon } from "@/features/actions/action-card";
 import { ApplicationLogo } from "@/features/applications/application-logo";
 import type { Action, Application, Task } from "@/types/content";
 import { normalizeSearch, rankSearch } from "./search-content";
@@ -32,26 +31,6 @@ function CategoryIcon({ type }: { type: "bank" | "message" | "government" }) {
 
 function ApplicationMark({ application }: { application: Application }) {
   return <ApplicationLogo application={application} />;
-}
-
-function getTaskIconTone(task: Task) {
-  if (task.applicationId === "app-whatsapp") return "whatsapp";
-  if (task.applicationId === "app-gov-br") return "government";
-  return task.actionId ?? "default";
-}
-
-function TaskIcon({ task }: { task: Task }) {
-  if (task.actionId) return <ActionIcon slug={task.actionId} />;
-  if (task.slug.includes("audio")) {
-    return <svg aria-hidden="true" viewBox="0 0 24 24" className="home-task-icon-svg"><path d="M12 4a3 3 0 0 0-3 3v5a3 3 0 0 0 6 0V7a3 3 0 0 0-3-3Z" /><path d="M6.5 11.5a5.5 5.5 0 0 0 11 0M12 17v3M9.5 20h5" /></svg>;
-  }
-  if (task.slug.includes("chamada")) {
-    return <svg aria-hidden="true" viewBox="0 0 24 24" className="home-task-icon-svg"><path d="M7.5 4.5 5 6c-.7.4-.9 1.3-.6 2 1.8 4.7 5.1 8.1 9.8 9.8.7.3 1.6 0 2-.6l1.5-2.5-3-2-1.6 1.6a12.6 12.6 0 0 1-4.5-4.5l1.6-1.6-2.7-3.7Z" /></svg>;
-  }
-  if (task.slug.includes("bloquear-contato")) {
-    return <svg aria-hidden="true" viewBox="0 0 24 24" className="home-task-icon-svg"><circle cx="10" cy="8" r="3" /><path d="M4.5 18c.7-2.6 2.5-4 5.5-4 1.2 0 2.2.2 3 .7M15 15v-1a2 2 0 0 1 4 0v1M14 15h6v5h-6z" /></svg>;
-  }
-  return <svg aria-hidden="true" viewBox="0 0 24 24" className="home-task-icon-svg"><path d="M12 3 5 6v5c0 4.6 2.8 8.2 7 10 4.2-1.8 7-5.4 7-10V6l-7-3Z" /><path d="m9 12 2 2 4-4" /></svg>;
 }
 
 function taskHref(task: Task) { return `/tarefas/${task.slug}`; }
@@ -144,14 +123,10 @@ function taskRoute(task: Task, applicationSlug?: string) {
 }
 
 function TaskCard({ task, modal = false }: { task: Task; modal?: boolean }) {
-  const tone = getTaskIconTone(task);
   return (
     <Link href={taskHref(task)} className={`home-task-card${modal ? " home-task-modal-card" : ""}`}>
-      <span className={`home-task-card-icon home-task-card-icon--${tone}`}><TaskIcon task={task} /></span>
-      <span className="home-task-card-copy">
-        <strong>{task.title}</strong>
-        <small>{taskStatusLabel(task)}</small>
-      </span>
+      <strong>{task.title}</strong>
+      <small>{taskStatusLabel(task)}</small>
       <span aria-hidden="true" className="home-card-arrow">→</span>
     </Link>
   );
@@ -219,7 +194,7 @@ function BankModal({ banks, onClose, onSelect }: BankModalProps) {
         <div className="home-bank-modal-list">
           {banks.map((bank) => (
             <button key={bank.id} type="button" onClick={() => onSelect(bank)} className="home-bank-modal-option">
-              <span className={`home-application-mark home-application-mark--${bank.slug}`} aria-hidden="true"><ApplicationMark application={bank} /></span>
+              <span className="home-application-mark" aria-hidden="true"><ApplicationMark application={bank} /></span>
               <span>{bank.name}</span><span aria-hidden="true" className="home-card-arrow">→</span>
             </button>
           ))}
@@ -430,16 +405,11 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
                   {liveSuggestions.map((task) => {
                   const application = applications.find((item) => item.id === task.applicationId);
                   const bankTask = isBankTask(task, applications);
-                  const tone = getTaskIconTone(task);
                   return <Link key={task.id} href={searchTaskHref(task, applications)} onClick={(event) => {
                     if (!bankTask) return;
                     event.preventDefault();
                     openBankModalFromSearch({ task });
-                  }} aria-haspopup={bankTask ? "dialog" : undefined} className="home-task-card">
-                    <span className={`home-task-card-icon home-task-card-icon--${tone}`}><TaskIcon task={task} /></span>
-                    <span className="home-task-card-copy"><span className="home-task-card-context">{application?.name ?? "Guido"}</span><strong>{task.title}</strong><small>{task.availability === "preparing" ? "Em preparação" : "Abrir guia"}</small></span>
-                    <span aria-hidden="true" className="home-card-arrow">→</span>
-                  </Link>;
+                  }} aria-haspopup={bankTask ? "dialog" : undefined} className="home-task-card"><span>{application?.name ?? "Guido"}</span><strong>{task.title}</strong><small>{task.availability === "preparing" ? "Em preparação" : "Abrir guia"}</small><span aria-hidden="true" className="home-card-arrow">→</span></Link>;
                   })}
                 </div>
               </> : <div className="home-task-grid"><p className="home-search-empty"><strong>Não encontramos esse guia.</strong><span>Tente escrever de outra forma.</span></p></div>}
@@ -464,10 +434,10 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
 
                     return (
                     <button ref={(element) => { categoryButtonRefs.current[category.id] = element; }} key={category.id} type="button" onClick={() => chooseCategory(category.id)} className={`home-category-button home-category-button--${category.id}`}>
-                      <span className={`home-category-icon home-category-icon--${category.id}${categoryApplication ? " home-category-icon--application" : ""}`}>
+                      <span className={`home-category-icon${categoryApplication ? " home-category-icon--application" : ""}`}>
                         {categoryApplication ? <ApplicationMark application={categoryApplication} /> : <CategoryIcon type={category.icon} />}
                       </span>
-                      <span><strong>{category.title}</strong><small>{category.description}</small></span>
+                      <span><strong>{category.title}</strong><small>{category.description}</small></span><span aria-hidden="true" className="home-card-arrow">→</span>
                     </button>
                     );
                   })}

@@ -66,7 +66,7 @@ describe("catálogo Supabase", () => {
     expect(canOpenGuideVersion("published", false, false)).toBe(true);
   });
 
-  it("aceita timestamps reais do Supabase e libera a prévia colaborativa no catálogo", () => {
+  it("aceita timestamps reais do Supabase e libera a prévia colaborativa", () => {
     const catalog = parseSupabaseCatalogRows([{
       id: ids.application,
       name: "Gov.br",
@@ -116,9 +116,15 @@ describe("catálogo Supabase", () => {
   it("mantém conteúdo local em preparação sem duplicar o conteúdo remoto", () => {
     const fallbackApplication = {
       id: "local-app", name: "Banco", slug: "banco", description: "Local", category: "Banco",
-      logoPath: null, searchTerms: [], status: "available" as const, createdAt: "", updatedAt: "",
+      logoPath: "/images/logos/banco.png", searchTerms: ["local"], status: "available" as const, createdAt: "", updatedAt: "",
     };
-    const remoteApplication = { ...fallbackApplication, id: ids.application, description: "Remoto" };
+    const remoteApplication = {
+      ...fallbackApplication,
+      id: ids.application,
+      description: "Remoto",
+      logoPath: null,
+      searchTerms: ["remoto"],
+    };
     const fallbackTask = {
       id: "local-task", applicationId: "local-app", title: "Boleto", slug: "boleto",
       description: "Local", difficulty: "easy" as const, safetyWarning: "", searchTerms: [],
@@ -128,7 +134,11 @@ describe("catálogo Supabase", () => {
       { applications: [remoteApplication], tasks: [] },
       { applications: [fallbackApplication], tasks: [fallbackTask] },
     );
-    expect(merged.applications).toEqual([remoteApplication]);
+    expect(merged.applications).toEqual([{
+      ...remoteApplication,
+      logoPath: fallbackApplication.logoPath,
+      searchTerms: ["local", "remoto"],
+    }]);
     expect(merged.tasks[0]?.applicationId).toBe(ids.application);
   });
 

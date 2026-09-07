@@ -28,7 +28,6 @@ export default async function DynamicGuidePage({ params, searchParams }: Dynamic
     imageGuideSlug,
     imageApplicationSlug,
     os,
-    selectedApplication?.category ?? remoteContent?.application.category,
   );
   if (remoteContent) return <GuideViewer
     {...remoteContent}

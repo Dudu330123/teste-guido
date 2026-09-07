@@ -33,6 +33,15 @@ describe("logo do aplicativo", () => {
     expect(screen.getByText("BA")).toBeVisible();
   });
 
+  it("recupera o logo local quando o catálogo remoto não informa o caminho", () => {
+    render(<ApplicationLogo application={{ ...application, name: "WhatsApp", slug: "whatsapp" }} />);
+
+    expect(screen.getByRole("img", { name: "Logo do WhatsApp" })).toHaveAttribute(
+      "src",
+      "/images/logos/whatsapp-home.png",
+    );
+  });
+
   it("mantém o banco demonstrativo sem logo de terceiro", () => {
     expect(applications.find((item) => item.slug === "banco-demonstracao")?.logoPath).toBeNull();
   });

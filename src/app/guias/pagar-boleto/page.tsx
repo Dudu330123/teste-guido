@@ -38,7 +38,6 @@ export default async function GuidePage({ searchParams }: GuidePageProps) {
     remoteContent?.imageContext?.guideSlug ?? "pagar-boleto",
     selectedApplication?.slug ?? remoteContent?.imageContext?.applicationSlug ?? null,
     os,
-    selectedApplication?.category ?? remoteContent?.application.category,
   );
   if (remoteContent) {
     return <GuideViewer
