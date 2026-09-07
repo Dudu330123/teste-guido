@@ -90,6 +90,20 @@ describe("formulário de criação de guias", () => {
     expect(await screen.findByText(/Aplicativo: Banco Aurora/)).toBeVisible();
   }, 15000);
 
+  it("mostra o campo de logotipo somente ao cadastrar um aplicativo novo", async () => {
+    const user = userEvent.setup();
+    render(<GuideCreationForm applications={[{ slug: "caixa", name: "Caixa", category: "Bancos" }]} previewOnly />);
+
+    expect(screen.queryByLabelText(/Escolher logotipo/)).not.toBeInTheDocument();
+    await user.click(screen.getByRole("radio", { name: /Cadastrar novo aplicativo/ }));
+
+    expect(screen.getByLabelText(/Escolher logotipo/)).toHaveAttribute(
+      "accept",
+      "image/png,image/jpeg,image/webp",
+    );
+    expect(screen.getByText(/não é enviada ao Supabase/)).toBeVisible();
+  });
+
   it("cria 1, 2 e 50 editores sem perder a etapa existente", async () => {
     const user = userEvent.setup();
     render(<GuideCreationForm applications={[{ slug: "caixa", name: "Caixa", category: "Bancos" }]} previewOnly />);

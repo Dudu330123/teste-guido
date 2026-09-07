@@ -1,12 +1,18 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
 import { ApplicationSearch, type ApplicationSearchOption } from "./application-search";
 import {
   normalizeApplicationCreationInput,
   type ApplicationCreationInput,
 } from "./application-creation-validation";
+import {
+  applicationLogoRules,
+  validateApplicationLogoDimensions,
+  validateApplicationLogoFile,
+} from "./application-logo-validation";
 import {
   GUIDE_STEP_MAX,
   GUIDE_STEP_MIN,
@@ -86,6 +92,13 @@ interface NewApplicationState {
   slug: string;
   categoryId: string;
   description: string;
+}
+
+interface NewApplicationLogoState {
+  file: File;
+  previewUrl: string;
+  width: number;
+  height: number;
 }
 
 interface CreatedGuide {
@@ -220,6 +233,8 @@ export function GuideCreationForm({
   const [form, setForm] = useState<GuideFormState>(() => initialForm(applications, initialValues));
   const [creationMode, setCreationMode] = useState<CreationMode>("existing");
   const [newApplication, setNewApplication] = useState<NewApplicationState>(() => initialNewApplication(applications, categories, previewOnly));
+  const [newApplicationLogo, setNewApplicationLogo] = useState<NewApplicationLogoState | null>(null);
+  const [newApplicationLogoError, setNewApplicationLogoError] = useState("");
   const [newApplicationSlugEdited, setNewApplicationSlugEdited] = useState(false);
   const [slugEdited, setSlugEdited] = useState(false);
   const [stepCount, setStepCount] = useState<number | "">(initialValues?.steps.length || GUIDE_STEP_MIN);
@@ -253,6 +268,56 @@ export function GuideCreationForm({
   const duplicateGuideSlug = !isEditing && Boolean(form.slug && existingGuideSlugs.includes(form.slug));
 
   const selectedApplication = applications.find((application) => application.slug === form.applicationSlug);
+
+  useEffect(() => () => {
+    if (newApplicationLogo?.previewUrl) URL.revokeObjectURL(newApplicationLogo.previewUrl);
+  }, [newApplicationLogo?.previewUrl]);
+
+  const selectNewApplicationLogo = (event: ChangeEvent<HTMLInputElement>) => {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+    setNewApplicationLogoError("");
+    if (!file) return;
+
+    const fileError = validateApplicationLogoFile(file);
+    if (fileError) {
+      input.value = "";
+      setNewApplicationLogo(null);
+      setNewApplicationLogoError(fileError);
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+    const image = new window.Image();
+    image.onload = () => {
+      const dimensionError = validateApplicationLogoDimensions(image.naturalWidth, image.naturalHeight);
+      if (dimensionError) {
+        URL.revokeObjectURL(previewUrl);
+        input.value = "";
+        setNewApplicationLogo(null);
+        setNewApplicationLogoError(dimensionError);
+        return;
+      }
+      setNewApplicationLogo({
+        file,
+        previewUrl,
+        width: image.naturalWidth,
+        height: image.naturalHeight,
+      });
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(previewUrl);
+      input.value = "";
+      setNewApplicationLogo(null);
+      setNewApplicationLogoError("Não foi possível abrir esta imagem. Escolha outro arquivo.");
+    };
+    image.src = previewUrl;
+  };
+
+  const removeNewApplicationLogo = () => {
+    setNewApplicationLogo(null);
+    setNewApplicationLogoError("");
+  };
 
   const updateStep = (index: number, field: keyof Pick<GuideEditorStepValue, "title" | "instruction" | "imageAlt" | "warning" | "confirmationMessage">, value: string) => {
     setFieldErrors((current) => {
@@ -593,6 +658,43 @@ export function GuideCreationForm({
                 <textarea value={newApplication.description} onChange={(event) => { setFieldErrors((current) => { const next = { ...current }; delete next["application.description"]; return next; }); setNewApplication((current) => ({ ...current, description: event.target.value })); }} className="glass-control" placeholder="Explique que tipo de serviço o aplicativo oferece." maxLength={500} required aria-invalid={Boolean(fieldErrors["application.description"])} aria-describedby={fieldErrors["application.description"] ? "application-description-error" : undefined} />
                 {fieldErrors["application.description"] && <span id="application-description-error" className="guide-editor-error" role="alert">{fieldErrors["application.description"]}</span>}
               </label>
+              <div className="guide-editor-field guide-editor-field--wide">
+                <span>Logotipo do aplicativo <small>(opcional)</small></span>
+                <div className="guide-editor-logo-upload">
+                  {newApplicationLogo ? (
+                    <div className="guide-editor-logo-preview" role="status">
+                      <Image
+                        src={newApplicationLogo.previewUrl}
+                        alt={`Prévia do logotipo de ${newApplication.name || "novo aplicativo"}`}
+                        width={88}
+                        height={88}
+                        unoptimized
+                      />
+                      <div>
+                        <strong>{newApplicationLogo.file.name}</strong>
+                        <span>{newApplicationLogo.width} × {newApplicationLogo.height} pixels · {(newApplicationLogo.file.size / 1024).toFixed(0)} KB</span>
+                        <button type="button" className="guide-editor-inline-action" onClick={removeNewApplicationLogo}>Remover logotipo</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <label className="guide-editor-logo-picker">
+                      <span>Escolher logotipo</span>
+                      <small>PNG, JPG ou WebP · até 2 MB · mínimo 128 × 128 px</small>
+                      <input
+                        type="file"
+                        accept={applicationLogoRules.acceptedTypes.join(",")}
+                        onChange={selectNewApplicationLogo}
+                        aria-describedby="application-logo-help"
+                      />
+                    </label>
+                  )}
+                </div>
+                <span id="application-logo-help" className="guide-editor-help">
+                  Prefira uma imagem quadrada, sem dados pessoais e obtida de fonte oficial.
+                  {previewOnly ? " Nesta prévia, ela fica somente neste navegador e não é enviada ao Supabase." : ""}
+                </span>
+                {newApplicationLogoError && <span className="guide-editor-error" role="alert">{newApplicationLogoError}</span>}
+              </div>
             </div>
           )}
           </>

@@ -5835,6 +5835,92 @@ html[data-theme="dark"] .guide-help-modal-option p {
   resize: vertical;
 }
 
+.guide-editor-logo-upload {
+  border: 1px dashed color-mix(in srgb, var(--primary) 65%, var(--border));
+  border-radius: 0.9rem;
+  background: color-mix(in srgb, var(--primary) 5%, var(--surface-soft));
+  padding: 0.85rem;
+}
+
+.guide-editor-logo-picker {
+  display: grid;
+  min-height: 5.5rem;
+  align-content: center;
+  justify-items: start;
+  gap: 0.25rem;
+  cursor: pointer;
+}
+
+.guide-editor-logo-picker > span {
+  color: var(--primary-dark);
+  font-weight: 850;
+}
+
+.guide-editor-logo-picker > small,
+.guide-editor-logo-preview span {
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.guide-editor-logo-picker input {
+  width: 100%;
+  margin-top: 0.45rem;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 0.9rem;
+}
+
+.guide-editor-logo-picker input::file-selector-button {
+  min-height: 2.75rem;
+  margin-right: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.7rem;
+  background: var(--surface);
+  color: var(--primary-dark);
+  cursor: pointer;
+  padding: 0.55rem 0.85rem;
+  font: inherit;
+  font-weight: 800;
+}
+
+.guide-editor-logo-picker input:focus-visible {
+  outline: 4px solid var(--primary);
+  outline-offset: 4px;
+}
+
+.guide-editor-logo-preview {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.guide-editor-logo-preview img {
+  width: 5.5rem;
+  height: 5.5rem;
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface);
+  object-fit: contain;
+  padding: 0.35rem;
+}
+
+.guide-editor-logo-preview > div {
+  display: grid;
+  min-width: 0;
+  gap: 0.35rem;
+}
+
+.guide-editor-logo-preview strong {
+  overflow-wrap: anywhere;
+}
+
+.guide-editor-logo-preview .guide-editor-inline-action {
+  width: fit-content;
+  margin-top: 0.2rem;
+}
+
 .guide-editor-details {
   margin-top: 1.25rem;
   border-top: 1px solid var(--border);
