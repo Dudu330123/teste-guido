@@ -138,8 +138,8 @@ export function AccountPanel() {
         <fieldset>
           <legend className="font-bold">Qual celular você usa?</legend>
           <div className="mt-2 flex flex-col gap-3 sm:flex-row">
-            <label className="glass-control flex min-h-12 flex-1 items-center gap-3 rounded-xl px-4"><input type="radio" name="platform" checked={preferredPlatform === "ios"} onChange={() => setPreferredPlatform("ios")} className="size-5" /> iPhone</label>
-            <label className="glass-control flex min-h-12 flex-1 items-center gap-3 rounded-xl px-4"><input type="radio" name="platform" checked={preferredPlatform === "android"} onChange={() => setPreferredPlatform("android")} className="size-5" /> Outro</label>
+            <label className="glass-control flex min-h-12 flex-1 items-center gap-3 rounded-xl px-4"><input type="radio" name="platform" checked={preferredPlatform === "ios"} onChange={() => setPreferredPlatform("ios")} /> iPhone</label>
+            <label className="glass-control flex min-h-12 flex-1 items-center gap-3 rounded-xl px-4"><input type="radio" name="platform" checked={preferredPlatform === "android"} onChange={() => setPreferredPlatform("android")} /> Android</label>
           </div>
         </fieldset>
         <button type="submit" disabled={submitting} className="primary-action min-h-14 w-full px-5 py-3 text-xl font-bold">
