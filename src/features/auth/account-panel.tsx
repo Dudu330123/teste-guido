@@ -37,7 +37,7 @@ export function AccountPanel() {
         return;
       }
       setUser(data.user);
-      const profile = await supabase
+      const { data: profile } = await supabase
         .from("profiles")
         .select("display_name, preferred_platform")
         .eq("id", data.user.id)

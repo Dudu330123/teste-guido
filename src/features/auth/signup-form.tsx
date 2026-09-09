@@ -46,7 +46,7 @@ export function SignupForm() {
     setPasswordStrength(checkStrength(value));
   };
 
-  const handleDemoSignup = (email: string) => {
+  const handleDemoSignup = (email: string, password: string = "12345678") => {
     setDemoMenuOpen(false);
     setSubmitting(true);
     setMessage("⏳ Criando conta...");
