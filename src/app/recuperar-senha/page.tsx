@@ -4,17 +4,18 @@ import { RecoveryForm } from "@/features/auth/recovery-form";
 
 export const metadata: Metadata = { title: "Recuperar senha" };
 interface RecoveryPageProps {
-  searchParams: Promise<{ modo?: string }>;
+  searchParams: Promise<{ modo?: string; token?: string }>;
 }
 
 export default async function RecoveryPage({ searchParams }: RecoveryPageProps) {
-  const resetMode = (await searchParams).modo === "nova-senha";
+  const params = await searchParams;
+  const resetMode = params.modo === "nova-senha" || Boolean(params.token);
   return (
     <AuthShell
       title={resetMode ? "Criar nova senha" : "Recuperar senha"}
-      description={resetMode ? "Escolha uma nova senha para sua conta Guido." : "Informe seu e-mail para receber as instruções do Supabase Auth."}
+      description={resetMode ? "Escolha uma nova senha para sua conta Guido." : "Informe seu e-mail para receber as instruções."}
     >
-      <RecoveryForm resetMode={resetMode} />
+      <RecoveryForm resetMode={resetMode} resetToken={params.token} />
     </AuthShell>
   );
 }

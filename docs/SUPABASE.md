@@ -1,4 +1,6 @@
-# Integração do Supabase — sujeita a revisão de produto
+# Histórico do Supabase — não usado pelo runtime novo
+
+Este documento e o diretório `supabase/` preservam decisões e migrations antigas. Guido não acessa o projeto Supabase antigo, não usa suas credenciais e não executa estas migrations para o runtime independente. Consulte [autenticação independente](INDEPENDENT_AUTH.md), [banco](DATABASE.md) e [Storage](STORAGE.md).
 
 As migrations versionadas são validadas em PostgreSQL efêmero; a `007` adiciona
 rascunhos privados, a `008` cria a publicação de imagens e a migration de 20 de

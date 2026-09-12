@@ -145,7 +145,7 @@ export function GuideAdmin({ guides, bankApplications, canDelete = false }: Guid
     <div className="mt-8">
       <div className="notice-warning rounded-2xl border-2 p-5" role="note">
         <p className="font-bold">Publicação imediata</p>
-        <p className="mt-1">Qualquer visitante pode enviar, mesmo sem login. Em guias já navegáveis, o print aparece para todos assim que o upload termina. Nos demais, ele fica preparado até a liberação do guia.</p>
+        <p className="mt-1">Somente o superadministrador pode enviar ou remover prints. Em guias já navegáveis, o print aparece para todos assim que o upload termina. Nos demais, ele fica preparado até a liberação do guia.</p>
         <p className="mt-2 font-semibold">Os roteiros estão preparados para revisão. O upload de uma imagem não transforma o conteúdo em guia oficial ou validado.</p>
       </div>
 

@@ -1,7 +1,8 @@
 import { z } from "zod";
 import type { Application, GuideStep, OperatingSystem, Task } from "@/types/content";
 import type { RemoteGuideContent } from "@/lib/api/catalog";
-import { getSupabaseServerClient } from "./server";
+import { query } from "@/lib/db/client";
+import { signedObjectUrl } from "@/lib/storage";
 import { isBankCategory } from "@/data/applications";
 
 const publicationStatusSchema = z.enum(["draft", "under_review", "published", "outdated"]);
@@ -220,63 +221,42 @@ export async function getGuideFromSupabase(
   tutorialSlug: string,
   operatingSystem: OperatingSystem,
 ): Promise<RemoteGuideContent | null> {
-  const supabase = await getSupabaseServerClient();
-  if (!supabase) return null;
-
-  const loadRow = async (status: "draft" | "published") => supabase
-      .from("guide_versions")
-      .select(`
-      id, tutorial_id, platform, app_version, guide_version, reviewed_at, status, estimated_minutes, public_for_upload,
-      tutorials!inner(
-        id, application_id, title, slug, description, difficulty, safety_warning, status, is_demo, image_context_slug,
-        tutorial_search_terms(term),
-        applications!inner(id, name, slug, description, status, is_demo, categories!inner(name))
-      ),
-      steps(
-        id, guide_version_id, position, title, instruction, image_alt, warning, confirmation_message,
-        step_media(purpose, sort_order, media_assets(storage_bucket, storage_key, mime_type, status, contains_personal_data))
-      )
-    `)
-      .eq("tutorials.slug", tutorialSlug)
-      .eq("platform", operatingSystem)
-      .eq("status", status)
-      .order("updated_at", { ascending: false })
-      .order("position", { referencedTable: "steps", ascending: true })
-      .limit(1)
-      .maybeSingle();
-
-  let { data, error } = await loadRow("published");
-  if (!data && !error) {
-    const draft = await loadRow("draft");
-    const parsedDraft = guideRowSchema.safeParse(draft.data);
-    // A prévia permite revisar texto e prints sem alterar o status editorial.
-    if (parsedDraft.success && canOpenGuideVersion(
-      parsedDraft.data.status,
-      parsedDraft.data.tutorials.is_demo,
-      parsedDraft.data.public_for_upload,
-    )) {
-      data = draft.data;
-      error = draft.error;
-    }
-  }
-  if (error || !data) return null;
-
-  const parsed = guideRowSchema.safeParse(data);
-  if (!parsed.success) return null;
-  const media = parsed.data.steps.flatMap((step) =>
-    step.step_media.map(({ media_assets: asset }) => asset),
+  const result = await query<{
+    guide_id: string; tutorial_id: string; platform: OperatingSystem; public_for_upload: boolean; app_version: string; guide_version: string; reviewed_at: string | null; guide_status: "draft" | "under_review" | "published" | "outdated"; estimated_minutes: number;
+    tutorial_title: string; tutorial_slug: string; tutorial_description: string; difficulty: "easy" | "medium" | "advanced"; safety_warning: string; tutorial_status: "draft" | "under_review" | "published" | "outdated"; is_demo: boolean; image_context_slug: string; application_id: string; application_name: string; application_slug: string; application_description: string; application_status: "draft" | "under_review" | "published" | "outdated"; application_is_demo: boolean; category_name: string; search_term: string | null;
+    step_id: string | null; guide_version_id: string | null; position: number | null; step_title: string | null; instruction: string | null; image_alt: string | null; warning: string | null; confirmation_message: string | null;
+    purpose: "screen" | "audio" | null; sort_order: number | null; storage_bucket: string | null; storage_key: string | null; mime_type: "image/avif" | "image/webp" | "image/png" | "audio/mpeg" | null; media_status: "draft" | "under_review" | "published" | "outdated" | null; contains_personal_data: boolean | null;
+  }>(
+    `select gv.id as guide_id, gv.tutorial_id, gv.platform, gv.public_for_upload, gv.app_version, gv.guide_version, gv.reviewed_at, gv.status as guide_status, gv.estimated_minutes,
+            t.title as tutorial_title, t.slug as tutorial_slug, t.description as tutorial_description, t.difficulty, t.safety_warning, t.status as tutorial_status, t.is_demo, t.image_context_slug, t.application_id,
+            a.name as application_name, a.slug as application_slug, a.description as application_description, a.status as application_status, a.is_demo as application_is_demo, c.name as category_name, tst.term as search_term,
+            s.id as step_id, s.guide_version_id, s.position, s.title as step_title, s.instruction, s.image_alt, s.warning, s.confirmation_message,
+            sm.purpose, sm.sort_order, ma.storage_bucket, ma.storage_key, ma.mime_type, ma.status as media_status, ma.contains_personal_data
+       from guide_versions gv join tutorials t on t.id = gv.tutorial_id join applications a on a.id = t.application_id join categories c on c.id = t.category_id
+       left join tutorial_search_terms tst on tst.tutorial_id = t.id left join steps s on s.guide_version_id = gv.id left join step_media sm on sm.step_id = s.id left join media_assets ma on ma.id = sm.media_id
+      where t.slug = $1 and gv.platform = $2 and (gv.status = 'published' or (gv.status = 'draft' and (t.is_demo or gv.public_for_upload)))
+      order by (gv.status = 'published') desc, gv.updated_at desc, s.position asc, sm.sort_order asc`,
+    [tutorialSlug, operatingSystem],
   );
-  const uniqueMedia = [...new Map(media.map((asset) => [mediaLocationKey(asset), asset])).values()];
-  const signedUrlEntries = await Promise.all(uniqueMedia.map(async (asset) => {
-    // Buckets permanecem privados; URLs curtas evitam tornar prints revisados
-    // permanentemente públicos e dependem da política de leitura do Storage.
-    const { data: signed } = await supabase.storage
-      .from(asset.storage_bucket)
-      .createSignedUrl(asset.storage_key, 60 * 60);
-    return signed?.signedUrl ? [mediaLocationKey(asset), signed.signedUrl] as const : null;
-  }));
-  const signedUrls = new Map(signedUrlEntries.filter((entry): entry is readonly [string, string] => entry !== null));
-  return parseSupabaseGuideRow(parsed.data, signedUrls);
+  const first = result.rows[0];
+  if (!first) return null;
+  const stepMap = new Map<string, { id: string; guide_version_id: string; position: number; title: string; instruction: string; image_alt: string; warning: string | null; confirmation_message: string | null; step_media: Array<{ purpose: "screen" | "audio"; sort_order: number; media_assets: MediaLocation }> }>();
+  const searchTerms = new Map<string, string>();
+  for (const row of result.rows) {
+    if (row.search_term) searchTerms.set(row.search_term, row.search_term);
+    if (!row.step_id || row.position === null || !row.step_title || !row.instruction || !row.image_alt || !row.guide_version_id) continue;
+    const step = stepMap.get(row.step_id) ?? { id: row.step_id, guide_version_id: row.guide_version_id, position: row.position, title: row.step_title, instruction: row.instruction, image_alt: row.image_alt, warning: row.warning, confirmation_message: row.confirmation_message, step_media: [] };
+    if (row.purpose && row.storage_bucket && row.storage_key && row.mime_type && row.media_status && row.contains_personal_data !== null) step.step_media.push({ purpose: row.purpose, sort_order: row.sort_order ?? 0, media_assets: { storage_bucket: row.storage_bucket, storage_key: row.storage_key, mime_type: row.mime_type, status: row.media_status, contains_personal_data: row.contains_personal_data } });
+    stepMap.set(row.step_id, step);
+  }
+  const payload = {
+    id: first.guide_id, tutorial_id: first.tutorial_id, platform: first.platform, public_for_upload: first.public_for_upload, app_version: first.app_version, guide_version: first.guide_version, reviewed_at: first.reviewed_at, status: first.guide_status, estimated_minutes: first.estimated_minutes,
+    tutorials: { id: first.tutorial_id, application_id: first.application_id, title: first.tutorial_title, slug: first.tutorial_slug, description: first.tutorial_description, difficulty: first.difficulty, safety_warning: first.safety_warning, status: first.tutorial_status, is_demo: first.is_demo, image_context_slug: first.image_context_slug, tutorial_search_terms: [...searchTerms.values()].map((term) => ({ term })), applications: { id: first.application_id, name: first.application_name, slug: first.application_slug, description: first.application_description, status: first.application_status, is_demo: first.application_is_demo, categories: { name: first.category_name } } },
+    steps: [...stepMap.values()],
+  };
+  const media = [...stepMap.values()].flatMap((step) => step.step_media.map(({ media_assets: asset }) => asset));
+  const signedUrls = new Map(media.map((asset) => [mediaLocationKey(asset), signedObjectUrl(asset.storage_bucket, asset.storage_key)]));
+  return parseSupabaseGuideRow(payload, signedUrls);
 }
 
 export interface SupabaseCatalog {
@@ -363,20 +343,25 @@ export function mergeCatalogWithFallback(
 }
 
 export async function getCatalogFromSupabase(): Promise<SupabaseCatalog | null> {
-  const supabase = await getSupabaseServerClient();
-  if (!supabase) return null;
-  const [applicationsResult, tutorialsResult] = await Promise.all([
-    supabase
-      .from("applications")
-      .select("id, name, slug, description, status, is_demo, created_at, updated_at, categories!inner(name)")
-      .order("name", { ascending: true }),
-    supabase
-      .from("tutorials")
-      .select("id, application_id, title, slug, description, difficulty, safety_warning, status, is_demo, image_context_slug, tutorial_search_terms(term), guide_versions(status, public_for_upload)")
-      .order("title", { ascending: true }),
-  ]);
-  if (applicationsResult.error || tutorialsResult.error) return null;
-  return parseSupabaseCatalogRows(applicationsResult.data, tutorialsResult.data);
+  try {
+    const [applicationsResult, tutorialsResult] = await Promise.all([
+      query(`select a.id, a.name, a.slug, a.description, a.status, a.is_demo, a.created_at, a.updated_at, c.name as category_name from applications a join categories c on c.id = a.category_id order by a.name`),
+      query(`select t.id, t.application_id, t.title, t.slug, t.description, t.difficulty, t.safety_warning, t.status, t.is_demo, t.image_context_slug,
+                    coalesce((select json_agg(json_build_object('term', tst.term)) from tutorial_search_terms tst where tst.tutorial_id = t.id), '[]'::json) as tutorial_search_terms,
+                    coalesce((select json_agg(json_build_object('status', gv.status, 'public_for_upload', gv.public_for_upload)) from guide_versions gv where gv.tutorial_id = t.id), '[]'::json) as guide_versions
+               from tutorials t order by t.title`),
+    ]);
+    const applicationPayload = applicationsResult.rows.map((row) => ({
+      ...row,
+      created_at: new Date(row.created_at).toISOString(),
+      updated_at: new Date(row.updated_at).toISOString(),
+      categories: { name: row.category_name },
+    }));
+    const tutorialPayload = tutorialsResult.rows;
+    return parseSupabaseCatalogRows(applicationPayload, tutorialPayload);
+  } catch {
+    return null;
+  }
 }
 
 /** Converte os roteiros públicos para upload mantendo a chave editorial antiga. */
@@ -411,32 +396,26 @@ export function parseSupabaseUploadGuides(payload: unknown): SupabaseUploadGuide
 }
 
 export async function getUploadGuidesFromSupabase(): Promise<SupabaseUploadGuide[] | null> {
-  const supabase = await getSupabaseServerClient();
-  if (!supabase) return null;
-  const { data, error } = await supabase
-    .from("guide_versions")
-    .select(`
-      id, platform, public_for_upload,
-      tutorials!inner(title, slug, applications!inner(is_demo, categories!inner(name))),
-      steps(position, editorial_key, title, instruction, image_alt, warning, confirmation_message)
-    `)
-    .eq("public_for_upload", true)
-    .order("position", { referencedTable: "steps", ascending: true });
-  if (error) return null;
-  return parseSupabaseUploadGuides(data);
+  try {
+    const result = await query(`select gv.id, gv.platform, gv.public_for_upload, t.title, t.slug, a.is_demo, c.name as category_name,
+                                       s.position, s.editorial_key, s.title as step_title, s.instruction, s.image_alt, s.warning, s.confirmation_message
+                                  from guide_versions gv join tutorials t on t.id = gv.tutorial_id join applications a on a.id = t.application_id join categories c on c.id = t.category_id
+                                  join steps s on s.guide_version_id = gv.id where gv.public_for_upload = true order by t.title, gv.platform, s.position`);
+    const payload = result.rows.map((row) => ({ id: row.id, platform: row.platform, public_for_upload: true, tutorials: { title: row.title, slug: row.slug, applications: { is_demo: row.is_demo, categories: { name: row.category_name } } }, steps: [{ position: row.position, editorial_key: row.editorial_key, title: row.step_title, instruction: row.instruction, image_alt: row.image_alt, warning: row.warning, confirmation_message: row.confirmation_message }] }));
+    return parseSupabaseUploadGuides(payload);
+  } catch {
+    return null;
+  }
 }
 
 /** Retorna somente contagens agregadas; nenhuma identidade ou histórico individual sai do banco. */
 export async function getGuidePopularityFromSupabase() {
-  const supabase = await getSupabaseServerClient();
-  if (!supabase) return new Map<string, number>();
-  const { data, error } = await supabase
-    .from("guide_access_stats")
-    .select("tutorial_id, access_count")
-    .order("access_count", { ascending: false })
-    .limit(50);
-  if (error) return new Map<string, number>();
-  const parsed = popularityRowsSchema.safeParse(data);
-  if (!parsed.success) return new Map<string, number>();
-  return new Map(parsed.data.map((row) => [row.tutorial_id, row.access_count]));
+  try {
+    const result = await query("select tutorial_id, access_count from guide_access_stats order by access_count desc limit 50");
+    const parsed = popularityRowsSchema.safeParse(result.rows);
+    if (!parsed.success) return new Map<string, number>();
+    return new Map(parsed.data.map((row) => [row.tutorial_id, row.access_count]));
+  } catch {
+    return new Map<string, number>();
+  }
 }

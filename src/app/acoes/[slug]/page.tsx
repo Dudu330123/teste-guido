@@ -7,7 +7,7 @@ import { applications } from "@/data/applications";
 import { tasks } from "@/data/guides";
 import { ApplicationLogo } from "@/features/applications/application-logo";
 import { safeReturnPath, withReturnPath } from "@/lib/navigation/return-path";
-import { getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/supabase/catalog";
+import { getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/catalog";
 
 interface ActionPageProps {
   params: Promise<{ slug: string }>;

@@ -3,18 +3,15 @@
 ## Estado atual
 
 O projeto `c-teste/guido` executa o monólito Next.js na Vercel. A URL de produção
-é `https://guido-orpin.vercel.app`. Supabase continua responsável por Auth,
-PostgreSQL e Storage; nenhuma credencial administrativa é enviada ao frontend.
+é `https://guido-orpin.vercel.app`. PostgreSQL, Auth Guido, email e Storage são
+configurados como serviços independentes; nenhum segredo administrativo é enviado ao frontend.
 
 ## Variáveis
 
-Produção, previews e desenvolvimento remoto usam somente:
-
-- `NEXT_PUBLIC_SUPABASE_URL`;
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
-
-Ambas são públicas por contrato. Nunca cadastrar `service_role`, `sb_secret_...`,
-senha do banco ou token de acesso administrativo na Vercel.
+Produção e previews precisam de `DATABASE_URL`, `AUTH_SESSION_SECRET`,
+`AUTH_BASE_URL`, `EMAIL_FROM` e configuração de Storage. Google OAuth usa
+`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` e `GOOGLE_REDIRECT_URI` quando ativado.
+Nunca cadastrar senha do banco, client secret ou token administrativo no frontend.
 
 ## GitHub
 
@@ -23,17 +20,10 @@ Depois que o proprietário conectar sua identidade GitHub à conta Vercel, o
 projeto deve ser associado ao repositório para deploy automático. Alterações em
 branches geram previews; somente versões validadas devem chegar à `main`.
 
-## Supabase Auth
+## URLs de autenticação
 
-Em **Authentication > URL Configuration**, usar:
-
-- Site URL: `https://guido-orpin.vercel.app`;
-- Redirect URL: `https://guido-orpin.vercel.app/**`;
-- manter `http://localhost:3000/**` para desenvolvimento local.
-
-A URL antiga do Netlify pode permanecer temporariamente durante a transição.
-Essa configuração deve ser alterada isoladamente pelo painel: não usar um push
-integral de `config.toml` sem revisar confirmação de e-mail, MFA e rate limits.
+Configure `AUTH_BASE_URL` com a URL pública. Se Google OAuth estiver ativo,
+cadastre essa URL mais `/api/auth/google/callback` no Google Cloud Console.
 
 ## Empacotamento
 

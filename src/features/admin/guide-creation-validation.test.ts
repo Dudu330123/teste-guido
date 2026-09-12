@@ -36,7 +36,7 @@ describe("validação de criação de guias", () => {
     expect(normalizeGuideCreationInput({ ...validGuide, slug: "Consultar Saldo" }).success).toBe(false);
   });
 
-  it("gera identificadores compatíveis com as constraints do Supabase", () => {
+  it("gera identificadores compatíveis com as constraints do PostgreSQL", () => {
     expect(slugifyGuideTitle("Pagar um boleto — Caixa")).toBe("pagar-um-boleto-caixa");
     expect(slugifyGuideTitle("   ")).toBe("novo-guia");
   });

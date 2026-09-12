@@ -1,16 +1,16 @@
 # Decisões técnicas
 
-## Backend integrado ao Next.js e Supabase
+## Backend integrado ao Next.js
 
-O produto ativo usa Next.js com PostgreSQL, Auth e Storage do Supabase. A decisão reduz hospedagem e integração duplicadas e está registrada no [`ADR-002`](adr/ADR-002-nextjs-supabase.md). O ADR-001 e o diretório C++ permanecem temporariamente apenas como histórico.
+O produto ativo usa Next.js com autenticação própria, PostgreSQL independente e Storage local/S3. O ADR-002 anterior e diretório C++ permanecem como histórico.
 
 ## Monólito modular
 
-Há uma aplicação Next.js modular e serviços gerenciados do Supabase, sem microsserviços próprios. Consultas ficam centralizadas em `src/lib/supabase`, políticas em migrations e coordenação HTTP em Route Handlers pequenos.
+Há uma aplicação Next.js modular, sem microsserviços próprios. Auth, consultas, autorização e Storage ficam em adapters pequenos e Route Handlers.
 
-## PostgreSQL e Supabase
+## PostgreSQL independente
 
-PostgreSQL foi confirmado pelo modelo relacional, constraints, transações, busca textual e auditoria. Supabase fornece hospedagem, Auth e Storage. Nenhum projeto é criado automaticamente e nenhuma chave administrativa é exposta no frontend.
+PostgreSQL foi confirmado pelo modelo relacional, constraints, transações, busca textual e auditoria. Nenhum provedor é obrigatório; nenhum segredo administrativo é exposto no frontend.
 
 ## Progresso durante a migração
 

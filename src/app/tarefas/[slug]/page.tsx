@@ -5,7 +5,7 @@ import { applications, isBankCategory } from "@/data/applications";
 import { tasks } from "@/data/guides";
 import { TaskGuideSetup } from "@/features/guides/task-guide-setup";
 import { safeReturnPath, withReturnPath } from "@/lib/navigation/return-path";
-import { getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/supabase/catalog";
+import { getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/catalog";
 
 interface TaskPageProps {
   params: Promise<{ slug: string }>;

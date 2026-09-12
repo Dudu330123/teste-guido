@@ -22,7 +22,6 @@ endif()
 find_package(Drogon CONFIG REQUIRED)
 
 add_library(guido_core
-  src/auth/supabase_auth_gateway.cc
   src/application/catalog_service.cc
   src/http/api_controller.cc
   src/http/json_response.cc

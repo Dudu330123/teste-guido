@@ -241,7 +241,7 @@ export function GuideLibrary({
                 {isPendingDelete && (
                   <div className="guide-local-confirm" role="alertdialog" aria-label={`Confirmar exclusão de ${draft.title}`}>
                     <strong>Apagar este rascunho?</strong>
-                    <p>Isso remove somente este item do navegador. O Supabase não será alterado.</p>
+                    <p>Isso remove somente este item do navegador. O banco não será alterado.</p>
                     <div>
                       <button type="button" className="secondary-action" onClick={onCancelDelete}>Cancelar</button>
                       <button type="button" className="guide-local-confirm-delete" aria-label={`Confirmar apagar rascunho: ${draft.title}`} onClick={() => onConfirmDelete(draft)}>Apagar agora</button>

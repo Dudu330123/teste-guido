@@ -1,5 +1,5 @@
 import { HomeToolbar, type HomeActivePage } from "@/features/theme/home-toolbar";
-import { getSuperadminAccess } from "@/lib/supabase/admin";
+import { getSuperadminAccess } from "@/lib/auth/admin";
 
 interface SiteHeaderProps {
   showAdmin?: boolean;

@@ -4,7 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { applications, getApplicationBySlug, getCategoryLabel } from "@/data/applications";
 import { tasks } from "@/data/guides";
-import { getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/supabase/catalog";
+import { getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/catalog";
 import { safeReturnPath, withReturnPath } from "@/lib/navigation/return-path";
 
 interface ApplicationPageProps {

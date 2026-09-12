@@ -1,40 +1,28 @@
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SessionNavigation } from "./session-navigation";
 
 const mocks = vi.hoisted(() => ({
   push: vi.fn(),
   refresh: vi.fn(),
-  unsubscribe: vi.fn(),
-  signOut: vi.fn().mockResolvedValue({ error: null }),
 }));
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mocks.push, refresh: mocks.refresh }),
 }));
 
-vi.mock("@/lib/validation/env", () => ({
-  getSupabaseConfig: () => ({ configured: true }),
-}));
-
-vi.mock("@/lib/supabase/client", () => ({
-  getSupabaseBrowserClient: () => ({
-    auth: {
-      getUser: vi.fn().mockResolvedValue({ data: { user: { user_metadata: { name: "Maria da Silva" } } } }),
-      onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: mocks.unsubscribe } } })),
-      signOut: mocks.signOut,
-    },
-  }),
-}));
-
 describe("menu responsivo da conta", () => {
   beforeEach(() => {
     mocks.push.mockClear();
     mocks.refresh.mockClear();
-    mocks.unsubscribe.mockClear();
-    mocks.signOut.mockClear();
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: { user: { displayName: "Maria da Silva" } } }),
+    }));
   });
+
+  afterEach(() => vi.unstubAllGlobals());
 
   it("expõe as ações autorizadas e fecha com Escape devolvendo o foco", async () => {
     const user = userEvent.setup();

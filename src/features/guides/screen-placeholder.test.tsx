@@ -23,7 +23,7 @@ describe("ilustração do passo", () => {
   it("preserva a proporção de um print publicado e mantém sua descrição", () => {
     const publishedStep = {
       ...steps[0]!,
-      imagePath: "https://example.supabase.co/storage/v1/object/public/guides/step-1.webp",
+      imagePath: "/api/storage?bucket=guide-media&key=step-1.webp&expires=9999999999&sig=test",
       imageAlt: "Tela publicada do primeiro passo",
       evidenceStatus: "VERIFIED" as const,
     };
