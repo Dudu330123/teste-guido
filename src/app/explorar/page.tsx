@@ -13,12 +13,12 @@ import {
 } from "@/features/explore/explore-content";
 import { ExploreGuideCard } from "@/features/explore/explore-guide-card";
 import { HomeToolbar } from "@/features/theme/home-toolbar";
-import { getSuperadminAccess } from "@/lib/supabase/admin";
+import { getSuperadminAccess } from "@/lib/auth/admin";
 import {
   getCatalogFromSupabase,
   getGuidePopularityFromSupabase,
   mergeCatalogWithFallback,
-} from "@/lib/supabase/catalog";
+} from "@/lib/catalog";
 
 interface ExplorePageProps {
   searchParams: Promise<{ q?: string; categoria?: string }>;

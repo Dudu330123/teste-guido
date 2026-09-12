@@ -31,4 +31,4 @@ O adaptador PostgreSQL assíncrono é ativado por `GUIDO_DATABASE_URL`. Sem ele,
 - `GET /api/v1/me/progress/{guideId}`;
 - `PUT /api/v1/me/progress/{guideId}`.
 
-Os endpoints de progresso exigem Bearer token. A API confirma o token no Supabase Auth, usa somente o `user.id` retornado pela autoridade e executa upsert parametrizado. O BFF do Next.js apenas recupera a sessão e retransmite o token; autorização e regras permanecem em C++.
+Os endpoints C++ de progresso estão arquivados. Runtime atual usa `/api/progress` e `/api/progress/{guideId}` com cookie HttpOnly Guido, sessão validada server-side, `user.id` derivado do cookie e SQL parametrizado.

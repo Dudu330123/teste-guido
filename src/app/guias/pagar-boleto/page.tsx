@@ -3,8 +3,8 @@ import { redirect } from "next/navigation";
 import { applications, financialApplications } from "@/data/applications";
 import { getGuide, getStepsForGuide, tasks } from "@/data/guides";
 import { GuideViewer } from "@/features/guides/guide-viewer";
-import { getGuideFromSupabase } from "@/lib/supabase/catalog";
-import { applyPublicGuideImages, getPublicGuideImages } from "@/lib/supabase/public-guide-images";
+import { getGuideFromSupabase } from "@/lib/catalog";
+import { applyPublicGuideImages, getPublicGuideImages } from "@/lib/public-guide-images";
 
 interface GuidePageProps {
   searchParams: Promise<{ os?: string; app?: string; preview?: string }>;

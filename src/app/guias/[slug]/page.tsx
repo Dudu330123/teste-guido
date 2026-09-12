@@ -3,9 +3,9 @@ import { notFound, redirect } from "next/navigation";
 import { applications, financialApplications } from "@/data/applications";
 import { getGuide, getStepsForGuide, tasks } from "@/data/guides";
 import { GuideViewer } from "@/features/guides/guide-viewer";
-import { getGuideFromSupabase } from "@/lib/supabase/catalog";
+import { getGuideFromSupabase } from "@/lib/catalog";
 import { safeReturnPath } from "@/lib/navigation/return-path";
-import { applyPublicGuideImages, getPublicGuideImages } from "@/lib/supabase/public-guide-images";
+import { applyPublicGuideImages, getPublicGuideImages } from "@/lib/public-guide-images";
 
 interface DynamicGuidePageProps {
   params: Promise<{ slug: string }>;
@@ -37,7 +37,7 @@ export default async function DynamicGuidePage({ params, searchParams }: Dynamic
   />;
 
   // Somente a demonstração explicitamente identificada possui fallback local.
-  // Guias reais nunca são inventados quando o Supabase está indisponível.
+  // Guias reais nunca são inventados quando o banco está indisponível.
   if (slug !== "pagar-boleto") notFound();
   const guide = getGuide(os);
   const task = tasks.find((item) => item.id === guide?.taskId);

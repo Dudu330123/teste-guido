@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { GuideStep, OperatingSystem } from "@/types/content";
-import { getSupabaseServerClient } from "./server";
+import { query } from "@/lib/db/client";
+import { signedObjectUrl } from "@/lib/storage";
 
 const publicImageRowsSchema = z.array(z.object({
   step_order: z.number().int().positive(),
@@ -45,24 +46,15 @@ async function loadPublicGuideImages(
   applicationSlug: string | null,
   operatingSystem: OperatingSystem,
 ) {
-  const supabase = await getSupabaseServerClient();
-  if (!supabase) return new Map<number, string>();
-  let query = supabase
-    .from("guide_public_images")
-    .select("step_order, storage_bucket, storage_key")
-    .eq("guide_slug", guideSlug)
-    .eq("operating_system", operatingSystem);
-  query = applicationSlug
-    ? query.eq("application_slug", applicationSlug)
-    : query.is("application_slug", null);
-  const { data, error } = await query.order("step_order", { ascending: true });
-  const parsed = publicImageRowsSchema.safeParse(data);
-  if (error || !parsed.success) return new Map<number, string>();
+  try {
+    const result = await query("select step_order, storage_bucket, storage_key from guide_public_images where guide_slug = $1 and operating_system = $2 and application_slug is not distinct from $3 order by step_order", [guideSlug, operatingSystem, applicationSlug]);
+    const parsed = publicImageRowsSchema.safeParse(result.rows);
+    if (!parsed.success) return new Map<number, string>();
 
-  return new Map(parsed.data.map((row) => [
-    row.step_order,
-    supabase.storage.from(row.storage_bucket).getPublicUrl(row.storage_key).data.publicUrl,
-  ]));
+    return new Map(parsed.data.map((row) => [row.step_order, signedObjectUrl(row.storage_bucket, row.storage_key, 24 * 60 * 60)]));
+  } catch {
+    return new Map<number, string>();
+  }
 }
 
 async function loadScopedPublicGuideImages(

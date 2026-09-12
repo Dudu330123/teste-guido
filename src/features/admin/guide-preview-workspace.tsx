@@ -235,7 +235,7 @@ export function GuidePreviewWorkspace({
       <section className="guide-local-workspace internal-page-content internal-page-content--compact" id="rascunhos-locais" aria-labelledby="local-drafts-title">
         <header className="guide-local-header">
           <div>
-            <p className="internal-page-eyebrow">Antes do Supabase</p>
+            <p className="internal-page-eyebrow">Prévia local</p>
             <h2 id="local-drafts-title">Tarefas locais</h2>
             <p>Organize os guias criados nesta prévia, confira cada passo e prepare o material para o agente de imagens.</p>
           </div>
@@ -251,7 +251,7 @@ export function GuidePreviewWorkspace({
 
         <div className="guide-local-notice" role="note">
           <strong>Somente neste computador</strong>
-          <span> Nada desta lista é enviado ao Supabase. A exclusão também não altera o banco real.</span>
+          <span> Nada desta lista é enviado ao servidor. A exclusão também não altera o banco real.</span>
         </div>
 
         <div className="guide-local-summary" aria-label="Resumo dos rascunhos locais">

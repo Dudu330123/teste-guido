@@ -39,7 +39,7 @@ describe("administração compartilhada dos prints", () => {
     />);
 
     expect(screen.getByText("Publicação imediata")).toBeVisible();
-    expect(screen.getByText(/Qualquer visitante pode enviar, mesmo sem login/)).toBeVisible();
+    expect(screen.getByText(/Somente o superadministrador pode enviar ou remover prints/)).toBeVisible();
     expect(screen.getByText("Como preparar e enviar o print")).toBeVisible();
     expect(screen.getByText(/PNG, JPEG ou WebP/)).toBeVisible();
     expect(screen.getByText("Selecione um guia para começar.")).toBeVisible();

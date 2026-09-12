@@ -5,7 +5,7 @@ import { TouchTargetOverlay } from "./touch-target-overlay";
 const demoBankIconPath = "/guide-placeholders/banco-demonstracao-icon.png";
 
 export function ScreenPlaceholder({ step }: { step: GuideStep }) {
-  if (step.imagePath.startsWith("https://")) {
+  if (step.imagePath.startsWith("https://") || step.imagePath.startsWith("/api/storage")) {
     return (
       <figure className="guide-evidence">
         <div className="guide-evidence-frame">

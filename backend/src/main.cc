@@ -12,7 +12,6 @@
 #include <thread>
 
 #include "guido/application/catalog_service.h"
-#include "guido/auth/supabase_auth_gateway.h"
 #include "guido/http/api_controller.h"
 #include "guido/infrastructure/in_memory_catalog_repository.h"
 #include "guido/infrastructure/postgres_catalog_repository.h"
@@ -51,12 +50,6 @@ namespace {
 int main() {
   const auto environment = environment_or("GUIDO_ENV", "development");
   const auto database_url = environment_or("GUIDO_DATABASE_URL", "");
-  const auto supabase_url = environment_or("GUIDO_SUPABASE_URL", "");
-  // A variável antiga é aceita apenas para facilitar a migração de ambientes
-  // existentes; novos projetos devem fornecer a chave publishable atual.
-  const auto legacy_anon_key = environment_or("GUIDO_SUPABASE_ANON_KEY", "");
-  const auto supabase_publishable_key =
-      environment_or("GUIDO_SUPABASE_PUBLISHABLE_KEY", legacy_anon_key);
   guido::domain::CatalogRepositoryPtr repository;
   drogon::orm::DbClientPtr database_client;
   std::string repository_name;
@@ -79,12 +72,9 @@ int main() {
   const auto service = std::make_shared<const guido::application::CatalogService>(repository);
   std::shared_ptr<const guido::auth::AuthGateway> auth_gateway;
   std::shared_ptr<const guido::progress::ProgressService> progress_service;
-  // A sincronização remota só é habilitada quando banco e Supabase Auth estão
-  // disponíveis juntos. A chave usada aqui é pública; service role nunca é
-  // necessária nem aceita pelo frontend.
-  if (database_client && !supabase_url.empty() && !supabase_publishable_key.empty()) {
-    auth_gateway = std::make_shared<const guido::auth::SupabaseAuthGateway>(supabase_url,
-                                                                           supabase_publishable_key);
+  // Next.js owns authentication. This historical C++ service remains optional
+  // and no longer contacts an external authentication provider.
+  if (database_client) {
     const auto progress_repository =
         std::make_shared<const guido::progress::PostgresProgressRepository>(
             database_client, environment != "production");
@@ -92,7 +82,7 @@ int main() {
         std::make_shared<const guido::progress::ProgressService>(progress_repository);
   } else if (environment == "production") {
     throw std::runtime_error(
-        "Production requires PostgreSQL and Supabase Auth configuration");
+        "Production requires PostgreSQL configuration");
   }
 
   const guido::http::ApiController controller{service, repository_name, auth_gateway,

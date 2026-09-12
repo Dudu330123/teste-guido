@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { applications } from "@/data/applications";
 import { GuidePreviewWorkspace } from "@/features/admin/guide-preview-workspace";
 import { GuideUploadContent } from "@/features/admin/guide-upload-content";
+import { getSuperadminAccess } from "@/lib/auth/admin";
 
 export const metadata: Metadata = { title: "Criar e editar guias" };
 
@@ -15,6 +17,7 @@ const applicationOptions = applications
  * alternar entre duas páginas durante a mesma tarefa editorial.
  */
 export default async function GuideCreationPreviewPage() {
+  if (!(await getSuperadminAccess())) notFound();
   return (
     <main className="guido-home internal-page min-h-screen">
       <SiteHeader showAdmin={false} activePage="guides" />
