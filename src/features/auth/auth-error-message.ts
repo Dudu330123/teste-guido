@@ -4,7 +4,7 @@ interface AuthErrorLike {
 }
 
 /**
- * Traduz somente códigos públicos e acionáveis do Auth Guido. A mensagem não
+ * Traduz somente códigos públicos e acionáveis do Supabase Auth. A mensagem não
  * confirma se uma conta existe, evitando facilitar enumeração de usuários.
  */
 export function getSignupErrorMessage(error: AuthErrorLike): string {

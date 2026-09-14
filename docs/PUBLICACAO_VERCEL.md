@@ -1,32 +1,20 @@
 # Publicação na Vercel
 
-## Estado atual
+O repositório oficial é `castroo00/guido`, a produção usa a branch `main` e a URL atual é `https://guido-orpin.vercel.app`.
 
-O projeto `c-teste/guido` executa o monólito Next.js na Vercel. A URL de produção
-é `https://guido-orpin.vercel.app`. PostgreSQL, Auth Guido, email e Storage são
-configurados como serviços independentes; nenhum segredo administrativo é enviado ao frontend.
+## Variáveis públicas obrigatórias
 
-## Variáveis
+Configure em produção e preview:
 
-Produção e previews precisam de `DATABASE_URL`, `AUTH_SESSION_SECRET`,
-`AUTH_BASE_URL`, `EMAIL_FROM` e configuração de Storage. Google OAuth usa
-`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` e `GOOGLE_REDIRECT_URI` quando ativado.
-Nunca cadastrar senha do banco, client secret ou token administrativo no frontend.
+```text
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+```
 
-## GitHub
+Essas variáveis identificam o projeto e usam a chave pública protegida por RLS. Nunca configure `service_role`, `sb_secret_...`, senha do banco ou segredo OAuth como variável `NEXT_PUBLIC_*`.
 
-O repositório oficial é `castroo00/guido` e a branch de produção é `main`.
-Depois que o proprietário conectar sua identidade GitHub à conta Vercel, o
-projeto deve ser associado ao repositório para deploy automático. Alterações em
-branches geram previews; somente versões validadas devem chegar à `main`.
+## Autenticação social
 
-## URLs de autenticação
+Os Client IDs e secrets de Google e Apple ficam no painel do Supabase. Em **Authentication > URL Configuration**, permita `https://guido-orpin.vercel.app/auth/callback`. A URL cadastrada no provedor social é a callback do próprio Supabase (`https://SEU-PROJECT-REF.supabase.co/auth/v1/callback`).
 
-Configure `AUTH_BASE_URL` com a URL pública. Se Google OAuth estiver ativo,
-cadastre essa URL mais `/api/auth/google/callback` no Google Cloud Console.
-
-## Empacotamento
-
-`.vercelignore` exclui o backend C++ congelado e artefatos locais. Esses arquivos
-não participam do Next.js e aumentavam o primeiro upload de aproximadamente
-140 KB para 290 MB sem qualquer benefício de execução.
+Branches geram previews e `main` gera produção pela integração Git. Cada domínio de preview usado para testar login precisa estar autorizado nas Redirect URLs do Supabase.

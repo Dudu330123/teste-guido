@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseConfig } from "@/lib/validation/env";
 
 interface SessionNavigationProps {
   loginLabel?: string;
@@ -13,8 +15,8 @@ interface SessionNavigationProps {
 
 /** Limita metadados controlados pelo usuário antes de usá-los na navegação. */
 export function getSessionDisplayName(metadata: unknown) {
-  if (!metadata || typeof metadata !== "object" || !("name" in metadata)) return null;
-  const name = Reflect.get(metadata, "name");
+  if (!metadata || typeof metadata !== "object") return null;
+  const name = Reflect.get(metadata, "name") ?? Reflect.get(metadata, "full_name");
   if (typeof name !== "string") return null;
   const normalized = name.trim().replace(/\s+/g, " ");
   return normalized ? normalized.slice(0, 60) : null;
@@ -28,19 +30,22 @@ export function SessionNavigation({
 }: SessionNavigationProps) {
   const [authenticated, setAuthenticated] = useState(false);
   const [displayName, setDisplayName] = useState<string | null>(null);
-  const [ready, setReady] = useState(false);
+  const [ready, setReady] = useState(() => !getSupabaseConfig().configured);
 
   useEffect(() => {
-    void fetch("/api/auth/session", { cache: "no-store" }).then(async (response) => {
-      const body = await response.json() as { data?: { user?: { displayName?: string } | null } };
-      const user = body.data?.user;
-      setAuthenticated(Boolean(user));
-      setDisplayName(user?.displayName ? getSessionDisplayName({ name: user.displayName }) : null);
-      setReady(true);
-    }).catch(() => {
-      setAuthenticated(false);
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) return;
+    void supabase.auth.getUser().then(({ data }) => {
+      setAuthenticated(Boolean(data.user));
+      setDisplayName(getSessionDisplayName(data.user?.user_metadata));
       setReady(true);
     });
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthenticated(Boolean(session?.user));
+      setDisplayName(getSessionDisplayName(session?.user.user_metadata));
+      setReady(true);
+    });
+    return () => data.subscription.unsubscribe();
   }, []);
 
   if (!ready || !authenticated) {
@@ -116,7 +121,8 @@ function AuthenticatedNavigation({
   }, [menuOpen]);
 
   const signOut = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    const supabase = getSupabaseBrowserClient();
+    if (supabase) await supabase.auth.signOut();
     setMenuOpen(false);
     onSignedOut();
     router.push("/");

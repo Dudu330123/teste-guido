@@ -6,7 +6,7 @@ vi.mock("@/features/theme/home-toolbar", () => ({
   HomeToolbar: () => <header aria-label="Navegação" />,
 }));
 
-vi.mock("@/lib/auth/admin", () => ({
+vi.mock("@/lib/supabase/admin", () => ({
   getSuperadminAccess: vi.fn().mockResolvedValue(false),
 }));
 

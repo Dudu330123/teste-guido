@@ -6,20 +6,29 @@ import { SessionNavigation } from "./session-navigation";
 const mocks = vi.hoisted(() => ({
   push: vi.fn(),
   refresh: vi.fn(),
+  signOut: vi.fn(),
+  unsubscribe: vi.fn(),
 }));
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mocks.push, refresh: mocks.refresh }),
 }));
 
+vi.mock("@/lib/supabase/client", () => ({
+  getSupabaseBrowserClient: () => ({
+    auth: {
+      getUser: async () => ({ data: { user: { user_metadata: { name: "Maria da Silva" } } } }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: mocks.unsubscribe } } }),
+      signOut: mocks.signOut,
+    },
+  }),
+}));
+
 describe("menu responsivo da conta", () => {
   beforeEach(() => {
     mocks.push.mockClear();
     mocks.refresh.mockClear();
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ data: { user: { displayName: "Maria da Silva" } } }),
-    }));
+    mocks.signOut.mockResolvedValue({ error: null });
   });
 
   afterEach(() => vi.unstubAllGlobals());

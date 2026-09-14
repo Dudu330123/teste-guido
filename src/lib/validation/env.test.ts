@@ -1,37 +1,40 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { getRuntimeConfig } from "@/lib/validation/env";
+import { getSupabaseConfig } from "@/lib/validation/env";
 
-const originalDatabaseUrl = process.env.DATABASE_URL;
-const originalGoogleClientId = process.env.GOOGLE_CLIENT_ID;
-const originalGoogleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
-const originalGoogleRedirectUri = process.env.GOOGLE_REDIRECT_URI;
+const originalUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const originalPublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+const originalAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-function restore(name: string, value: string | undefined) {
+function restoreEnvironment(name: string, value: string | undefined) {
   if (value === undefined) delete process.env[name];
   else process.env[name] = value;
 }
 
 afterEach(() => {
-  restore("DATABASE_URL", originalDatabaseUrl);
-  restore("GOOGLE_CLIENT_ID", originalGoogleClientId);
-  restore("GOOGLE_CLIENT_SECRET", originalGoogleClientSecret);
-  restore("GOOGLE_REDIRECT_URI", originalGoogleRedirectUri);
+  restoreEnvironment("NEXT_PUBLIC_SUPABASE_URL", originalUrl);
+  restoreEnvironment("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", originalPublishableKey);
+  restoreEnvironment("NEXT_PUBLIC_SUPABASE_ANON_KEY", originalAnonKey);
 });
 
-describe("getRuntimeConfig", () => {
-  it("detects database and complete Google configuration", () => {
-    process.env.DATABASE_URL = "postgresql://localhost/guido";
-    process.env.GOOGLE_CLIENT_ID = "client";
-    process.env.GOOGLE_CLIENT_SECRET = "secret";
-    process.env.GOOGLE_REDIRECT_URI = "http://localhost:3000/api/auth/google/callback";
-    expect(getRuntimeConfig()).toEqual({ databaseConfigured: true, googleConfigured: true });
+describe("getSupabaseConfig", () => {
+  it("prefere a chave publishable atual", () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://guido.supabase.co";
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_test";
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "legacy-anon";
+    expect(getSupabaseConfig()).toEqual({ configured: true, url: "https://guido.supabase.co", publishableKey: "sb_publishable_test" });
   });
 
-  it("keeps Google optional", () => {
-    delete process.env.DATABASE_URL;
-    delete process.env.GOOGLE_CLIENT_ID;
-    delete process.env.GOOGLE_CLIENT_SECRET;
-    delete process.env.GOOGLE_REDIRECT_URI;
-    expect(getRuntimeConfig()).toEqual({ databaseConfigured: false, googleConfigured: false });
+  it("mantém compatibilidade com a chave anon antiga", () => {
+    process.env.NEXT_PUBLIC_SUPABASE_URL = "https://guido.supabase.co";
+    delete process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "legacy-anon";
+    expect(getSupabaseConfig()).toEqual({ configured: true, url: "https://guido.supabase.co", publishableKey: "legacy-anon" });
+  });
+
+  it("mantém o site utilizável sem credenciais", () => {
+    delete process.env.NEXT_PUBLIC_SUPABASE_URL;
+    delete process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+    delete process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    expect(getSupabaseConfig()).toEqual({ configured: false, message: "A autenticação ainda não foi configurada neste ambiente." });
   });
 });

@@ -12,7 +12,7 @@ function safePath(bucket: string, key: string) {
 }
 
 function signingSecret() {
-  return process.env.STORAGE_SIGNING_SECRET || process.env.AUTH_SESSION_SECRET || "local-storage-development-secret";
+  return process.env.STORAGE_SIGNING_SECRET || "local-storage-development-secret";
 }
 
 function signature(bucket: string, key: string, expires: string) {

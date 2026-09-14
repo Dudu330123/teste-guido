@@ -1,22 +1,20 @@
 # Guido
 
-O Guido é uma plataforma de inclusão digital para pessoas idosas e quem tem pouca familiaridade com tecnologia. O projeto usa Next.js, PostgreSQL e serviços próprios de autenticação e mídia para entregar catálogo, guias e progresso sem depender do projeto Supabase de terceiros.
+O Guido é uma plataforma de inclusão digital para pessoas idosas e quem tem pouca familiaridade com tecnologia. O projeto usa Next.js e Supabase para entregar catálogo, guias, progresso e autenticação.
 
 > **Aviso:** o guia financeiro é fictício, não oficial e pendente de validação humana. O Guido não acessa bancos, não coleta dados bancários e não realiza nem confirma pagamentos.
 
 ## Stack
 
 - Next.js App Router, React, TypeScript estrito e Tailwind CSS;
-- PostgreSQL independente;
-- autenticação Guido com sessões próprias;
-- armazenamento local/S3 compatível;
+- PostgreSQL, Auth e Storage pelo Supabase;
 - Zod para validação nas fronteiras do frontend;
 - Vitest e Testing Library.
 
 ## Requisitos
 
 - Node.js 20.9 ou superior e npm 10 ou superior;
-- PostgreSQL local configurado por `DATABASE_URL`.
+- um projeto Supabase para autenticação, progresso e administração.
 
 ## Instalação
 
@@ -25,7 +23,7 @@ npm install
 cp .env.example .env.local
 ```
 
-O catálogo fictício continua disponível sem banco. Para criar contas, progresso remoto e administração, configure PostgreSQL e execute `npm run db:migrate`. Sem credenciais Google, login por e-mail e senha continua disponível.
+O catálogo fictício continua disponível sem credenciais. Para contas, progresso remoto e administração, configure as variáveis públicas do Supabase. Google e Apple são habilitados no painel do Supabase; a pessoa entra com a conta que já possui e não precisa conhecer nem acessar o Supabase.
 
 ## Execução local
 
@@ -40,8 +38,8 @@ Abra `http://localhost:3000`.
 Frontend (`.env.local`):
 
 ```text
-DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/guido
-AUTH_SESSION_SECRET=replace-with-at-least-32-random-characters
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 ```
 
 Use a chave pública `sb_publishable_...`. Nunca use
@@ -64,7 +62,7 @@ npm run build
 
 ## Banco de dados
 
-Migration inicial independente está em `db/migrations/001_independent_foundation.sql` e é executada por `npm run db:migrate`. `supabase/` permanece somente como histórico; nenhum dado do antigo projeto é acessado ou migrado nesta etapa.
+As migrations versionadas ficam em `supabase/migrations`. Alterações de schema devem ser revisadas antes de execução e nunca devem usar chave administrativa no navegador.
 
 ## Estado atual e limitações
 
@@ -74,7 +72,7 @@ Migration inicial independente está em `db/migrations/001_independent_foundatio
 - somente “Pagar um boleto” é navegável e usa telas fictícias;
 - conteúdo de WhatsApp, Gov.br e instituições financeiras permanece em preparação;
 - progresso fica local para visitantes e sincroniza com PostgreSQL para sessões Guido válidas;
-- autenticação usa sessões Guido e o painel `/admin` exige vínculo ativo em `team_members`;
+- autenticação usa Supabase Auth e o painel `/admin` exige vínculo ativo em `team_members`;
 - qualquer visitante pode publicar prints imediatamente em `/enviar-print`, mesmo sem login; somente `superadmin` acessa `/admin` e pode removê-los;
 - imagens públicas ficam no adaptador de Storage local/S3 e substituem somente a tela do passo; instruções continuam controladas pelo guia;
 - não há OCR, integração bancária ou offline completo.
@@ -83,7 +81,7 @@ Consulte [arquitetura](docs/ARQUITETURA.md), [API](docs/API.md), [banco](docs/DA
 
 ## Publicação do frontend
 
-O frontend e seus Route Handlers podem ser publicados na Vercel; PostgreSQL, email e Storage são configurados separadamente. Consulte [autenticação independente](docs/INDEPENDENT_AUTH.md) e [Storage](docs/STORAGE.md).
+O frontend e seus Route Handlers podem ser publicados na Vercel. Consulte [Supabase](docs/SUPABASE.md) e [publicação na Vercel](docs/PUBLICACAO_VERCEL.md).
 O Netlify permanece apenas como publicação anterior durante a transição.
 
 O diretório `backend/` contém a implementação C++ anterior, congelada apenas como referência durante a migração. Ela não participa mais do build, da CI ou da execução do Guido.

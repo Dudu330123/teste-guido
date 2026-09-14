@@ -2,31 +2,23 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "react";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { loginSchema } from "@/lib/validation/auth";
 import { FormMessage } from "./form-message";
+import { SocialAuthButtons } from "./social-auth-buttons";
 
-type LoginResponse = {
-  error?: {
-    code?: string;
-    message?: string;
-  };
-};
-
-function getLoginErrorMessage(code: string | undefined, serverMessage: string | undefined, status: number) {
-  if (code === "email_not_verified") {
+function getLoginErrorMessage(code: string | undefined, status: number | undefined) {
+  if (code === "email_not_confirmed") {
     return "Seu e-mail ainda não foi confirmado. Confira sua caixa de entrada e a pasta de spam. Se não encontrar a mensagem, use “Esqueci minha senha” abaixo para receber novas instruções.";
   }
-  if (code === "google_not_configured") {
-    return "O login com Google está temporariamente indisponível. Entre com seu e-mail e senha ou tente novamente mais tarde.";
+  if (status === 429 || code === "over_request_rate_limit") {
+    return "Muitas tentativas em pouco tempo. Aguarde alguns minutos e tente novamente.";
   }
-  if (code?.startsWith("google_") || code === "auth_not_configured") {
-    return "Não foi possível concluir o login com Google. Tente novamente ou entre com seu e-mail e senha.";
-  }
-  if (status >= 500) {
+  if (status && status >= 500) {
     return "O Guido está temporariamente indisponível. Tente novamente em alguns instantes.";
   }
-  return serverMessage ?? "Não foi possível entrar. Confira os dados e tente novamente.";
+  return "Não foi possível entrar. Confira o e-mail e a senha e tente novamente.";
 }
 
 function getLoginQueryMessage(errorCode: string | null) {
@@ -55,7 +47,6 @@ export function LoginForm() {
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
   const [rateLimited, setRateLimited] = useState(false);
   const [canRetry, setCanRetry] = useState(false);
   const [email, setEmail] = useState("");
@@ -70,7 +61,6 @@ export function LoginForm() {
   const passwordInputRef = useRef<HTMLInputElement>(null);
   const globalMessageRef = useRef<HTMLParagraphElement>(null);
   const rateLimitRef = useRef<HTMLDivElement>(null);
-  const googleTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     emailInputRef.current?.focus();
@@ -104,12 +94,6 @@ export function LoginForm() {
     const target = rateLimited ? rateLimitRef.current : globalMessageRef.current;
     target?.focus();
   }, [focusGlobalError, message, rateLimited]);
-
-  useEffect(() => {
-    return () => {
-      if (googleTimeoutRef.current !== null) window.clearTimeout(googleTimeoutRef.current);
-    };
-  }, []);
 
   const validateEmail = (value: string) => {
     const result = loginSchema.shape.email.safeParse(value);
@@ -153,21 +137,6 @@ export function LoginForm() {
     setFieldErrors((current) => ({ ...current, password: validatePassword(password) }));
   };
 
-  const handleGoogleLogin = (event: MouseEvent<HTMLAnchorElement>) => {
-    if (googleLoading || submitting) {
-      event.preventDefault();
-      return;
-    }
-    setGoogleLoading(true);
-    if (googleTimeoutRef.current !== null) window.clearTimeout(googleTimeoutRef.current);
-    googleTimeoutRef.current = window.setTimeout(() => {
-      setGoogleLoading(false);
-      setMessage("Não foi possível abrir o login com Google. Tente novamente ou entre com seu e-mail e senha.");
-      setSuccess(false);
-      setFocusGlobalError(true);
-    }, 8_000);
-  };
-
   const handleRetry = () => {
     setCanRetry(false);
     formRef.current?.requestSubmit();
@@ -175,7 +144,7 @@ export function LoginForm() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (submitting || googleLoading) return;
+    if (submitting) return;
 
     const parsed = loginSchema.safeParse({ email, password });
     if (!parsed.success) {
@@ -201,56 +170,33 @@ export function LoginForm() {
     setCanRetry(false);
     setSubmitting(true);
 
-    const controller = new AbortController();
-    const timeout = window.setTimeout(() => controller.abort(), 10_000);
-
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(parsed.data),
-        signal: controller.signal,
-      });
-
-      let body: LoginResponse = {};
-      const contentType = response.headers.get("content-type") ?? "";
-      let validJson = false;
-      if (contentType.includes("application/json")) {
-        try {
-          const parsedBody: unknown = await response.json();
-          if (parsedBody && typeof parsedBody === "object") {
-            body = parsedBody as LoginResponse;
-            validJson = true;
-          }
-        } catch {
-          validJson = false;
-        }
-      }
-
-      const wasRateLimited = response.status === 429;
+      const supabase = getSupabaseBrowserClient();
+      if (!supabase) throw new Error("supabase_not_configured");
+      const { error } = await supabase.auth.signInWithPassword(parsed.data);
+      const wasRateLimited = error?.status === 429 || error?.code === "over_request_rate_limit";
       setRateLimited(wasRateLimited);
-      setSuccess(response.ok);
+      setSuccess(!error);
 
-      if (response.ok) {
+      if (!error) {
         setMessage("✓ Entrada realizada com sucesso!");
         router.push("/conta");
         router.refresh();
         return;
       }
 
-      setCanRetry(!wasRateLimited && (response.status >= 500 || !validJson));
+      setCanRetry(!wasRateLimited && Boolean(error.status && error.status >= 500));
       setFocusGlobalError(true);
-      setMessage(wasRateLimited ? "" : getLoginErrorMessage(body.error?.code, body.error?.message, response.status));
+      setMessage(wasRateLimited ? "" : getLoginErrorMessage(error.code, error.status));
     } catch (error) {
       setSuccess(false);
       setRateLimited(false);
       setCanRetry(true);
       setFocusGlobalError(true);
-      setMessage(error instanceof DOMException && error.name === "AbortError"
-        ? "O login demorou mais que o esperado. Verifique sua conexão e tente novamente."
+      setMessage(error instanceof Error && error.message === "supabase_not_configured"
+        ? "O login ainda não está configurado neste ambiente."
         : "Não foi possível conectar ao Guido. Verifique sua conexão e tente novamente.");
     } finally {
-      window.clearTimeout(timeout);
       setSubmitting(false);
     }
   };
@@ -261,7 +207,7 @@ export function LoginForm() {
       className="login-form mt-7"
       noValidate
       onSubmit={handleSubmit}
-      aria-busy={submitting || googleLoading}
+      aria-busy={submitting}
       aria-describedby={rateLimited ? "login-rate-limit" : message && !success ? "login-form-message" : undefined}
     >
       <label htmlFor="email" className="block font-bold mb-2">E-mail</label>
@@ -320,7 +266,7 @@ export function LoginForm() {
 
       <button
         type="submit"
-        disabled={submitting || googleLoading}
+        disabled={submitting}
         className="primary-action mt-7 min-h-14 w-full px-5 py-3 text-xl font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg active:scale-[0.98] transition-all"
       >
         {submitting ? "Entrando…" : "Entrar"}
@@ -330,30 +276,7 @@ export function LoginForm() {
         <span>ou</span>
       </div>
 
-      <a
-        href="/api/auth/google/start?next=%2Fconta"
-        aria-busy={googleLoading || submitting}
-        aria-disabled={googleLoading || submitting}
-        onClick={handleGoogleLogin}
-        className={`secondary-action login-google-action flex min-h-14 w-full items-center justify-center gap-3 px-5 py-3 text-lg font-bold ${googleLoading || submitting ? "pointer-events-none cursor-wait opacity-60" : ""}`}
-      >
-        {googleLoading ? (
-          <span className="flex items-center justify-center gap-2">
-            <span aria-hidden="true" className="login-spinner h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-            Abrindo Google…
-          </span>
-        ) : (
-          <>
-            <svg aria-hidden="true" className="login-google-icon h-5 w-5" viewBox="0 0 24 24" fill="none">
-              <path d="M21.805 12.23c0-.79-.064-1.55-.2-2.28H12v4.31h5.5a4.7 4.7 0 0 1-2.04 3.08v2.56h3.3c1.93-1.78 3.045-4.4 3.045-7.67Z" fill="#4285F4" />
-              <path d="M12 22c2.76 0 5.08-.91 6.76-2.47l-3.3-2.56c-.91.61-2.07.97-3.46.97-2.66 0-4.92-1.8-5.73-4.22H2.86v2.64A10.2 10.2 0 0 0 12 22Z" fill="#34A853" />
-              <path d="M6.27 13.72A6.13 6.13 0 0 1 5.95 12c0-.6.11-1.19.32-1.72V7.64H2.86A10 10 0 0 0 1.8 12c0 1.61.39 3.13 1.06 4.36l3.41-2.64Z" fill="#FBBC05" />
-              <path d="M12 6.06c1.5 0 2.84.52 3.9 1.54l2.92-2.92C17.08 3.07 14.76 2 12 2a10.2 10.2 0 0 0-9.14 5.64l3.41 2.64C7.08 7.86 9.34 6.06 12 6.06Z" fill="#EA4335" />
-            </svg>
-            Continuar com Google
-          </>
-        )}
-      </a>
+      <SocialAuthButtons disabled={submitting} />
 
       {rateLimited && (
         <div id="login-rate-limit" ref={rateLimitRef} className="login-rate-limit" role="alert" aria-live="assertive" aria-atomic="true" tabIndex={-1}>

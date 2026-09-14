@@ -2,16 +2,16 @@
 
 ## Visão geral
 
-O Guido é um monólito modular Next.js com autenticação própria, PostgreSQL independente e adaptador de Storage local/S3. O C++ permanece congelado como histórico.
+O Guido é um monólito modular Next.js integrado ao PostgreSQL, Auth e Storage do Supabase. O C++ permanece congelado como histórico.
 
 ```text
 Navegador
-   │ cookies HttpOnly
+   │ cookies de sessão + chave pública protegida por RLS
    ▼
 Next.js / Route Handlers
-   ├── Auth Guido + autorização server-side
-   ├── PostgreSQL via adapter
-   └── Storage local/S3 via adapter
+   ├── Supabase Auth + autorização server-side
+   ├── PostgreSQL via Supabase
+   └── Supabase Storage
 ```
 
 O Next.js apresenta interface, autentica sessões e aplica autorização server-side. PostgreSQL preserva integridade e relações; Storage guarda imagens e áudios. Nenhum token de autenticação fica em localStorage.
@@ -20,10 +20,9 @@ O Next.js apresenta interface, autentica sessões e aplica autorização server-
 
 - `src/app`: rotas, Route Handlers, layout, metadados e manifesto;
 - `src/features`: pesquisa, guias, progresso, histórico, tema e autenticação;
-- `src/lib/auth`: hashing, sessões, email, OAuth e autorização;
+- `src/lib/supabase`: clientes browser/servidor, renovação de sessão e autorização;
 - `src/lib/db`: pool PostgreSQL e consultas da aplicação;
 - `src/lib/storage`: adaptador local com interface compatível com S3;
-- `src/lib/supabase`: nomes históricos de módulos de catálogo, sem SDK Supabase;
 - `src/data`: fallback temporário e fonte reprodutível da migração inicial; o banco é a fonte principal em execução;
 - `supabase/migrations`: schema e políticas RLS versionados, aplicados manualmente;
 - `supabase/seed.sql`: somente dados demonstrativos sem informações pessoais.
@@ -78,7 +77,7 @@ publicados pelo frontend.
 
 ## Fluxo autenticado
 
-Route Handlers validam hash de sessão e expiração antes de ler ou gravar progresso. A autorização de usuário, equipe e superadmin acontece explicitamente no servidor. Visitantes continuam com progresso local sem dados sensíveis.
+Route Handlers validam a identidade do Supabase Auth antes de ler ou gravar progresso. A autorização de usuário, equipe e superadmin acontece explicitamente no servidor e é reforçada por RLS. Visitantes continuam com progresso local sem dados sensíveis.
 
 ## Fluxo de conteúdo
 

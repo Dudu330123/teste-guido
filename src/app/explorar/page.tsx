@@ -13,7 +13,7 @@ import {
 } from "@/features/explore/explore-content";
 import { ExploreGuideCard } from "@/features/explore/explore-guide-card";
 import { HomeToolbar } from "@/features/theme/home-toolbar";
-import { getSuperadminAccess } from "@/lib/auth/admin";
+import { getSuperadminAccess } from "@/lib/supabase/admin";
 import {
   getCatalogFromSupabase,
   getGuidePopularityFromSupabase,

@@ -6,7 +6,7 @@ automática e suporta App Router, SSR, Route Handlers e Middleware.
 
 ## Escopo da primeira publicação
 
-A URL pública executa o Next.js e seus Route Handlers. Login, sincronização e conteúdo PostgreSQL são ativados pelas variáveis independentes Guido; sem banco, o frontend usa somente o fallback demonstrativo identificado como fictício.
+A URL pública executa o Next.js e seus Route Handlers. Login, sincronização e conteúdo remoto usam o mesmo projeto Supabase da produção; sem configuração, o frontend usa somente o fallback demonstrativo.
 
 Projeto Netlify atual:
 
@@ -29,20 +29,16 @@ No painel do Netlify, as variáveis devem ser cadastradas em **Project
 configuration > Environment variables**, nunca gravadas no repositório:
 
 ```text
-DATABASE_URL=
-AUTH_SESSION_SECRET=
-AUTH_BASE_URL=https://seu-dominio.example
-EMAIL_FROM=Guido <no-reply@seu-dominio.example>
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 ```
 
-Google OAuth e SMTP são opcionais, mas exigem as variáveis descritas em
-`docs/INDEPENDENT_AUTH.md`. Nunca configure no código ou no navegador senha
-PostgreSQL, client secret ou token administrativo.
+Google e Apple são configurados em Supabase Auth. Nunca configure no código ou
+no navegador senha PostgreSQL, client secret, `service_role` ou token administrativo.
 
 ## Autenticação
 
-Depois que existir uma URL pública definitiva, use-a em `AUTH_BASE_URL` e nas
-URLs autorizadas do Google OAuth, se o provedor estiver ativo.
+Adicione a URL pública e `/auth/callback` às Redirect URLs do Supabase.
 
 ## Atualizações
 

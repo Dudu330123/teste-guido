@@ -4,13 +4,22 @@ const scriptPolicy = process.env.NODE_ENV === "development"
   ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
   : "script-src 'self' 'unsafe-inline'";
 
+function getSupabaseOrigins() {
+  try {
+    const origin = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").origin;
+    return `${origin} ${origin.replace(/^http/, "ws")}`;
+  } catch {
+    return "";
+  }
+}
+
 const contentSecurityPolicy = [
   "default-src 'self'",
   scriptPolicy,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self'",
+  `connect-src 'self' ${getSupabaseOrigins()}`.trim(),
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",

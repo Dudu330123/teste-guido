@@ -17,10 +17,9 @@
     "node": "22.x"
   },
   "dependencies": {
-    "argon2": "^0.45.1",
-    "jose": "^6.2.12",
-    "next": "^16.2.12",
-    "nodemailer": "^10.0.8",
+    "@supabase/ssr": "^0.12.4",
+    "@supabase/supabase-js": "^2.111.0",
+    "next": "^16.3.3",
     "pg": "^8.23.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
@@ -32,7 +31,6 @@
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
     "@types/node": "^26.1.2",
-    "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.23.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
@@ -49,6 +47,6 @@
     "minimatch": "10.2.6",
     "nanoid": "3.3.18",
     "postcss": "$postcss",
-    "sharp": "0.35.3"
+    "sharp": "0.35.4"
   }
 }
