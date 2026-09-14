@@ -6,12 +6,12 @@ vi.mock("@/features/theme/home-toolbar", () => ({
   HomeToolbar: () => <header aria-label="Navegação" />,
 }));
 
-vi.mock("@/lib/supabase/admin", () => ({
+vi.mock("@/lib/auth/admin", () => ({
   getSuperadminAccess: vi.fn().mockResolvedValue(false),
 }));
 
-vi.mock("@/lib/supabase/catalog", async () => {
-  const actual = await vi.importActual<typeof import("@/lib/supabase/catalog")>("@/lib/supabase/catalog");
+vi.mock("@/lib/catalog", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/catalog")>("@/lib/catalog");
   return {
     ...actual,
     getCatalogFromSupabase: vi.fn().mockResolvedValue(null),

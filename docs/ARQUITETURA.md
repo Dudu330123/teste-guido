@@ -2,27 +2,28 @@
 
 ## Visão geral
 
-O Guido é um monólito modular Next.js conectado aos serviços gerenciados do Supabase. A mudança substitui a API C++ separada e está registrada no ADR-002.
+O Guido é um monólito modular Next.js com autenticação própria, PostgreSQL independente e adaptador de Storage local/S3. O C++ permanece congelado como histórico.
 
 ```text
 Navegador
-   │
+   │ cookies HttpOnly
    ▼
-Next.js / Vercel
-   │ sessão, consultas e Route Handlers
-   ▼
-Supabase ── Auth
-   ├─────── PostgreSQL + RLS
-   └─────── Storage privado
+Next.js / Route Handlers
+   ├── Auth Guido + autorização server-side
+   ├── PostgreSQL via adapter
+   └── Storage local/S3 via adapter
 ```
 
-O Next.js apresenta a interface e contém somente a coordenação necessária. PostgreSQL preserva integridade e autorização por linha, Storage guarda imagens e áudios e Supabase Auth é a autoridade de identidade. Não existe chave administrativa no navegador.
+O Next.js apresenta interface, autentica sessões e aplica autorização server-side. PostgreSQL preserva integridade e relações; Storage guarda imagens e áudios. Nenhum token de autenticação fica em localStorage.
 
 ## Módulos
 
 - `src/app`: rotas, Route Handlers, layout, metadados e manifesto;
 - `src/features`: pesquisa, guias, progresso, histórico, tema e autenticação;
-- `src/lib/supabase`: clientes, consultas tipadas e validação das respostas;
+- `src/lib/auth`: hashing, sessões, email, OAuth e autorização;
+- `src/lib/db`: pool PostgreSQL e consultas da aplicação;
+- `src/lib/storage`: adaptador local com interface compatível com S3;
+- `src/lib/supabase`: nomes históricos de módulos de catálogo, sem SDK Supabase;
 - `src/data`: fallback temporário e fonte reprodutível da migração inicial; o banco é a fonte principal em execução;
 - `supabase/migrations`: schema e políticas RLS versionados, aplicados manualmente;
 - `supabase/seed.sql`: somente dados demonstrativos sem informações pessoais.
@@ -52,9 +53,7 @@ entram no fluxo público sem revisão separada.
 ### Imagens demonstrativas publicadas por visitantes
 
 O fluxo ativo do painel usa `guide_public_images` e o bucket público
-`guide-public`. Qualquer visitante pode criar ou substituir essas imagens pela
-rota `/enviar-print`, mesmo sem login; somente o `superadmin` acessa `/admin` e pode
-removê-las. A publicação ocorre assim que o upload termina, conforme decisão do produto; o visualizador continua exibindo que
+`guide-public`. Somente o `superadmin` pode criar, substituir ou remover essas imagens pela rota `/enviar-print`. A publicação ocorre assim que o upload termina; o visualizador continua exibindo que
 se trata de demonstração não oficial. Aplicativo, plataforma e ordem do passo
 fazem parte da chave para impedir mistura entre bancos ou celulares.
 
@@ -79,7 +78,7 @@ publicados pelo frontend.
 
 ## Fluxo autenticado
 
-O cookie da sessão é renovado pelo proxy do Next.js. Route Handlers chamam `auth.getUser()` antes de ler ou gravar progresso. As tabelas `profiles`, `user_progress` e `favorites` também usam RLS com `auth.uid()`, fornecendo defesa em profundidade. Visitantes continuam com progresso local sem dados sensíveis.
+Route Handlers validam hash de sessão e expiração antes de ler ou gravar progresso. A autorização de usuário, equipe e superadmin acontece explicitamente no servidor. Visitantes continuam com progresso local sem dados sensíveis.
 
 ## Fluxo de conteúdo
 

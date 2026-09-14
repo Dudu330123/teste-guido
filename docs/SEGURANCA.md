@@ -7,25 +7,25 @@
 - XSS em conteúdo administrativo futuro;
 - sessão expirada, roubo de conta ou autorização inadequada;
 - exposição de dados pessoais em imagens, logs ou uploads;
-- dependências vulneráveis e configuração incorreta do Supabase.
+- dependências vulneráveis e configuração incorreta do runtime independente.
 
 ## Priorização atual
 
 | Risco | Prioridade | Controle atual |
 | --- | --- | --- |
 | Publicar guia financeiro falso ou sem revisão | Crítica | guias continuam `is_demo`; o upload altera somente a imagem e não promove conteúdo a oficial |
-| Usuário acessar progresso de outra pessoa | Alta | identidade vem do Supabase Auth e `user_id` nunca vem do payload; RLS isola por `auth.uid()` |
+| Usuário acessar progresso de outra pessoa | Alta | identidade vem da sessão Guido e `user_id` nunca vem do payload; autorização SQL usa usuário autenticado |
 | SQL injection | Alta | queries C++ parametrizadas e validações de fronteira |
 | Vazamento de token | Alta | Bearer não é logado; proxy server-side; mensagens ocultam detalhes |
 | Print com dado pessoal | Alta | upload exige conta e confirmação explícita, com tipos/dimensões limitados; inspeção automática ainda falta |
 | XSS em conteúdo editorial | Média | React escapa texto, não há HTML arbitrário e CSP está ativa |
 | CSRF | Média | mutação C++ usa Bearer; endpoints baseados em cookies devem continuar restritos ao BFF same-origin |
-| Abuso e brute force | Média | Auth é delegado ao Supabase; rate limiting específico ainda precisa ser configurado antes de produção |
+| Abuso e brute force | Média | rate limiting básico por processo; proteção distribuída ainda precisa ser configurada antes de produção |
 | Supply-chain | Média | CI usa Actions fixadas por commit, lockfile npm, warnings e sanitizers C++ |
 
 ## Dados proibidos
 
-O Guido não deve coletar ou armazenar senha bancária, CPF usado numa operação, valor, beneficiário, linha digitável, código de barras, token, imagem pessoal de boleto ou conteúdo digitado em aplicativo financeiro. Senhas de conta Guido são enviadas diretamente ao Supabase Auth e nunca registradas em logs ou tabelas próprias.
+O Guido não deve coletar ou armazenar senha bancária, CPF usado numa operação, valor, beneficiário, linha digitável, código de barras, token, imagem pessoal de boleto ou conteúdo digitado em aplicativo financeiro. Senhas de conta Guido são verificadas server-side com Argon2id; somente hashes ficam no PostgreSQL e nunca aparecem em logs.
 
 ## Regras para guias financeiros
 
@@ -68,7 +68,9 @@ um print, a referência pública muda imediatamente, mas o objeto anterior pode
 ficar órfão caso a limpeza seja recusada pelo RLS. Uma rotina administrativa de
 retenção e limpeza desses objetos ainda precisa ser implementada.
 
-## Supabase
+## Histórico Supabase
+
+As regras abaixo descrevem o sistema antigo e não são runtime atual. No runtime independente, use cookies de sessão Guido, autorização server-side, hash Argon2id e adaptadores PostgreSQL/Storage.
 
 - somente URL e chave publishable (`sb_publishable_...`) no cliente;
 - nunca expor `service_role`, senha do banco ou token administrativo;

@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { getSupabaseConfig } from "@/lib/validation/env";
 
 interface SessionNavigationProps {
   loginLabel?: string;
@@ -30,25 +28,19 @@ export function SessionNavigation({
 }: SessionNavigationProps) {
   const [authenticated, setAuthenticated] = useState(false);
   const [displayName, setDisplayName] = useState<string | null>(null);
-  const [ready, setReady] = useState(() => !getSupabaseConfig().configured);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) return;
-
-    // getUser consulta o Auth e evita tratar apenas a presença local de um token
-    // como prova de sessão válida. O listener mantém o cabeçalho sincronizado.
-    void supabase.auth.getUser().then(({ data }) => {
-      setAuthenticated(Boolean(data.user));
-      setDisplayName(getSessionDisplayName(data.user?.user_metadata));
+    void fetch("/api/auth/session", { cache: "no-store" }).then(async (response) => {
+      const body = await response.json() as { data?: { user?: { displayName?: string } | null } };
+      const user = body.data?.user;
+      setAuthenticated(Boolean(user));
+      setDisplayName(user?.displayName ? getSessionDisplayName({ name: user.displayName }) : null);
+      setReady(true);
+    }).catch(() => {
+      setAuthenticated(false);
       setReady(true);
     });
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAuthenticated(Boolean(session?.user));
-      setDisplayName(getSessionDisplayName(session?.user.user_metadata));
-      setReady(true);
-    });
-    return () => data.subscription.unsubscribe();
   }, []);
 
   if (!ready || !authenticated) {
@@ -124,9 +116,7 @@ function AuthenticatedNavigation({
   }, [menuOpen]);
 
   const signOut = async () => {
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) return;
-    await supabase.auth.signOut();
+    await fetch("/api/auth/logout", { method: "POST" });
     setMenuOpen(false);
     onSignedOut();
     router.push("/");

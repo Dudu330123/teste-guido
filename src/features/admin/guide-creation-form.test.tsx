@@ -58,7 +58,7 @@ describe("formulário de criação de guias", () => {
 
     expect(fetchMock).not.toHaveBeenCalled();
     expect(await screen.findByText(/Rascunho local validado/)).toBeVisible();
-    expect(screen.getByText(/Nada foi enviado ao Supabase/)).toBeVisible();
+    expect(screen.getByText(/Nada foi enviado ao servidor/)).toBeVisible();
   }, 15000);
 
   it("permite validar localmente um aplicativo novo sem chamar a API", async () => {
@@ -92,7 +92,7 @@ describe("formulário de criação de guias", () => {
       "accept",
       "image/png,image/jpeg,image/webp",
     );
-    expect(screen.getByText(/não é enviada ao Supabase/)).toBeVisible();
+    expect(screen.getByText(/não é enviada ao servidor/)).toBeVisible();
   });
 
   it("oferece upload direto do print sem pedir uma descrição duplicada", () => {

@@ -2,7 +2,7 @@ import { actions } from "@/data/actions";
 import { getAdminScriptSteps } from "@/data/admin-guide-scripts";
 import { financialApplications, isBankCategory } from "@/data/applications";
 import { getGuide, getStepsForGuide, tasks } from "@/data/guides";
-import { getCatalogFromSupabase, getUploadGuidesFromSupabase } from "@/lib/supabase/catalog";
+import { getCatalogFromSupabase, getUploadGuidesFromSupabase } from "@/lib/catalog";
 import { GuideAdmin, type AdminGuideOption } from "./guide-admin";
 
 interface GuideUploadContentProps {

@@ -565,7 +565,7 @@ export function GuideCreationForm({
         stepCount: previewGuide.data.steps.length,
         applicationName,
       });
-      setMessage("Rascunho local validado. Ele será salvo somente neste navegador e nada será enviado ao Supabase.");
+      setMessage("Rascunho local validado. Ele será salvo somente neste navegador e nada será enviado ao servidor.");
       return;
     }
 
@@ -643,7 +643,7 @@ export function GuideCreationForm({
             {previewOnly
               ? isEditing
                 ? "Atualize o texto e confira os prints. As mudanças ficam somente neste navegador."
-                : "Monte o roteiro e confira os prints antes de publicar no Supabase."
+                : "Monte o roteiro e confira os prints antes de publicar no servidor."
               : isEditing
                 ? "Atualize o conteúdo com segurança. O guia continua como rascunho até a revisão humana."
                 : "Monte o roteiro em poucos passos. O guia começa como rascunho para revisão humana."}
@@ -791,7 +791,7 @@ export function GuideCreationForm({
                 </div>
                 <span id="application-logo-help" className="guide-editor-help">
                   Prefira uma imagem quadrada, sem dados pessoais e obtida de fonte oficial.
-                  {previewOnly ? " Nesta prévia, ela fica somente neste navegador e não é enviada ao Supabase." : ""}
+                  {previewOnly ? " Nesta prévia, ela fica somente neste navegador e não é enviada ao servidor." : ""}
                 </span>
                 {newApplicationLogoError && <span className="guide-editor-error" role="alert">{newApplicationLogoError}</span>}
               </div>
@@ -988,7 +988,7 @@ export function GuideCreationForm({
         </div>
         {(submitting || message) && <p role={submitting || createdGuide || previewResult || savedEdit ? "status" : "alert"} aria-live={submitting || createdGuide || previewResult || savedEdit ? "polite" : "assertive"} className={`guide-editor-feedback ${submitting ? "notice-info" : createdGuide || previewResult || savedEdit ? "notice-success" : "notice-danger"}`}>{submitting ? isEditing ? "Salvando alterações…" : "Criando o rascunho…" : message}</p>}
         {createdGuide && <div className="guide-editor-result glass-panel"><p className="font-bold">Rascunho criado: {createdGuide.stepCount} passo(s) nas duas versões.</p><p className="mt-2 text-[var(--muted)]">Slug: <strong>{createdGuide.slug}</strong>. O roteiro ainda não está publicado e nenhum placeholder de imagem foi criado.</p><div className="mt-4 flex flex-wrap gap-3"><Link href="#prints-dos-guias" className="primary-action inline-flex min-h-12 items-center rounded-xl px-4 py-2 font-bold">Adicionar prints ao guia</Link><Link href="/admin" className="secondary-action inline-flex min-h-12 items-center rounded-xl px-4 py-2 font-bold">Voltar ao painel</Link><Link href={`/tarefas/${createdGuide.slug}`} className="secondary-action inline-flex min-h-12 items-center rounded-xl px-4 py-2 font-bold">Abrir prévia</Link></div></div>}
-        {previewResult && <div className="guide-editor-result notice-success" role="status"><p className="font-bold">Rascunho pronto para revisão visual</p><p className="mt-2">{previewResult.stepCount} passo(s) preenchido(s). {previewResult.applicationName ? `Aplicativo: ${previewResult.applicationName}. ` : ""}Slug: <strong>{previewResult.slug}</strong>.</p><p className="mt-2">O roteiro foi salvo somente neste navegador. Nada foi enviado ao Supabase.</p></div>}
+        {previewResult && <div className="guide-editor-result notice-success" role="status"><p className="font-bold">Rascunho pronto para revisão visual</p><p className="mt-2">{previewResult.stepCount} passo(s) preenchido(s). {previewResult.applicationName ? `Aplicativo: ${previewResult.applicationName}. ` : ""}Slug: <strong>{previewResult.slug}</strong>.</p><p className="mt-2">O roteiro foi salvo somente neste navegador. Nada foi enviado ao servidor.</p></div>}
         {savedEdit && <div className="guide-editor-result notice-success" role="status"><p className="font-bold">Rascunho atualizado com sucesso.</p><p className="mt-2">O conteúdo continua em rascunho. Confira os prints antes de qualquer revisão ou publicação.</p><div className="mt-4 flex flex-wrap gap-3"><Link href={savedEdit.reviewHref ?? initialValues?.reviewHref ?? "/admin"} className="primary-action inline-flex min-h-12 items-center rounded-xl px-4 py-2 font-bold">Revisar prints</Link><Link href="/admin" className="secondary-action inline-flex min-h-12 items-center rounded-xl px-4 py-2 font-bold">Voltar ao painel</Link></div></div>}
       </form>
     </div>

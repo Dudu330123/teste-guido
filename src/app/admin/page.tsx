@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { GuideUploadContent } from "@/features/admin/guide-upload-content";
-import { getSuperadminAccess } from "@/lib/supabase/admin";
+import { getSuperadminAccess } from "@/lib/auth/admin";
 
 export const metadata: Metadata = { title: "Administração de guias" };
 

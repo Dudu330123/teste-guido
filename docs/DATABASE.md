@@ -2,11 +2,12 @@
 
 ## Escolha
 
-PostgreSQL atende ao modelo relacional, constraints, transações, busca textual, concorrência e auditoria do Guido. A hospedagem prevista é Supabase, mas o schema evita usar o navegador como camada de autorização administrativa.
+PostgreSQL atende ao modelo relacional, constraints, transações, busca textual, concorrência e auditoria do Guido. A conexão é independente de Supabase e fica atrás do adapter server-side.
 
 ## Entidades implementadas no schema inicial
 
-- `profiles` e `team_members` complementam as identidades de `auth.users`;
+- `users`, `user_identities`, `sessions` e tokens de Auth formam a identidade Guido;
+- `profiles` e `team_members` complementam `users`;
 - `categories`, `applications` e `tutorials` formam o catálogo;
 - `tutorial_search_terms` mantém sinônimos controlados;
 - `guide_versions` separa plataforma e versão;
@@ -17,6 +18,8 @@ PostgreSQL atende ao modelo relacional, constraints, transações, busca textual
 - `audit_logs` registra operações críticas sem conteúdo sensível.
 
 ## Migrations
+
+`db/migrations/001_independent_foundation.sql` cria banco novo para desenvolvimento local. Execute `npm run db:migrate` com `DATABASE_URL`. As migrations em `supabase/migrations` são históricas e não são necessárias para o runtime novo.
 
 - `001_initial_schema.sql`: tipos, tabelas, constraints, índices e gatilhos;
 - `002_row_level_security.sql`: RLS com leitura pública somente de conteúdo publicado e isolamento de dados de usuário.

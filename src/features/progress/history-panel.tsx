@@ -2,16 +2,14 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import type { User } from "@supabase/supabase-js";
+import type { AuthUser } from "@/lib/auth/types";
 import { applications } from "@/data/applications";
 import { guides, tasks } from "@/data/guides";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
-import { getSupabaseConfig } from "@/lib/validation/env";
 import type { UserProgress } from "@/types/progress";
 import { listProgress } from "./progress-storage";
 import { loadRemoteHistory } from "./remote-progress";
 
-type HistoryState = "loading" | "unconfigured" | "signed_out" | "ready";
+type HistoryState = "loading" | "signed_out" | "ready";
 
 interface HistoryItem {
   applicationName: string;
@@ -70,40 +68,29 @@ async function loadAvailableHistory() {
 }
 
 export function HistoryPanel() {
-  const [state, setState] = useState<HistoryState>(() =>
-    getSupabaseConfig().configured ? "loading" : "unconfigured",
-  );
-  const [user, setUser] = useState<User | null>(null);
+  const [state, setState] = useState<HistoryState>("loading");
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [items, setItems] = useState<HistoryItem[]>([]);
 
   useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) return;
-
-    void supabase.auth.getUser().then(async ({ data, error }) => {
-      if (error || !data.user) {
+    void fetch("/api/auth/session", { cache: "no-store" }).then(async (response) => {
+      if (!response.ok) {
         setState("signed_out");
         return;
       }
-
-      setUser(data.user);
+      const body = await response.json() as { data?: { user?: AuthUser | null } };
+      if (!body.data?.user) {
+        setState("signed_out");
+        return;
+      }
+      setUser(body.data.user);
       setItems(await loadAvailableHistory());
       setState("ready");
-    });
+    }).catch(() => setState("signed_out"));
   }, []);
 
   if (state === "loading") {
     return <p role="status" className="glass-panel rounded-3xl p-6 font-semibold">Carregando seu histórico…</p>;
-  }
-
-  if (state === "unconfigured") {
-    return (
-      <section className="glass-panel rounded-3xl p-6 sm:p-8">
-        <h1 className="text-4xl font-bold">Histórico</h1>
-        <p className="mt-4">O histórico da conta será ativado quando a autenticação do Supabase estiver configurada.</p>
-        <Link href="/" className="secondary-action mt-6 inline-flex min-h-12 items-center px-4 py-2 font-bold">Voltar ao início</Link>
-      </section>
-    );
   }
 
   if (state === "signed_out") {
