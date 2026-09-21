@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
-import { getActionBySlug } from "@/data/actions";
+import { getActionBySlug, getActionForTask } from "@/data/actions";
 import { applications } from "@/data/applications";
 import { tasks } from "@/data/guides";
 import { ApplicationLogo } from "@/features/applications/application-logo";
 import { safeReturnPath, withReturnPath } from "@/lib/navigation/return-path";
-import { getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/catalog";
+import { findSharedBankTask, getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/catalog";
 
 interface ActionPageProps {
   params: Promise<{ slug: string }>;
@@ -27,8 +27,8 @@ export default async function ActionPage({ params, searchParams }: ActionPagePro
   const remoteCatalog = await getCatalogFromSupabase();
   const catalog = mergeCatalogWithFallback(remoteCatalog, { applications, tasks });
 
-  const actionTasks = catalog.tasks.filter((task) => task.actionId === action.id);
-  const genericTask = actionTasks.find((task) => task.applicationId === "app-demo-bancos");
+  const actionTasks = catalog.tasks.filter((task) => getActionForTask(task)?.id === action.id);
+  const genericTask = findSharedBankTask(catalog, action.id);
   const applicationIds = [...new Set(actionTasks.map((task) => task.applicationId))];
   const availableApplications = applicationIds
     .map((applicationId) => catalog.applications.find((application) => application.id === applicationId))

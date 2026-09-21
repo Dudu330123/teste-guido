@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { Application, GuideStep, OperatingSystem, Task } from "@/types/content";
 import type { RemoteGuideContent } from "@/lib/api/catalog";
+import { getActionForTask } from "@/data/actions";
 import { isBankCategory } from "@/data/applications";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -285,6 +286,27 @@ export interface SupabaseCatalog {
   tasks: Task[];
 }
 
+/**
+ * Encontra o roteiro bancário compartilhado de uma ação.
+ *
+ * Os bancos possuem registros próprios no catálogo para pesquisa, mas o roteiro
+ * educativo é mantido uma única vez no aplicativo de demonstração. Resolver a
+ * relação pelo slug do aplicativo evita depender dos IDs locais ou do Supabase.
+ */
+export function findSharedBankTask(
+  catalog: SupabaseCatalog,
+  actionId: string,
+) {
+  const sharedApplication = catalog.applications.find(
+    (application) => application.slug === "banco-demonstracao",
+  );
+  if (!sharedApplication) return undefined;
+  return catalog.tasks.find((task) => (
+    task.applicationId === sharedApplication.id
+    && getActionForTask(task)?.id === actionId
+  ));
+}
+
 /** Valida a resposta completa antes que dados remotos cheguem aos componentes. */
 export function parseSupabaseCatalogRows(
   applicationPayload: unknown,
@@ -359,7 +381,15 @@ export function mergeCatalogWithFallback(
     ...task,
     applicationId: replacementIds.get(task.applicationId) ?? task.applicationId,
   }]));
-  remote.tasks.forEach((task) => tasksBySlug.set(task.slug, task));
+  remote.tasks.forEach((task) => {
+    const localTask = tasksBySlug.get(task.slug);
+    tasksBySlug.set(task.slug, {
+      ...task,
+      // A tabela remota ainda não possui action_id. O vínculo editorial local
+      // continua necessário para agrupar Pix, boleto e demais ações bancárias.
+      actionId: task.actionId ?? localTask?.actionId,
+    });
+  });
   return { applications: mergedApplications, tasks: [...tasksBySlug.values()] };
 }
 

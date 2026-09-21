@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
+import { getActionForTask } from "@/data/actions";
 import { applications, isBankCategory } from "@/data/applications";
 import { tasks } from "@/data/guides";
 import { TaskGuideSetup } from "@/features/guides/task-guide-setup";
 import { safeReturnPath, withReturnPath } from "@/lib/navigation/return-path";
-import { getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/catalog";
+import { findSharedBankTask, getCatalogFromSupabase, mergeCatalogWithFallback } from "@/lib/catalog";
 
 interface TaskPageProps {
   params: Promise<{ slug: string }>;
@@ -35,11 +36,10 @@ export default async function TaskPage({ params, searchParams }: TaskPageProps) 
   const defaultBackHref = isGenericBankTask ? "/" : `/aplicativos/${application.slug}`;
   const backHref = safeReturnPath(returnTo, defaultBackHref);
 
-  if (task.availability === "preparing" && task.applicationId !== "app-demo-bancos" && task.actionId) {
-    const genericTask = catalog.tasks.find((item) =>
-      item.applicationId === "app-demo-bancos" && item.actionId === task.actionId,
-    );
-    if (genericTask) {
+  const taskAction = getActionForTask(task);
+  if (task.availability === "preparing" && taskApplication.slug !== "banco-demonstracao" && taskAction) {
+    const genericTask = findSharedBankTask(catalog, taskAction.id);
+    if (genericTask && genericTask.availability !== "preparing") {
       // Links antigos podem apontar para uma tarefa específica do banco. Como o
       // roteiro publicado é compartilhado por ação, redirecionamos para a versão
       // genérica e preservamos o banco escolhido no contexto do guia.
