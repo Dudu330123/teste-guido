@@ -3,6 +3,7 @@
 import { useState } from "react";
 import type { Provider } from "@supabase/supabase-js";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { getSupabaseConfig } from "@/lib/validation/env";
 import { FormMessage } from "./form-message";
 
 type SocialProvider = Extract<Provider, "google" | "apple">;
@@ -15,6 +16,20 @@ const providers: ReadonlyArray<{ id: SocialProvider; label: string }> = [
 interface SocialAuthButtonsProps {
   disabled?: boolean;
   next?: string;
+}
+
+async function isProviderEnabled(provider: SocialProvider) {
+  const config = getSupabaseConfig();
+  if (!config.configured) return false;
+  const response = await fetch(`${config.url}/auth/v1/settings`, {
+    headers: { apikey: config.publishableKey },
+    cache: "no-store",
+  });
+  if (!response.ok) return false;
+  const payload: unknown = await response.json();
+  if (!payload || typeof payload !== "object") return false;
+  const external = Reflect.get(payload, "external");
+  return Boolean(external && typeof external === "object" && Reflect.get(external, provider) === true);
 }
 
 /**
@@ -37,6 +52,11 @@ export function SocialAuthButtons({ disabled = false, next = "/conta" }: SocialA
     setLoadingProvider(provider);
     const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
     try {
+      if (!await isProviderEnabled(provider)) {
+        setLoadingProvider(null);
+        setMessage(`${provider === "google" ? "Google" : "Apple"} ainda não foi ativado para o Guido. Use e-mail e senha por enquanto.`);
+        return;
+      }
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {

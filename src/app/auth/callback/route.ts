@@ -1,19 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
-
-/** Impede que o callback seja usado para redirecionar a domínios externos. */
-export function safeAuthReturnPath(value: string | null) {
-  if (!value?.startsWith("/") || value.startsWith("//") || value.includes("\\")) return "/";
-  try {
-    const parsed = new URL(value, "https://guido.local");
-    const normalized = `${parsed.pathname}${parsed.search}${parsed.hash}`;
-    return parsed.origin === "https://guido.local" && normalized.startsWith("/") && !normalized.startsWith("//") && !normalized.includes("\\")
-      ? normalized
-      : "/";
-  } catch {
-    return "/";
-  }
-}
+import { safeAuthReturnPath } from "@/lib/validation/auth-return-path";
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);

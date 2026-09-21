@@ -30,6 +30,16 @@ const contentSecurityPolicy = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
+  // Os prints revisados são servidos diretamente pelo Storage do Supabase.
+  // A CSP já permite HTTPS; esta regra autoriza também o otimizador de imagens do Next.
+  images: {
+    remotePatterns: [{ protocol: "https", hostname: "**.supabase.co" }],
+  },
+  experimental: {
+    // Evita a captura vazia de `tsc --showConfig` observada com Next 16 e TypeScript 6.
+    // A API oficial do compilador mantém a mesma verificação estrita durante o build.
+    useTypeScriptCli: false,
+  },
   async headers() {
     return [{
       source: "/(.*)",

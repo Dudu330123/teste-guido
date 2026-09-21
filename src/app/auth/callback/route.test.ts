@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { safeAuthReturnPath } from "./route";
+import { safeAuthReturnPath } from "@/lib/validation/auth-return-path";
 
 describe("retorno da autenticação", () => {
   it("aceita somente caminhos internos", () => {

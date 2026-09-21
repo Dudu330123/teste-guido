@@ -59,7 +59,7 @@ const row = {
   }],
 };
 
-describe("catálogo PostgreSQL", () => {
+describe("catálogo do Supabase", () => {
   it("abre rascunhos colaborativos somente como prévia", () => {
     expect(canOpenGuideVersion("draft", false, true)).toBe(true);
     expect(canOpenGuideVersion("draft", false, false)).toBe(false);
