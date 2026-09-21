@@ -67,6 +67,7 @@ export function HomeToolbar({
   guideActions,
 }: HomeToolbarProps) {
   const [helpOpen, setHelpOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const helpButtonRef = useRef<HTMLButtonElement>(null);
   const helpCloseRef = useRef<HTMLButtonElement>(null);
 
@@ -104,6 +105,15 @@ export function HomeToolbar({
     window.addEventListener("keydown", closeWithEscape);
     return () => window.removeEventListener("keydown", closeWithEscape);
   }, [helpOpen]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const closeWithEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMobileMenuOpen(false);
+    };
+    window.addEventListener("keydown", closeWithEscape);
+    return () => window.removeEventListener("keydown", closeWithEscape);
+  }, [mobileMenuOpen]);
 
   const toggleTheme = () => {
     const currentTheme = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
@@ -146,14 +156,17 @@ export function HomeToolbar({
           </span>
         </Link>
 
-        <nav aria-label="Navegação principal" className="home-main-nav">
-          <Link href="/" aria-current={activePage === "home" ? "page" : undefined}>Início</Link>
-          <Link href="/explorar" aria-current={activePage === "explore" ? "page" : undefined}>Explorar</Link>
-          <Link href="/admin/guias/preview" aria-current={activePage === "guides" ? "page" : undefined}>Criar e editar guias</Link>
+        <nav id="home-main-navigation" aria-label="Navegação principal" className={`home-main-nav${mobileMenuOpen ? " is-open" : ""}`}>
+          <Link href="/" onClick={() => setMobileMenuOpen(false)} aria-current={activePage === "home" ? "page" : undefined}>Início</Link>
+          <Link href="/explorar" onClick={() => setMobileMenuOpen(false)} aria-current={activePage === "explore" ? "page" : undefined}>Explorar</Link>
+          <Link href="/admin/guias/preview" onClick={() => setMobileMenuOpen(false)} aria-current={activePage === "guides" ? "page" : undefined}>Criar e editar guias</Link>
           <button
             ref={helpButtonRef}
             type="button"
-            onClick={() => setHelpOpen(true)}
+            onClick={() => {
+              setMobileMenuOpen(false);
+              setHelpOpen(true);
+            }}
             className="home-nav-button"
             aria-current={helpOpen ? "page" : undefined}
             aria-expanded={helpOpen}
@@ -171,6 +184,19 @@ export function HomeToolbar({
           <ThemeToggleButton onClick={toggleTheme} />
           <SessionNavigation loginLabel="Entrar" showAdmin={showAdmin} showUpload={false} />
         </nav>
+
+        <button
+          type="button"
+          className="home-mobile-menu-button"
+          aria-label={mobileMenuOpen ? "Fechar menu" : "Abrir menu"}
+          aria-expanded={mobileMenuOpen}
+          aria-controls="home-main-navigation"
+          onClick={() => setMobileMenuOpen((open) => !open)}
+        >
+          <span aria-hidden="true" />
+          <span aria-hidden="true" />
+          <span aria-hidden="true" />
+        </button>
       </header>
 
       {helpOpen && (
