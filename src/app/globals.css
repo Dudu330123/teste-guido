@@ -7626,6 +7626,10 @@ html[data-theme="dark"] .guide-help-modal-option p {
    Os controles continuam dentro da área segura, enquanto cenário e mascote
    podem preencher visualmente toda a tela do aparelho. */
 @media (max-width: 42rem) {
+  .guido-home--landing::before {
+    display: none;
+  }
+
   html,
   body {
     width: 100%;
@@ -7636,8 +7640,10 @@ html[data-theme="dark"] .guide-help-modal-option p {
   body:has(.guido-home--landing) {
     background-color: #eaf5ff;
     background-image: url("/images/home/cenario-home.png");
-    background-position: 70% bottom;
-    background-size: auto 100dvh;
+    background-position: 70% center;
+    /* O arquivo de cenário possui uma moldura própria. Ampliá-lo ligeiramente
+       mantém essa moldura fora da tela sem cortar os elementos importantes. */
+    background-size: auto calc(100dvh + 3.5rem);
     background-repeat: no-repeat;
   }
 
@@ -7650,8 +7656,8 @@ html[data-theme="dark"] .guide-help-modal-option p {
     width: 100%;
     height: 100dvh;
     min-height: 100dvh;
-    background-position: 70% bottom;
-    background-size: auto 100dvh;
+    background-position: 70% center;
+    background-size: auto calc(100dvh + 3.5rem);
   }
 
   .guido-home--landing .home-header {
@@ -7670,8 +7676,8 @@ html[data-theme="dark"] .guide-help-modal-option p {
   }
 
   .guido-home--landing .home-mascot {
-    margin-bottom: calc(0px - env(safe-area-inset-bottom, 0px));
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    margin-bottom: 0;
+    padding-bottom: 0;
   }
 
   .guido-home--landing .home-hero--results {
