@@ -82,6 +82,8 @@ html[data-theme="dark"] {
 
 html {
   min-height: 100%;
+  /* Evita que o cabeçalho se desloque quando uma rota passa a ter rolagem. */
+  scrollbar-gutter: stable;
   scroll-behavior: smooth;
   background: var(--sky-base);
 }
@@ -385,7 +387,7 @@ html[data-theme="dark"] .guido-home::before {
 }
 
 .guido-home-content {
-  min-height: calc(100vh - 8.75rem);
+  min-height: calc(100vh - 6.5rem);
 }
 
 .home-header {
@@ -393,7 +395,8 @@ html[data-theme="dark"] .guido-home::before {
   z-index: 30;
   display: grid;
   width: min(100%, 96rem);
-  min-height: 8.75rem;
+  /* O cabeçalho é uma referência espacial: suas dimensões não variam por rota. */
+  min-height: 6.5rem;
   margin-inline: auto;
   padding: 1.35rem clamp(1.5rem, 4.5vw, 4.5rem);
   grid-template-columns: auto minmax(16rem, 1fr) auto;
@@ -698,7 +701,7 @@ html[data-theme="dark"] .home-theme-moon {
   position: relative;
   display: grid;
   width: min(100%, 96rem);
-  min-height: calc(100vh - 8.75rem);
+  min-height: calc(100vh - 6.5rem);
   margin-inline: auto;
   padding: clamp(2rem, 5.5vh, 4.5rem) clamp(1.5rem, 5vw, 5rem) 2.25rem;
   grid-template-columns: minmax(36rem, 1.55fr) minmax(24rem, 0.95fr);
@@ -2053,22 +2056,6 @@ html[data-theme="dark"] .login-field-error {
 }
 
 @media (max-width: 42rem) {
-  .login-auth-page .home-header {
-    min-height: 5.5rem;
-    padding: 0.75rem 1rem;
-    grid-template-columns: 1fr auto;
-    gap: 0.5rem;
-  }
-
-  .login-auth-page .home-brand-logo {
-    width: 8rem;
-    min-height: 3rem;
-  }
-
-  .login-auth-page .home-main-nav {
-    display: none;
-  }
-
   .login-auth-page .auth-page-content {
     padding-top: 1rem;
   }
@@ -3192,13 +3179,6 @@ html[data-theme="dark"] .explore-card-status.is-preparing {
 
 .task-setup-shell .home-logo-light { display: none; }
 .task-setup-shell .home-brand-logo .home-logo-dark { display: block; }
-.task-setup-shell .home-header {
-  min-height: 5.5rem;
-  padding-block: 1rem;
-  border-bottom: 1px solid rgba(170, 205, 248, 0.2);
-  background: rgba(1, 8, 24, 0.88);
-  box-shadow: 0 8px 24px rgba(0, 3, 12, 0.18);
-}
 .task-setup-shell .home-main-nav a,
 .task-setup-shell .home-nav-button,
 .task-setup-shell .home-account-nav .quiet-action,
@@ -3791,14 +3771,8 @@ html[data-theme="dark"] .explore-card-status.is-preparing {
   .device-picker-continue:active { transform: none; }
 }
 
-/* Ajuste final da tela de escolha para a composição fixada (1366px). */
-.task-setup-shell .home-header {
-  min-height: 5rem;
-  padding-block: 0.75rem;
-}
-
 .task-setup-page {
-  min-height: calc(100vh - 5rem);
+  min-height: calc(100vh - 6.5rem);
   padding: 0;
 }
 
@@ -3986,12 +3960,6 @@ html[data-theme="light"] .task-setup-shell .home-brand-logo .home-logo-dark {
   display: none;
 }
 
-html[data-theme="light"] .task-setup-shell .home-header {
-  border-bottom-color: var(--border);
-  background: rgba(250, 253, 255, 0.88);
-  box-shadow: var(--shadow-soft);
-}
-
 html[data-theme="light"] .task-setup-shell .home-main-nav a,
 html[data-theme="light"] .task-setup-shell .home-nav-button,
 html[data-theme="light"] .task-setup-shell .home-account-nav .quiet-action,
@@ -4139,22 +4107,6 @@ html[data-theme="dark"] .task-setup-shell .device-picker-continue:disabled {
 }
 
 /* Landing page composition: keep the reference treatment scoped to the home. */
-.guido-home--landing .home-header {
-  min-height: 6.5rem;
-  padding-inline: clamp(1.25rem, 4.5vw, 4.5rem);
-}
-
-.guido-home--landing .home-main-nav {
-  justify-content: center;
-  gap: clamp(1rem, 2.4vw, 2.25rem);
-}
-
-.guido-home--landing .home-account-nav {
-  gap: 0.8rem;
-  padding-left: clamp(0.85rem, 1.8vw, 1.4rem);
-  border-left: 1px solid rgba(126, 174, 236, 0.28);
-}
-
 .guido-home--landing .home-hero {
   width: min(100%, 98rem);
   min-height: calc(100vh - 6.5rem);
@@ -4374,11 +4326,6 @@ html[data-theme="dark"] .guido-home--landing .home-category-button small {
 }
 
 @media (max-width: 75rem) {
-  .guido-home--landing .home-account-nav {
-    justify-self: end;
-    width: max-content;
-  }
-
   .guido-home--landing .home-hero {
     grid-template-columns: minmax(0, 1fr) minmax(16rem, 0.78fr);
     gap: 1.25rem;
@@ -4408,16 +4355,6 @@ html[data-theme="dark"] .guido-home--landing .home-category-button small {
 }
 
 @media (max-width: 60rem) {
-  .guido-home--landing .home-header {
-    min-height: 7rem;
-  }
-
-  .guido-home--landing .home-main-nav {
-    grid-column: 1 / -1;
-    grid-template-columns: repeat(2, minmax(0, auto));
-    justify-content: center;
-  }
-
   .guido-home--landing .home-hero {
     display: flex;
     min-height: auto;
@@ -4444,20 +4381,6 @@ html[data-theme="dark"] .guido-home--landing .home-category-button small {
 }
 
 @media (max-width: 42rem) {
-  .guido-home--landing .home-header {
-    min-height: 6.5rem;
-    padding-inline: 1rem;
-  }
-
-  .guido-home--landing .home-account-nav {
-    padding-left: 0.65rem;
-    border-left: 0;
-  }
-
-  .guido-home--landing .home-main-nav {
-    gap: 1.1rem;
-  }
-
   .guido-home--landing .home-hero {
     gap: 0.5rem;
     padding: 2.5rem 1rem 2rem;
@@ -4506,62 +4429,12 @@ html[data-theme="dark"] .guido-home--landing .home-category-button small {
 }
 
 @media (max-width: 32rem) {
-  .guido-home--landing .home-header {
-    gap: 0.75rem;
-  }
-
-  .guido-home--landing .home-logo {
-    width: 7.5rem;
-  }
-
-  .guido-home--landing .home-main-nav {
-    gap: 0.75rem;
-    font-size: 0.9rem;
-  }
-
-  .guido-home--landing .home-account-nav .home-theme-toggle {
-    width: 2.65rem;
-    height: 2.65rem;
-  }
-
-  .guido-home--landing .home-account-nav .session-login-link {
-    min-height: 2.65rem;
-    padding-inline: 0.85rem;
-  }
-
   .guido-home--landing .home-title {
     font-size: 2.7rem;
   }
 
   .guido-home--landing .home-category-button {
     padding-right: 2.9rem;
-  }
-}
-
-/* O grupo de navegação da home usa o centro da viewport como referência.
-   A partir de telas largas, isso evita que larguras diferentes do logo e da
-   área de conta empurrem os links para um dos lados. */
-@media (min-width: 75.0625rem) {
-  .guido-home--landing .home-main-nav {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: max-content;
-    transform: translate(-50%, -50%);
-  }
-}
-
-@media (max-width: 60rem) {
-  .guido-home--landing .home-main-nav {
-    grid-template-columns: repeat(3, minmax(0, auto));
-    justify-content: center;
-    gap: clamp(0.65rem, 2.5vw, 1.5rem);
-  }
-}
-
-@media (max-width: 32rem) {
-  .guido-home--landing .home-main-nav {
-    gap: 0.7rem;
   }
 }
 
@@ -4576,11 +4449,6 @@ html[data-theme="dark"] .guido-home--landing .home-category-button small {
    para que a pessoa encontre instrução e controles sem uma rolagem inicial.
    Em telas menores ou mais altas mantemos a composição e a leitura confortáveis. */
 @media (min-width: 80rem) and (max-height: 52rem) {
-  .guide-page .home-header {
-    min-height: 5.25rem;
-    padding-block: 0.6rem;
-  }
-
   .guide-page .guide-page-content {
     padding-top: 0.5rem;
     padding-bottom: 1.25rem;
@@ -5359,7 +5227,6 @@ html[data-theme="dark"] .guide-progress-status {
  * de 1366px permanece intocada; o espaço adicional passa a ficar nas bordas.
  */
 @media (min-width: 87.5rem) {
-  .guido-home--landing .home-header,
   .guido-home--landing .home-hero {
     max-width: 86rem;
   }

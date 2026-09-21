@@ -32,8 +32,6 @@ export type HomeActivePage = "home" | "explore" | "guides";
 
 interface HomeToolbarProps {
   activePage?: HomeActivePage;
-  /** Keeps the home navigation focused by omitting the secondary Sobre action. */
-  compactHome?: boolean;
   showAdmin?: boolean;
   /** Compact toolbar used by the step-by-step guide reader. */
   variant?: "home" | "guide";
@@ -63,7 +61,6 @@ function ThemeToggleButton({ onClick, className = "home-icon-button" }: { onClic
 
 export function HomeToolbar({
   activePage,
-  compactHome = false,
   showAdmin = false,
   variant = "home",
   guideLeft,
@@ -153,18 +150,16 @@ export function HomeToolbar({
           <Link href="/" aria-current={activePage === "home" ? "page" : undefined}>Início</Link>
           <Link href="/explorar" aria-current={activePage === "explore" ? "page" : undefined}>Explorar</Link>
           <Link href="/admin/guias/preview" aria-current={activePage === "guides" ? "page" : undefined}>Criar e editar guias</Link>
-          {!compactHome && (
-            <button
-              ref={helpButtonRef}
-              type="button"
-              onClick={() => setHelpOpen(true)}
-              className="home-nav-button"
-              aria-current={helpOpen ? "page" : undefined}
-              aria-expanded={helpOpen}
-            >
-              Sobre
-            </button>
-          )}
+          <button
+            ref={helpButtonRef}
+            type="button"
+            onClick={() => setHelpOpen(true)}
+            className="home-nav-button"
+            aria-current={helpOpen ? "page" : undefined}
+            aria-expanded={helpOpen}
+          >
+            Sobre
+          </button>
           {showAdmin && (
             <Link href="/admin/guias/preview" className="home-admin-tool-link">
               Tarefas automáticas

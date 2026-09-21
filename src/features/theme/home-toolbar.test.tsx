@@ -50,12 +50,12 @@ describe("controles da página inicial", () => {
     expect(screen.queryByRole("link", { name: "Enviar print" })).not.toBeInTheDocument();
   });
 
-  it("mantém Início e omite a ação secundária Sobre na home compacta", () => {
-    render(<HomeToolbar compactHome activePage="home" />);
+  it("mantém todas as opções na página inicial", () => {
+    render(<HomeToolbar activePage="home" />);
 
     expect(screen.getByRole("link", { name: "Início" })).toHaveAttribute("href", "/");
     expect(screen.getByRole("link", { name: "Início" })).toHaveAttribute("aria-current", "page");
-    expect(screen.queryByRole("button", { name: "Sobre" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Sobre" })).toBeVisible();
     expect(screen.getByRole("link", { name: "Explorar" })).toHaveAttribute("href", "/explorar");
     expect(screen.getByRole("link", { name: "Criar e editar guias" })).toHaveAttribute("href", "/admin/guias/preview");
   });
