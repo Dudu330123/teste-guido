@@ -72,8 +72,11 @@ printf '%s\n' 'Verificando tipos...'
 npm run typecheck
 printf '%s\n' 'Executando testes...'
 npm test -- --run
-printf '%s\n' 'Construindo produção...'
-npm run build
+printf '%s\n' 'Construindo produção com Webpack...'
+# O Turbopack abre uma porta interna ao processar o CSS e pode falhar em
+# ambientes restritos mesmo quando o código está correto. O Webpack executa o
+# mesmo build de produção sem essa dependência e mantém a publicação verificável.
+npm run build -- --webpack
 
 # Um push com commits integrados já aciona a Vercel. Se nada mudou, um commit
 # vazio mantém /public idempotente e ainda solicita um novo deploy pelo Git.
