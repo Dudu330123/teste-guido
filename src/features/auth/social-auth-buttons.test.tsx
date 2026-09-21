@@ -36,8 +36,10 @@ describe("entrada social", () => {
   });
 
   it("oferece Apple como segunda identidade comum", () => {
-    render(<SocialAuthButtons />);
+    const { container } = render(<SocialAuthButtons />);
     expect(screen.getByRole("button", { name: /continuar com apple/i })).toBeEnabled();
+    expect(container.querySelector('[data-provider-icon="google"]')).toBeInTheDocument();
+    expect(container.querySelector('[data-provider-icon="apple"]')).toBeInTheDocument();
   });
 
   it("mantém o usuário no Guido quando o provedor está desativado", async () => {

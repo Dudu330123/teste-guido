@@ -248,16 +248,25 @@ export function LoginForm() {
           aria-invalid={Boolean(fieldErrors.password)}
           aria-describedby={fieldErrors.password ? "login-password-error" : undefined}
           placeholder="••••••••"
-          className="glass-control min-h-14 w-full px-4 py-3 pr-28 text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          className="glass-control min-h-14 w-full px-4 py-3 pr-16 text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
         />
         <button
           type="button"
-          className="login-password-toggle absolute right-2 top-1/2 min-h-11 -translate-y-1/2 px-3 text-sm font-bold"
+          className="login-password-toggle absolute right-2 top-1/2 -translate-y-1/2"
           aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
           aria-pressed={showPassword}
           onClick={() => setShowPassword((current) => !current)}
         >
-          {showPassword ? "Ocultar" : "Mostrar"}
+          {showPassword ? (
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M3 3l18 18M10.6 10.7a2 2 0 0 0 2.7 2.7M9.9 4.3A10.8 10.8 0 0 1 12 4c5.2 0 9 4.4 10 8a13.8 13.8 0 0 1-2.3 4.3M6.6 6.6A13.4 13.4 0 0 0 2 12c1 3.6 4.8 8 10 8 1.5 0 2.8-.3 4-.8" />
+            </svg>
+          ) : (
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="M2 12s3.5-8 10-8 10 8 10 8-3.5 8-10 8S2 12 2 12Z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          )}
         </button>
       </div>
       {fieldErrors.password && (
