@@ -7514,23 +7514,40 @@ html[data-theme="dark"] .guide-help-modal-option p {
   }
 
   .guido-home--landing .home-mascot {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    z-index: 3;
+    position: relative;
+    inset: auto;
+    z-index: 6;
+    flex: 1 1 0;
     width: 100%;
     min-height: 0;
-    height: clamp(8rem, 25svh, 14rem);
-    margin: 0;
+    height: auto;
+    margin: -1.35rem 0 0;
+    align-items: flex-start;
+    justify-content: center;
     pointer-events: none;
   }
 
   .guido-home--landing .home-mascot img {
-    right: -0.5rem;
-    width: min(46vw, 13.5rem);
-    max-height: 100%;
+    position: static;
+    width: auto;
+    max-width: 82vw;
+    height: calc(100% + 1.35rem);
+    max-height: none;
     object-fit: contain;
-    object-position: right bottom;
+    object-position: center top;
+  }
+
+  /* Os resultados podem crescer; somente a capa inicial fica travada no
+     primeiro viewport para não cortar sugestões durante uma pesquisa. */
+  .guido-home--landing:has(.home-hero--results) {
+    height: auto;
+    overflow: visible;
+  }
+
+  .guido-home--landing .home-hero--results {
+    height: auto;
+    min-height: calc(100svh - 4.5rem);
+    overflow: visible;
   }
 }
 
@@ -7597,6 +7614,10 @@ html[data-theme="dark"] .guide-help-modal-option p {
   }
 
   .guido-home--landing .home-mascot {
-    height: clamp(6rem, 22svh, 10rem);
+    margin-top: -1.45rem;
+  }
+
+  .guido-home--landing .home-mascot img {
+    max-width: 76vw;
   }
 }

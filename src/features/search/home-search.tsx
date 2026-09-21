@@ -356,7 +356,7 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
   };
 
   return (
-    <section aria-labelledby="search-title" className="home-hero">
+    <section aria-labelledby="search-title" className={`home-hero${liveQuery ? " home-hero--results" : ""}`}>
       <div className="home-hero-copy">
         <h1 id="search-title" className="home-title">O que você precisa <span className="home-title-accent">fazer?</span></h1>
         <p className="home-subtitle">Encontre ajuda passo a passo para resolver tarefas do dia a dia.</p>
