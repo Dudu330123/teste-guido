@@ -450,7 +450,6 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
       </div>
 
       <div className="home-mascot" aria-hidden="true">
-        <p className="home-mascot-motto">Conhecimento<br />torna tudo<br />mais simples.<span /></p>
         <Image src="/images/home/mascote-guido-lendo.png" alt="" width={1207} height={1303} className="home-mascot-light" priority />
         <Image src="/images/home/mascote-guido-dark.png" alt="" width={1199} height={1312} className="home-mascot-dark" priority />
       </div>

@@ -7048,10 +7048,6 @@ html[data-theme="dark"] .guide-help-modal-option p {
   display: none;
 }
 
-.guido-home--landing .home-mascot-motto {
-  display: none;
-}
-
 @media (max-width: 60rem) {
   .guido-home--landing {
     min-height: 100svh;
@@ -7306,26 +7302,6 @@ html[data-theme="dark"] .guide-help-modal-option p {
     width: min(70vw, 28rem);
   }
 
-  .guido-home--landing .home-mascot-motto {
-    position: absolute;
-    bottom: 3.1rem;
-    left: 0;
-    z-index: 2;
-    display: block;
-    margin: 0;
-    color: var(--home-muted);
-    font-size: clamp(1rem, 3.6vw, 1.25rem);
-    line-height: 1.35;
-  }
-
-  .guido-home--landing .home-mascot-motto span {
-    display: block;
-    width: 2.5rem;
-    height: 0.18rem;
-    margin-top: 1.15rem;
-    border-radius: 999px;
-    background: var(--home-blue);
-  }
 }
 
 @media (max-width: 34rem) {
@@ -7389,5 +7365,238 @@ html[data-theme="dark"] .guide-help-modal-option p {
 @media (prefers-reduced-motion: reduce) {
   .guido-home--landing .home-mobile-menu-button span {
     transition: none;
+  }
+}
+
+/* Em celulares, o conteúdo principal cabe no primeiro viewport. O mascote fica
+   decorativo na faixa restante e não aumenta a altura rolável da página. */
+@media (max-width: 42rem) {
+  .guido-home--landing {
+    height: 100svh;
+    min-height: 100svh;
+    overflow: hidden;
+    background-position: 70% bottom;
+  }
+
+  .guido-home--landing .home-header {
+    min-height: 4.5rem;
+    height: 4.5rem;
+    padding-block: 0.55rem;
+  }
+
+  .guido-home--landing .home-brand-logo {
+    min-height: 2.5rem;
+  }
+
+  .guido-home--landing .home-icon-button,
+  .guido-home--landing .home-mobile-menu-button {
+    width: 3rem;
+    height: 3rem;
+    min-width: 3rem;
+  }
+
+  .guido-home--landing .home-account-nav .secondary-action,
+  .guido-home--landing .home-header-link {
+    min-height: 3rem;
+    padding-inline: 1rem;
+  }
+
+  .guido-home--landing .home-hero {
+    position: relative;
+    min-height: calc(100svh - 4.5rem);
+    height: calc(100svh - 4.5rem);
+    padding: 0.65rem 1rem 0;
+    overflow: hidden;
+  }
+
+  .guido-home--landing .home-hero-copy {
+    z-index: 5;
+    margin-inline: 0;
+  }
+
+  .guido-home--landing .home-title {
+    max-width: 11.5ch;
+    font-size: clamp(2.35rem, 10.8vw, 3.15rem);
+    line-height: 0.94;
+  }
+
+  .guido-home--landing .home-subtitle {
+    max-width: 25rem;
+    margin-top: 0.55rem;
+    font-size: 0.98rem;
+    line-height: 1.28;
+  }
+
+  .guido-home--landing .guido-search-form {
+    min-height: 3.6rem;
+    margin-top: 0.75rem;
+  }
+
+  .guido-home--landing .guido-search-form input {
+    min-height: 3.35rem;
+    padding-inline: 3.55rem 4rem;
+    font-size: 0.96rem;
+  }
+
+  .guido-home--landing .home-search-icon {
+    left: 1.2rem;
+    width: 1.7rem;
+    height: 1.7rem;
+  }
+
+  .guido-home--landing .guido-search-button {
+    right: 0.25rem;
+    width: 3.05rem;
+    height: 3.05rem;
+  }
+
+  .guido-home--landing .home-guided-area {
+    margin-top: 0.65rem;
+  }
+
+  .guido-home--landing .home-quick-suggestions {
+    gap: 0.35rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .guido-home--landing .home-quick-suggestions-label {
+    width: auto;
+    font-size: 0.78rem;
+  }
+
+  .guido-home--landing .home-quick-query {
+    min-height: 2.25rem;
+    padding: 0.3rem 0.75rem;
+    font-size: 0.82rem;
+  }
+
+  .guido-home--landing .home-category-picker > h2 {
+    margin-bottom: 0.45rem;
+    font-size: 1.22rem;
+  }
+
+  .guido-home--landing .home-category-grid {
+    gap: 0.4rem;
+  }
+
+  .guido-home--landing .home-category-button {
+    min-height: 4.55rem;
+    grid-template-columns: 3.15rem minmax(0, 1fr) 2.7rem;
+    gap: 0.65rem;
+    padding: 0.4rem 0.65rem;
+    border-radius: 0.9rem;
+  }
+
+  .guido-home--landing .home-category-icon {
+    width: 3.15rem;
+    height: 3.15rem;
+    border-radius: 0.8rem;
+  }
+
+  .guido-home--landing .home-category-icon svg {
+    width: 1.7rem;
+    height: 1.7rem;
+  }
+
+  .guido-home--landing .home-category-button strong {
+    font-size: 1rem;
+  }
+
+  .guido-home--landing .home-category-button small {
+    margin-top: 0.05rem;
+    font-size: 0.82rem;
+    line-height: 1.2;
+  }
+
+  .guido-home--landing .home-category-button .home-card-arrow {
+    width: 2.65rem;
+    height: 2.65rem;
+  }
+
+  .guido-home--landing .home-mascot {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    z-index: 3;
+    width: 100%;
+    min-height: 0;
+    height: clamp(8rem, 25svh, 14rem);
+    margin: 0;
+    pointer-events: none;
+  }
+
+  .guido-home--landing .home-mascot img {
+    right: -0.5rem;
+    width: min(46vw, 13.5rem);
+    max-height: 100%;
+    object-fit: contain;
+    object-position: right bottom;
+  }
+}
+
+@media (max-width: 42rem) and (max-height: 46rem) {
+  .guido-home--landing .home-header {
+    min-height: 4rem;
+    height: 4rem;
+  }
+
+  .guido-home--landing .home-hero {
+    min-height: calc(100svh - 4rem);
+    height: calc(100svh - 4rem);
+    padding-top: 0.35rem;
+  }
+
+  .guido-home--landing .home-title {
+    font-size: clamp(2.1rem, 9.8vw, 2.7rem);
+  }
+
+  .guido-home--landing .home-subtitle {
+    margin-top: 0.35rem;
+    font-size: 0.9rem;
+  }
+
+  .guido-home--landing .guido-search-form {
+    min-height: 3.2rem;
+    margin-top: 0.5rem;
+  }
+
+  .guido-home--landing .guido-search-form input {
+    min-height: 3rem;
+  }
+
+  .guido-home--landing .guido-search-button {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+
+  .guido-home--landing .home-guided-area {
+    margin-top: 0.4rem;
+  }
+
+  .guido-home--landing .home-quick-suggestions {
+    margin-bottom: 0.4rem;
+  }
+
+  .guido-home--landing .home-category-picker > h2 {
+    margin-bottom: 0.3rem;
+    font-size: 1.08rem;
+  }
+
+  .guido-home--landing .home-category-grid {
+    gap: 0.28rem;
+  }
+
+  .guido-home--landing .home-category-button {
+    min-height: 3.65rem;
+    grid-template-columns: 2.8rem minmax(0, 1fr) 2.5rem;
+  }
+
+  .guido-home--landing .home-category-icon {
+    width: 2.8rem;
+    height: 2.8rem;
+  }
+
+  .guido-home--landing .home-mascot {
+    height: clamp(6rem, 22svh, 10rem);
   }
 }
