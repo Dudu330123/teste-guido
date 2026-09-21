@@ -7621,3 +7621,72 @@ html[data-theme="dark"] .guide-help-modal-option p {
     max-width: 76vw;
   }
 }
+
+/* O fundo ocupa também as regiões ao redor do notch e do indicador inferior.
+   Os controles continuam dentro da área segura, enquanto cenário e mascote
+   podem preencher visualmente toda a tela do aparelho. */
+@media (max-width: 42rem) {
+  html,
+  body {
+    width: 100%;
+    min-height: 100dvh;
+    overscroll-behavior-y: none;
+  }
+
+  body:has(.guido-home--landing) {
+    background-color: #eaf5ff;
+    background-image: url("/images/home/cenario-home.png");
+    background-position: 70% bottom;
+    background-size: auto 100dvh;
+    background-repeat: no-repeat;
+  }
+
+  html[data-theme="dark"] body:has(.guido-home--landing) {
+    background-color: #010713;
+    background-image: url("/images/home/cenario-home-dark.png");
+  }
+
+  .guido-home--landing {
+    width: 100%;
+    height: 100dvh;
+    min-height: 100dvh;
+    background-position: 70% bottom;
+    background-size: auto 100dvh;
+  }
+
+  .guido-home--landing .home-header {
+    min-height: calc(4.5rem + env(safe-area-inset-top, 0px));
+    height: calc(4.5rem + env(safe-area-inset-top, 0px));
+    padding-top: calc(0.55rem + env(safe-area-inset-top, 0px));
+    padding-right: max(0.85rem, env(safe-area-inset-right, 0px));
+    padding-left: max(0.85rem, env(safe-area-inset-left, 0px));
+  }
+
+  .guido-home--landing .home-hero {
+    min-height: calc(100dvh - 4.5rem - env(safe-area-inset-top, 0px));
+    height: calc(100dvh - 4.5rem - env(safe-area-inset-top, 0px));
+    padding-right: max(1rem, env(safe-area-inset-right, 0px));
+    padding-left: max(1rem, env(safe-area-inset-left, 0px));
+  }
+
+  .guido-home--landing .home-mascot {
+    margin-bottom: calc(0px - env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .guido-home--landing .home-hero--results {
+    min-height: calc(100dvh - 4.5rem - env(safe-area-inset-top, 0px));
+  }
+}
+
+@media (max-width: 42rem) and (max-height: 46rem) {
+  .guido-home--landing .home-header {
+    min-height: calc(4rem + env(safe-area-inset-top, 0px));
+    height: calc(4rem + env(safe-area-inset-top, 0px));
+  }
+
+  .guido-home--landing .home-hero {
+    min-height: calc(100dvh - 4rem - env(safe-area-inset-top, 0px));
+    height: calc(100dvh - 4rem - env(safe-area-inset-top, 0px));
+  }
+}
