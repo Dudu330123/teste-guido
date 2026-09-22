@@ -450,8 +450,8 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
       </div>
 
       <div className="home-mascot" aria-hidden="true">
-        <Image src="/images/home/mascote-guido-lendo.png" alt="" width={1207} height={1303} className="home-mascot-light" sizes="(max-width: 640px) 70vw, 608px" />
-        <Image src="/images/home/mascote-guido-dark.png" alt="" width={1199} height={1312} className="home-mascot-dark" sizes="(max-width: 640px) 70vw, 608px" />
+        <Image src="/images/home/mascote-guido-lendo.webp" alt="" width={1207} height={1303} className="home-mascot-light" sizes="(max-width: 640px) 70vw, 608px" priority unoptimized />
+        <Image src="/images/home/mascote-guido-dark.webp" alt="" width={1199} height={1312} className="home-mascot-dark" sizes="(max-width: 640px) 70vw, 608px" priority unoptimized />
       </div>
       {bankModalOpen && <BankModal banks={financialApplications} onClose={closeBankModal} onSelect={chooseBank} />}
       {taskModalOpen && selectedApplication && <TaskModal applicationName={selectedApplication.name} tasks={selectedTasks} onClose={closeTaskModal} />}

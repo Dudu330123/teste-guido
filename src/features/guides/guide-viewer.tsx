@@ -52,7 +52,7 @@ function GuideToolbar({
             </Link>
             <Link href="/" className="guide-toolbar-brand" aria-label="Guido, página inicial">
               <span className="guide-toolbar-mascot" aria-hidden="true">
-                <Image src="/images/home/mascote-guido-dark.png" alt="" width={1199} height={1312} sizes="38px" />
+                <Image src="/images/home/mascote-guido-dark.webp" alt="" width={1199} height={1312} sizes="38px" />
               </span>
               <strong>GUIDO</strong>
             </Link>
