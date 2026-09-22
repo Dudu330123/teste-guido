@@ -13,6 +13,10 @@
     root.dataset.themePreference = preference;
     root.dataset.theme = resolved;
     root.style.colorScheme = resolved;
+    document.querySelectorAll('meta[name="theme-color"]').forEach(function (meta) {
+      meta.setAttribute("content", resolved === "dark" ? "#01040c" : "#eaf3fc");
+      meta.removeAttribute("media");
+    });
   } catch {
     root.dataset.themePreference = "system";
     root.dataset.theme = "light";

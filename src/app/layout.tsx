@@ -9,6 +9,11 @@ export const metadata: Metadata = {
   },
   description: "Guias visuais simples para usar aplicativos com mais segurança.",
   applicationName: "Guido",
+  appleWebApp: {
+    capable: true,
+    title: "Guido",
+    statusBarStyle: "black-translucent",
+  },
 };
 
 export const viewport: Viewport = {

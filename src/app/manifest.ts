@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Guias visuais simples para usar aplicativos com mais segurança.",
     start_url: "/",
     display: "standalone",
-    background_color: "#f7f4ed",
-    theme_color: "#155f45",
+    background_color: "#eef7ff",
+    theme_color: "#eef7ff",
     lang: "pt-BR",
   };
 }

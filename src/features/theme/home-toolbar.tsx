@@ -25,6 +25,12 @@ function applyThemePreference(preference: ThemePreference, save = true) {
   document.documentElement.dataset.themePreference = preference;
   document.documentElement.dataset.theme = resolved;
   document.documentElement.style.colorScheme = resolved;
+  // A barra do navegador precisa acompanhar o tema escolhido, não apenas o
+  // tema do sistema, para não criar uma faixa preta ao redor da câmera.
+  document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((meta) => {
+    meta.content = resolved === "dark" ? "#01040c" : "#eaf3fc";
+    meta.removeAttribute("media");
+  });
   if (save) window.localStorage.setItem(storageKey, preference);
 }
 
