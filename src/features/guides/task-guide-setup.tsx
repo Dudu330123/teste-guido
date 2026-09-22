@@ -27,7 +27,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { detectOperatingSystem, readOperatingSystem, saveOperatingSystem } from "./device";
 import { DevicePickerCard } from "./device-picker-card";
-import { deviceOptions, pairWithDevice, randomDevicePair, type DeviceOption } from "./device-options";
+import { deviceOptions, type DeviceOption } from "./device-options";
 
 interface ApplicationOption { slug: string; name: string; logoPath: string | null }
 interface TaskGuideSetupProps {
@@ -64,8 +64,8 @@ export function TaskGuideSetup({
   /* ── State ─────────────────────────────────────────────────────────── */
   const options = applicationOptions.length ? applicationOptions : [application];
   const applicationSlug = options.find((item) => item.slug === selectedApplicationSlug)?.slug ?? options[0]?.slug ?? application.slug;
-  const [visibleDevices, setVisibleDevices] = useState<DeviceOption[]>(() => deviceOptions.slice(0, 2));
-  const [deviceId, setDeviceId] = useState("samsung");
+  const visibleDevices = deviceOptions.slice(0, 2);
+  const [deviceId, setDeviceId] = useState("iphone");
 
   const selectedApplication =
     options.find((item) => item.slug === applicationSlug) ?? application;
@@ -77,10 +77,8 @@ export function TaskGuideSetup({
       const saved =
         readOperatingSystem(window.localStorage) ??
         detectOperatingSystem(window.navigator.userAgent);
-      const preferredDevice = saved === "ios" ? deviceOptions.find((item) => item.os === saved) : undefined;
-      const pair = preferredDevice ? pairWithDevice(preferredDevice) : randomDevicePair();
-      setVisibleDevices(pair.length === 2 ? pair : deviceOptions.slice(0, 2));
-      setDeviceId(preferredDevice?.id ?? pair[0]?.id ?? "samsung");
+      const preferredDevice = deviceOptions.find((item) => item.os === saved);
+      setDeviceId(preferredDevice?.id ?? "iphone");
     }, 0);
     return () => window.clearTimeout(timer);
   }, [taskId]);
@@ -146,12 +144,17 @@ export function TaskGuideSetup({
             <span className="task-setup-crumb-task">{taskTitle}</span>
           </nav>
 
-          <button type="button" className="task-setup-back" onClick={goBack}>
+          <button
+            type="button"
+            className="task-setup-back"
+            onClick={goBack}
+            aria-label="Voltar para a página anterior"
+          >
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 12H5m7 7-7-7 7-7" />
             </svg>
-            Voltar para a página anterior
+            Voltar
           </button>
 
         </div>

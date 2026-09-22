@@ -41,10 +41,10 @@ describe("preparação do guia", () => {
     expect(screen.getByRole("button", { name: /continuar com/i })).toBeEnabled();
   });
 
-  it("mantém somente Outro/Android e iPhone/iOS na tela inicial", () => {
+  it("mantém somente Android/Outro e iPhone/iOS na tela inicial", () => {
     render(<TaskGuideSetup {...defaultProps} />);
 
-    expect(screen.getByRole("radio", { name: "Outro" })).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "Android / Outro" })).toBeInTheDocument();
     expect(screen.getByRole("radio", { name: "iPhone" })).toBeInTheDocument();
     expect(screen.queryByRole("radio", { name: "Moto G" })).not.toBeInTheDocument();
     expect(screen.queryByRole("radio", { name: "LG" })).not.toBeInTheDocument();

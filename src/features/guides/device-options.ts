@@ -17,8 +17,8 @@ export interface DeviceOption {
  * usa a silhueta local já aprovada para Android.
  */
 export const deviceOptions: DeviceOption[] = [
-  { id: "samsung", name: "Outro", os: "android", platform: "android" },
   { id: "iphone", name: "iPhone", os: "ios", platform: "ios" },
+  { id: "samsung", name: "Android / Outro", os: "android", platform: "android" },
 ];
 
 /** Escolhe dois aparelhos sem executar aleatoriedade durante o SSR. */
