@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -42,7 +43,20 @@ function GuideToolbar({
       variant="guide"
       guideLeft={(
         <div className="guide-toolbar-context">
-          <Link href={exitHref} className="guide-toolbar-exit">← Sair do guia</Link>
+          <div className="guide-toolbar-primary-row">
+            <Link href={exitHref} className="guide-toolbar-exit">
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m15 18-6-6 6-6" />
+              </svg>
+              Sair do guia
+            </Link>
+            <Link href="/" className="guide-toolbar-brand" aria-label="Guido, página inicial">
+              <span className="guide-toolbar-mascot" aria-hidden="true">
+                <Image src="/images/home/mascote-guido-dark.png" alt="" width={1199} height={1312} priority />
+              </span>
+              <strong>GUIDO</strong>
+            </Link>
+          </div>
           <span className="guide-toolbar-breadcrumb" aria-label="Contexto do guia">
             <span>{application.name}</span>
             <span aria-hidden="true">·</span>
@@ -318,7 +332,7 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
   return (
     <GuidePageShell toolbar={guideToolbar}>
       <div className="guide-reader-layout">
-        <div className="guide-reader-visual">
+        <div className="guide-reader-visual guide-reader-visual--desktop">
           {preparing ? <GuidePreparationPhoneScreen /> : <ScreenPlaceholder step={activeStep} />}
         </div>
         <div className="guide-reader-content">
@@ -355,8 +369,19 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
             <p role="status" className="notice-success mt-6 rounded-xl p-4 font-bold">{activeStep.confirmationMessage}</p>
           )}
 
+          {/* No celular, o print pertence ao passo em leitura. A cópia visual
+              evita alterar o fluxo desktop e ambos continuam usando o mesmo dado. */}
+          <div className="guide-reader-visual guide-reader-visual--mobile">
+            <ScreenPlaceholder step={activeStep} />
+          </div>
+
           <button type="button" onClick={speak} className="secondary-action mt-7 min-h-14 w-full px-5 py-3 text-xl font-bold">
-            Ouvir instrução
+            <svg className="guide-audio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 5 6 9H2v6h4l5 4V5Z" />
+              <path d="M15.5 8.5a5 5 0 0 1 0 7" />
+              <path d="M18.5 5.5a9 9 0 0 1 0 13" />
+            </svg>
+            <span>Ouvir instrução</span>
           </button>
           <p className="mt-2 text-base" aria-live="polite">{speechMessage}</p>
 
@@ -370,7 +395,8 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
               Voltar
             </button>
             <button type="button" onClick={finishOrAdvance} className="primary-action min-h-14 px-5 py-3 text-xl font-bold">
-              {currentStep === steps.length - 1 ? hasUnpublishedNextStep ? "Ver próxima etapa" : "Concluir demonstração" : "Próximo"}
+              <span>{currentStep === steps.length - 1 ? hasUnpublishedNextStep ? "Ver próxima etapa" : "Concluir demonstração" : "Próximo"}</span>
+              <span className="guide-next-arrow" aria-hidden="true">→</span>
             </button>
           </div>
 

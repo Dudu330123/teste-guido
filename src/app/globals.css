@@ -4995,6 +4995,71 @@ html[data-theme="dark"] .device-switcher-close:hover {
   overflow: hidden;
 }
 
+.guide-reader-visual--mobile {
+  display: none;
+}
+
+.guide-toolbar-primary-row,
+.guide-toolbar-brand {
+  display: flex;
+  align-items: center;
+}
+
+.guide-toolbar-primary-row {
+  gap: 0.75rem;
+}
+
+.guide-toolbar-brand {
+  gap: 0.4rem;
+  color: inherit;
+  text-decoration: none;
+}
+
+.guide-toolbar-brand strong {
+  font-size: 1rem;
+  font-weight: 950;
+  letter-spacing: 0.035em;
+}
+
+.guide-toolbar-mascot {
+  position: relative;
+  display: block;
+  width: 2.35rem;
+  height: 2.35rem;
+  flex: 0 0 auto;
+  overflow: hidden;
+  border-radius: 50%;
+}
+
+.guide-toolbar-mascot img {
+  position: absolute;
+  top: -0.08rem;
+  left: 50%;
+  width: 3.65rem;
+  max-width: none;
+  height: auto;
+  transform: translateX(-50%);
+}
+
+.guide-audio-icon {
+  width: 1.45rem;
+  height: 1.45rem;
+  flex: 0 0 auto;
+}
+
+.guide-reader-instruction > .secondary-action,
+.guide-reader-instruction > .grid .primary-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+}
+
+.guide-next-arrow {
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
 .guide-reader-visual .mock-phone {
   width: auto;
   height: min(100%, 42rem);
@@ -5711,6 +5776,295 @@ html[data-theme="dark"] .guide-help-modal-option {
   border-color: rgba(117, 169, 235, 0.28);
   background: linear-gradient(120deg, rgba(18, 50, 94, 0.98), rgba(11, 34, 66, 0.98));
   box-shadow: inset 0 1px 0 rgba(184, 218, 255, 0.06), var(--shadow-control);
+}
+
+/* No leitor mobile, cada elemento segue a ordem mental da tarefa: contexto,
+   progresso, uma instrução e o print correspondente. O desktop mantém a
+   composição lado a lado para aproveitar a largura disponível. */
+@media (max-width: 42rem) {
+  .guide-page {
+    display: block;
+    min-height: 100svh;
+    overflow: visible;
+  }
+
+  .guide-toolbar {
+    position: relative;
+    display: block;
+    min-height: 0;
+    padding: calc(0.65rem + env(safe-area-inset-top)) 0.85rem 0.7rem;
+    background: rgba(248, 252, 255, 0.9);
+    box-shadow: none;
+  }
+
+  .guide-toolbar-left,
+  .guide-toolbar-context {
+    display: block;
+    width: 100%;
+  }
+
+  .guide-toolbar-primary-row {
+    display: grid;
+    min-height: 2.9rem;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .guide-toolbar-exit {
+    width: fit-content;
+    min-height: 2.65rem;
+    grid-column: 1;
+    padding: 0.48rem 0.7rem;
+    border-radius: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  .guide-toolbar-brand {
+    grid-column: 2;
+    justify-self: center;
+  }
+
+  .guide-toolbar-mascot {
+    width: 2.15rem;
+    height: 2.15rem;
+  }
+
+  .guide-toolbar-mascot img {
+    top: -0.05rem;
+    width: 3.35rem;
+  }
+
+  .guide-toolbar-brand strong {
+    font-size: 1.05rem;
+  }
+
+  .guide-toolbar-actions {
+    position: absolute;
+    top: calc(0.72rem + env(safe-area-inset-top));
+    right: 0.85rem;
+    display: flex;
+    width: auto;
+  }
+
+  .guide-toolbar-action {
+    display: none;
+  }
+
+  .guide-theme-toggle {
+    width: 2.65rem;
+    height: 2.65rem;
+    border-radius: 50%;
+  }
+
+  .guide-toolbar-breadcrumb {
+    display: flex;
+    width: 100%;
+    min-height: 2.75rem;
+    flex-wrap: nowrap;
+    gap: 0.35rem;
+    margin-top: 0.55rem;
+    overflow: hidden;
+    border: 1px solid rgba(95, 141, 194, 0.42);
+    border-radius: 0.75rem;
+    padding: 0.55rem 0.7rem;
+    background: rgba(239, 247, 255, 0.74);
+    color: #263f5e;
+    font-size: 0.78rem;
+  }
+
+  .guide-toolbar-breadcrumb span:nth-child(1),
+  .guide-toolbar-breadcrumb span:nth-child(5) {
+    flex: 0 1 auto;
+  }
+
+  .guide-toolbar-breadcrumb span:nth-child(3) {
+    flex: 1 1 auto;
+  }
+
+  .guide-page-content {
+    width: 100%;
+    padding: 0.75rem 0.75rem calc(1rem + env(safe-area-inset-bottom));
+  }
+
+  .guide-reader-layout {
+    display: block;
+    margin-top: 0;
+  }
+
+  .guide-reader-visual--desktop {
+    display: none;
+  }
+
+  .guide-reader-visual--mobile {
+    display: flex;
+    width: 100%;
+    margin-top: 0.9rem;
+    overflow: visible;
+  }
+
+  .guide-reader-content {
+    gap: 0.75rem;
+  }
+
+  .guide-page .guide-progress {
+    min-height: 0;
+    margin: 0;
+    border-radius: 0.85rem;
+    padding: 0.75rem 0.85rem;
+  }
+
+  .guide-progress-heading {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .guide-page .guide-progress-heading > p:first-child {
+    font-size: 0.95rem;
+  }
+
+  .guide-progress-meta {
+    width: auto;
+    margin-left: auto;
+    justify-content: flex-end;
+  }
+
+  .guide-progress-meta p:last-child,
+  .guide-progress-status {
+    display: none;
+  }
+
+  .guide-page .guide-progress-meta p:first-child {
+    padding: 0.25rem 0.55rem;
+    font-size: 0.78rem;
+  }
+
+  .guide-page .guide-progress-track {
+    gap: 0.3rem;
+    margin-top: 0.55rem;
+  }
+
+  .guide-page .guide-progress-segment {
+    height: 0.42rem;
+  }
+
+  .guide-page .guide-reader-instruction {
+    min-height: 0;
+    max-height: none;
+    overflow: visible;
+    border-radius: 0.9rem;
+    padding: 0.9rem;
+  }
+
+  .guide-step-heading {
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .guide-page .guide-step-number {
+    width: 2.85rem;
+    height: 2.85rem;
+    border-radius: 0.72rem;
+    font-size: 1.35rem;
+  }
+
+  .guide-page .guide-step-heading p {
+    font-size: 0.78rem;
+  }
+
+  .guide-step-heading h2 {
+    margin-top: 0.05rem;
+    font-size: clamp(1.65rem, 8vw, 2rem);
+  }
+
+  .guide-step-instruction {
+    margin-top: 0.75rem;
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+
+  .guide-page .guide-reader-visual--mobile .mock-phone,
+  .guide-page .guide-reader-visual--mobile .guide-preparation-phone,
+  .guide-page .guide-reader-visual--mobile .guide-evidence {
+    width: min(100%, 17rem);
+    max-width: 17rem;
+  }
+
+  .guide-page .guide-reader-visual--mobile .guide-evidence-frame {
+    width: 100%;
+    border-width: 0.45rem;
+    border-radius: 2rem;
+    padding: 0.28rem;
+  }
+
+  .guide-page .guide-reader-visual--mobile .guide-evidence-viewport {
+    border-radius: 1.35rem;
+  }
+
+  .guide-page .guide-reader-visual--mobile .guide-evidence-caption,
+  .guide-page .guide-reader-visual--mobile .guide-phone-caption {
+    display: none;
+  }
+
+  .guide-page .guide-reader-instruction > .secondary-action {
+    min-height: 3.25rem;
+    margin-top: 0.9rem;
+    border-radius: 0.75rem;
+    padding: 0.65rem 0.85rem;
+    font-size: 1rem;
+  }
+
+  .guide-page .guide-reader-instruction > [aria-live="polite"] {
+    min-height: 0;
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
+  }
+
+  .guide-page .guide-reader-instruction > .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr);
+    gap: 0.6rem;
+    margin-top: 0.65rem;
+  }
+
+  .guide-page .guide-reader-instruction > .grid button {
+    min-height: 3.35rem;
+    border-radius: 0.75rem;
+    padding: 0.65rem 0.7rem;
+    font-size: 1rem;
+  }
+
+  .guide-page .guide-reader-instruction .guide-help-trigger {
+    min-height: 3.8rem;
+    margin-top: 0.75rem;
+    border-radius: 0.8rem;
+    padding: 0.6rem 0.7rem;
+  }
+
+  .guide-help-trigger-icon,
+  .guide-help-trigger-arrow {
+    width: 2.1rem;
+    height: 2.1rem;
+  }
+
+  .guide-help-trigger strong {
+    font-size: 0.92rem;
+  }
+
+  .guide-help-trigger small {
+    font-size: 0.72rem;
+  }
+
+  html[data-theme="dark"] .guide-toolbar {
+    background: rgba(3, 13, 29, 0.92);
+  }
+
+  html[data-theme="dark"] .guide-toolbar-breadcrumb {
+    border-color: rgba(117, 169, 235, 0.34);
+    background: rgba(8, 25, 51, 0.74);
+    color: #d5e5f8;
+  }
 }
 
 html[data-theme="dark"] .guide-help-modal-intro p,
