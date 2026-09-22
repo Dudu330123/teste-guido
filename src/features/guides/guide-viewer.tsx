@@ -52,7 +52,7 @@ function GuideToolbar({
             </Link>
             <Link href="/" className="guide-toolbar-brand" aria-label="Guido, página inicial">
               <span className="guide-toolbar-mascot" aria-hidden="true">
-                <Image src="/images/home/mascote-guido-dark.png" alt="" width={1199} height={1312} priority />
+                <Image src="/images/home/mascote-guido-dark.png" alt="" width={1199} height={1312} sizes="38px" />
               </span>
               <strong>GUIDO</strong>
             </Link>
@@ -181,7 +181,6 @@ function GuideHelpModal({ onClose }: { onClose: () => void }) {
 
 export function GuideViewer({ application, guide, steps, task, returnTo }: GuideViewerProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [ready, setReady] = useState(false);
   const [remotePending, setRemotePending] = useState(true);
   const [resumeStep, setResumeStep] = useState<number | null>(null);
   const [speechMessage, setSpeechMessage] = useState("");
@@ -220,9 +219,8 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
         ? localProgress
         : null;
       if (localCandidate) setResumeStep(localCandidate.currentStep);
-      // O roteiro aparece assim que o armazenamento local está disponível. A
-      // sincronização remota continua em segundo plano para não atrasar o guia.
-      setReady(true);
+      // A sincronização remota continua em segundo plano; o primeiro passo já
+      // veio pronto do servidor e não precisa esperar este efeito para aparecer.
       void loadRemoteProgress(guide.id).then((remoteProgress) => {
         if (!localCandidate) {
           const remoteCandidate = remoteProgress
@@ -240,7 +238,7 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
   }, [guide.guideVersion, guide.id, steps.length]);
 
   useEffect(() => {
-    if (!ready || remotePending || resumeStep !== null) return;
+    if (remotePending || resumeStep !== null) return;
     saveProgress(window.localStorage, {
       guideId: guide.id,
       currentStep,
@@ -250,18 +248,18 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
       operatingSystem: guide.operatingSystem,
     });
     void saveRemoteProgress(guide.id, currentStep, completed ? "completed" : "in_progress");
-  }, [completed, currentStep, guide, ready, remotePending, resumeStep]);
+  }, [completed, currentStep, guide, remotePending, resumeStep]);
 
   useEffect(() => {
-    if (!ready || resumeStep !== null || previousRenderedStep.current === currentStep) return;
+    if (resumeStep !== null || previousRenderedStep.current === currentStep) return;
     previousRenderedStep.current = currentStep;
     const frame = window.requestAnimationFrame(() => {
       stepTitleRef.current?.focus({ preventScroll: true });
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [currentStep, ready, resumeStep]);
+  }, [currentStep, resumeStep]);
 
-  if (!ready || (!step && !preparing)) {
+  if (!step && !preparing) {
     return (
       <GuidePageShell toolbar={guideToolbar}>
         <p role="status" className="glass-panel guide-loading-state">Carregando o guia…</p>

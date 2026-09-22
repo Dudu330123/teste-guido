@@ -149,7 +149,7 @@ export function HomeToolbar({
               width={2076}
               height={757}
               className="home-logo-light"
-              priority
+              sizes="(max-width: 640px) 128px, 208px"
             />
             <Image
               src="/images/home/logo-guido-branca-dark.png"
@@ -157,7 +157,7 @@ export function HomeToolbar({
               width={1184}
               height={308}
               className="home-logo-dark"
-              priority
+              sizes="(max-width: 640px) 128px, 208px"
             />
           </span>
         </Link>
@@ -165,7 +165,7 @@ export function HomeToolbar({
         <nav id="home-main-navigation" aria-label="Navegação principal" className={`home-main-nav${mobileMenuOpen ? " is-open" : ""}`}>
           <Link href="/" onClick={() => setMobileMenuOpen(false)} aria-current={activePage === "home" ? "page" : undefined}>Início</Link>
           <Link href="/explorar" onClick={() => setMobileMenuOpen(false)} aria-current={activePage === "explore" ? "page" : undefined}>Explorar</Link>
-          <Link href="/admin/guias/preview" onClick={() => setMobileMenuOpen(false)} aria-current={activePage === "guides" ? "page" : undefined}>Criar e editar guias</Link>
+          <Link prefetch={false} href="/admin/guias/preview" onClick={() => setMobileMenuOpen(false)} aria-current={activePage === "guides" ? "page" : undefined}>Criar e editar guias</Link>
           <button
             ref={helpButtonRef}
             type="button"

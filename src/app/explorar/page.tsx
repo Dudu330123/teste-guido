@@ -13,7 +13,6 @@ import {
 } from "@/features/explore/explore-content";
 import { ExploreGuideCard } from "@/features/explore/explore-guide-card";
 import { HomeToolbar } from "@/features/theme/home-toolbar";
-import { getSuperadminAccess } from "@/lib/supabase/admin";
 import {
   getCatalogFromSupabase,
   getGuidePopularityFromSupabase,
@@ -38,11 +37,10 @@ function categoryHref(category: string, query: string) {
 }
 
 export default async function ExplorePage({ searchParams }: ExplorePageProps) {
-  const [{ q = "", categoria = "" }, remoteCatalog, accessCounts, superadminAccess] = await Promise.all([
+  const [{ q = "", categoria = "" }, remoteCatalog, accessCounts] = await Promise.all([
     searchParams,
     getCatalogFromSupabase(),
     getGuidePopularityFromSupabase(),
-    getSuperadminAccess(),
   ]);
   const catalog = mergeCatalogWithFallback(remoteCatalog, { applications, tasks });
   const allItems = buildExploreItems(catalog.applications, catalog.tasks);
@@ -57,7 +55,7 @@ export default async function ExplorePage({ searchParams }: ExplorePageProps) {
   const exploreReturnTo = categoryHref(categoria, q);
   return (
     <main className="guido-home guido-explore min-h-screen">
-      <HomeToolbar showAdmin={Boolean(superadminAccess)} activePage="explore" />
+      <HomeToolbar showAdmin={false} activePage="explore" />
       <div className="explore-content">
         <section className="explore-hero" aria-labelledby="explore-page-title">
           <header className="explore-intro">

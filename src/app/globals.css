@@ -344,7 +344,7 @@ button:disabled,
   min-height: 100vh;
   overflow: hidden;
   background-color: #eaf3fc;
-  background-image: url("/images/home/cenario-home.png");
+  background-image: url("/images/home/cenario-home.webp");
   background-position: center;
   background-size: cover;
   color: var(--home-ink);
@@ -376,7 +376,7 @@ html[data-theme="dark"] .guido-home {
   background-color: #01040c;
   background-image:
     linear-gradient(90deg, rgba(0, 5, 18, 0.88) 0%, rgba(1, 8, 24, 0.7) 56%, rgba(1, 5, 15, 0.38) 100%),
-    url("/images/home/cenario-home-dark.png");
+    url("/images/home/cenario-home-dark.webp");
   background-position: center;
   background-size: cover;
 }
@@ -2395,7 +2395,7 @@ html[data-theme="dark"] .guide-progress-segment--current {
 html[data-theme="dark"] .internal-page {
   background-image:
     linear-gradient(180deg, rgba(0, 5, 16, 0.72), rgba(1, 5, 14, 0.9)),
-    url("/images/home/cenario-home-dark.png");
+    url("/images/home/cenario-home-dark.webp");
 }
 
 html[data-theme="dark"] .internal-page-card-icon {
@@ -2405,7 +2405,7 @@ html[data-theme="dark"] .internal-page-card-icon {
 html[data-theme="dark"] .guido-explore {
   background-image:
     linear-gradient(180deg, rgba(0, 5, 16, 0.72), rgba(1, 5, 14, 0.9)),
-    url("/images/home/cenario-home-dark.png");
+    url("/images/home/cenario-home-dark.webp");
 }
 
 .explore-content {
@@ -3197,7 +3197,7 @@ html[data-theme="dark"] .explore-card-status.is-preparing {
   background-color: #01040c;
   background-image:
     linear-gradient(90deg, rgba(0, 5, 18, 0.88) 0%, rgba(1, 8, 24, 0.7) 56%, rgba(1, 5, 15, 0.38) 100%),
-    url("/images/home/cenario-home-dark.png");
+    url("/images/home/cenario-home-dark.webp");
   background-position: center;
   background-size: cover;
   background-attachment: fixed;
@@ -4074,7 +4074,7 @@ html[data-theme="light"] .task-setup-shell {
   --home-ink: var(--foreground);
   --home-muted: var(--muted);
   background-color: #eaf3fc;
-  background-image: url("/images/home/cenario-home.png");
+  background-image: url("/images/home/cenario-home.webp");
 }
 
 html[data-theme="light"] .task-setup-shell .home-logo-light {
@@ -8189,7 +8189,7 @@ html[data-theme="dark"] .guide-help-modal-option p {
   html:has(.guido-home) {
     --guido-mobile-scene:
       linear-gradient(transparent, transparent),
-      url("/images/home/cenario-home.png");
+      url("/images/home/cenario-home.webp");
     background-color: #eaf5ff;
     background-image: var(--guido-mobile-scene);
     background-position: 70% center;
@@ -8203,7 +8203,7 @@ html[data-theme="dark"] .guide-help-modal-option p {
   html[data-theme="dark"]:has(.guido-home) {
     --guido-mobile-scene:
       linear-gradient(90deg, rgba(0, 5, 18, 0.88) 0%, rgba(1, 8, 24, 0.7) 56%, rgba(1, 5, 15, 0.38) 100%),
-      url("/images/home/cenario-home-dark.png");
+      url("/images/home/cenario-home-dark.webp");
     background-color: #010713;
     background-image: var(--guido-mobile-scene);
   }

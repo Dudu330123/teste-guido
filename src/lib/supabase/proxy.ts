@@ -8,6 +8,14 @@ export async function updateSupabaseSession(request: NextRequest) {
   const config = getSupabaseConfig();
   if (!config.configured) return response;
 
+  // Visitantes anônimos não possuem sessão para renovar. Evitar a chamada de
+  // autenticação aqui mantém páginas públicas rápidas sem alterar a proteção
+  // das rotas para quem já está conectado.
+  const hasAuthCookie = request.cookies.getAll().some(({ name }) =>
+    /^sb-.+-auth-token(?:\.\d+)?$/.test(name),
+  );
+  if (!hasAuthCookie) return response;
+
   const supabase = createServerClient(config.url, config.publishableKey, {
     cookies: {
       getAll: () => request.cookies.getAll(),

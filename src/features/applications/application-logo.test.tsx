@@ -36,10 +36,8 @@ describe("logo do aplicativo", () => {
   it("recupera o logo local quando o catálogo remoto não informa o caminho", () => {
     render(<ApplicationLogo application={{ ...application, name: "WhatsApp", slug: "whatsapp" }} />);
 
-    expect(screen.getByRole("img", { name: "Logo do WhatsApp" })).toHaveAttribute(
-      "src",
-      "/images/logos/whatsapp-home.png",
-    );
+    expect(screen.getByRole("img", { name: "Logo do WhatsApp" }).getAttribute("src"))
+      .toContain("%2Fimages%2Flogos%2Fwhatsapp-home.png");
   });
 
   it("mantém o banco demonstrativo sem logo de terceiro", () => {

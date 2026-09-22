@@ -74,8 +74,10 @@ describe("busca e navegação guiada da página inicial", () => {
   it("exibe os logos locais nas categorias correspondentes", () => {
     render(<HomeSearch applications={applications} tasks={tasks} />);
 
-    expect(screen.getByRole("img", { name: "Logo do WhatsApp" })).toHaveAttribute("src", "/images/logos/whatsapp-home.png");
-    expect(screen.getByRole("img", { name: "Logo do Gov.br" })).toHaveAttribute("src", "/images/logos/gov-br-home.webp");
+    expect(screen.getByRole("img", { name: "Logo do WhatsApp" }).getAttribute("src"))
+      .toContain("%2Fimages%2Flogos%2Fwhatsapp-home.png");
+    expect(screen.getByRole("img", { name: "Logo do Gov.br" }).getAttribute("src"))
+      .toContain("%2Fimages%2Flogos%2Fgov-br-home.webp");
   });
 
   it("preenche a busca ao escolher uma sugestão rápida", async () => {

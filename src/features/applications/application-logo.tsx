@@ -12,7 +12,7 @@ export function ApplicationLogo({ application }: { application: Application }) {
         alt={`Logo do ${application.name}`}
         width={64}
         height={64}
-        unoptimized
+        sizes="64px"
         className="application-logo-image"
       />
     );

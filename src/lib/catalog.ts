@@ -4,6 +4,7 @@ import type { RemoteGuideContent } from "@/lib/api/catalog";
 import { getActionForTask } from "@/data/actions";
 import { isBankCategory } from "@/data/applications";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { getSupabasePublicClient } from "@/lib/supabase/public";
 
 const publicationStatusSchema = z.enum(["draft", "under_review", "published", "outdated"]);
 const mediaSchema = z.object({
@@ -393,8 +394,11 @@ export function mergeCatalogWithFallback(
   return { applications: mergedApplications, tasks: [...tasksBySlug.values()] };
 }
 
-export async function getCatalogFromSupabase(): Promise<SupabaseCatalog | null> {
-  const supabase = await getSupabaseServerClient();
+let catalogCache: { expiresAt: number; value: SupabaseCatalog | null } | null = null;
+
+async function loadPublicCatalog(): Promise<SupabaseCatalog | null> {
+  if (catalogCache && catalogCache.expiresAt > Date.now()) return catalogCache.value;
+  const supabase = getSupabasePublicClient();
   if (!supabase) return null;
   const [applicationsResult, tutorialsResult] = await Promise.all([
     supabase
@@ -406,8 +410,17 @@ export async function getCatalogFromSupabase(): Promise<SupabaseCatalog | null> 
       .select("id, application_id, title, slug, description, difficulty, safety_warning, status, is_demo, image_context_slug, tutorial_search_terms(term), guide_versions(status, public_for_upload)")
       .order("title", { ascending: true }),
   ]);
-  if (applicationsResult.error || tutorialsResult.error) return null;
-  return parseSupabaseCatalogRows(applicationsResult.data, tutorialsResult.data);
+  const value = applicationsResult.error || tutorialsResult.error
+    ? null
+    : parseSupabaseCatalogRows(applicationsResult.data, tutorialsResult.data);
+  // Um catálogo é igual para todos os visitantes. A janela curta evita repetir
+  // consultas em acessos consecutivos sem atrasar a publicação de alterações.
+  catalogCache = { expiresAt: Date.now() + 30_000, value };
+  return value;
+}
+
+export async function getCatalogFromSupabase(): Promise<SupabaseCatalog | null> {
+  return loadPublicCatalog();
 }
 
 /** Converte os roteiros públicos para upload mantendo a chave editorial antiga. */
@@ -458,16 +471,25 @@ export async function getUploadGuidesFromSupabase(): Promise<SupabaseUploadGuide
 }
 
 /** Retorna somente contagens agregadas; nenhuma identidade ou histórico individual sai do banco. */
-export async function getGuidePopularityFromSupabase() {
-  const supabase = await getSupabaseServerClient();
-  if (!supabase) return new Map<string, number>();
+let popularityCache: { expiresAt: number; value: Array<[string, number]> } | null = null;
+
+async function loadGuidePopularity() {
+  if (popularityCache && popularityCache.expiresAt > Date.now()) return popularityCache.value;
+  const supabase = getSupabasePublicClient();
+  if (!supabase) return [] as Array<[string, number]>;
   const { data, error } = await supabase
     .from("guide_access_stats")
     .select("tutorial_id, access_count")
     .order("access_count", { ascending: false })
     .limit(50);
-  if (error) return new Map<string, number>();
+  if (error) return [] as Array<[string, number]>;
   const parsed = popularityRowsSchema.safeParse(data);
-  if (!parsed.success) return new Map<string, number>();
-  return new Map(parsed.data.map((row) => [row.tutorial_id, row.access_count]));
+  if (!parsed.success) return [] as Array<[string, number]>;
+  const value = parsed.data.map((row): [string, number] => [row.tutorial_id, row.access_count]);
+  popularityCache = { expiresAt: Date.now() + 60_000, value };
+  return value;
+}
+
+export async function getGuidePopularityFromSupabase() {
+  return new Map(await loadGuidePopularity());
 }
