@@ -471,12 +471,13 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
           setSpeechMessage("Leitura concluída.");
           audioRef.current = null;
         };
-        audio.onerror = () => {
-          setIsSpeaking(false);
+        const fallbackToSpeech = () => {
+          if (audioRef.current !== audio) return;
           audioRef.current = null;
           speakWithSynthesis();
         };
-        void audio.play();
+        audio.onerror = fallbackToSpeech;
+        void audio.play().catch(fallbackToSpeech);
         return;
       } catch {
         // Fallback para síntese caso a reprodução do áudio falhe
