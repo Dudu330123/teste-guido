@@ -124,11 +124,11 @@ function TaskCard({ task, modal = false }: { task: Task; modal?: boolean }) {
   );
 }
 
-function TaskGroup({ label, tasks: groupTasks, modal = false }: { label: string; tasks: Task[]; modal?: boolean }) {
+function TaskGroup({ label, tasks: groupTasks, modal = false, showHeading = true }: { label: string; tasks: Task[]; modal?: boolean; showHeading?: boolean }) {
   if (groupTasks.length === 0) return null;
   return (
-    <section className={`home-task-group${modal ? " home-task-modal-group" : ""}`} aria-label={label}>
-      <h3>{label}</h3>
+    <section className={`home-task-group${modal ? " home-task-modal-group" : ""}`} aria-label={showHeading ? label : undefined}>
+      {showHeading && <h3>{label}</h3>}
       <div className="home-task-grid">
         {groupTasks.map((task) => <TaskCard key={task.id} task={task} modal={modal} />)}
       </div>
@@ -248,7 +248,7 @@ function TaskModal({ applicationName, tasks: modalTasks, onClose }: TaskModalPro
         <div className="home-task-modal-list">
           {modalTasks.length > 0 ? <>
             <TaskGroup label="Disponíveis agora" tasks={availableTasks} modal />
-            <TaskGroup label="Em preparação" tasks={preparingTasks} modal />
+            <TaskGroup label="Em preparação" tasks={preparingTasks} modal showHeading={false} />
           </> : <p className="home-task-modal-empty">Ainda não há tarefas cadastradas para este aplicativo.</p>}
         </div>
       </section>
