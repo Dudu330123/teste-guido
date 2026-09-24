@@ -115,7 +115,7 @@ describe("busca e navegação guiada da página inicial", () => {
     await user.click(screen.getByRole("button", { name: /Caixa/ }));
     expect(screen.getByRole("dialog", { name: "Escolha uma tarefa" })).toBeVisible();
     expect(screen.getByRole("link", { name: /Fazer Pix/ })).toHaveAttribute("href", "/tarefas/pix-caixa");
-    expect(screen.getByRole("heading", { name: "Em preparação" })).toBeVisible();
+    expect(screen.queryByRole("heading", { name: "Em preparação" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Fechar lista de tarefas" })).toHaveFocus();
   });
 
