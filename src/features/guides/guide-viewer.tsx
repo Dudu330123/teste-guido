@@ -194,6 +194,39 @@ function GuideHelpModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+function selectBestPortugueseVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
+  if (!voices || voices.length === 0) return null;
+
+  const ptVoices = voices.filter((voice) => {
+    const lang = (voice.lang || "").toLowerCase();
+    return lang.startsWith("pt-br") || lang.startsWith("pt_br") || lang === "pt";
+  });
+
+  const candidates = ptVoices.length > 0
+    ? ptVoices
+    : voices.filter((voice) => (voice.lang || "").toLowerCase().startsWith("pt"));
+
+  if (candidates.length === 0) return null;
+
+  const getScore = (voice: SpeechSynthesisVoice) => {
+    const name = (voice.name || "").toLowerCase();
+    let score = 0;
+    // Vozes neurais / naturais são as mais humanas e expressivas
+    if (name.includes("natural") || name.includes("neural") || name.includes("online")) score += 100;
+    if (name.includes("enhanced") || name.includes("premium")) score += 80;
+    // Vozes de alta qualidade das plataformas (Google Chrome/Android, Microsoft Edge/Windows, Apple Safari/iOS)
+    if (name.includes("google")) score += 50;
+    if (name.includes("microsoft")) score += 40;
+    if (name.includes("luciana") || name.includes("felipe") || name.includes("letícia") || name.includes("francisca")) score += 30;
+    if (!voice.localService) score += 20;
+    // Penalizar sintetizadores robóticos antigos (ex: eSpeak)
+    if (name.includes("espeak") || name.includes("klatt")) score -= 60;
+    return score;
+  };
+
+  return [...candidates].sort((a, b) => getScore(b) - getScore(a))[0] ?? null;
+}
+
 export function GuideViewer({ application, guide, steps, task, returnTo }: GuideViewerProps) {
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
@@ -204,12 +237,42 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
   const [completed, setCompleted] = useState(false);
   const [preparing, setPreparing] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [canPreload, setCanPreload] = useState(false);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const stepTitleRef = useRef<HTMLHeadingElement>(null);
   const previousRenderedStep = useRef(0);
   const step = steps[currentStep];
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window) || !window.speechSynthesis) return;
+    const updateVoices = () => {
+      if (typeof window.speechSynthesis.getVoices === "function") {
+        setVoices(window.speechSynthesis.getVoices());
+      }
+    };
+    updateVoices();
+    window.speechSynthesis.onvoiceschanged = updateVoices;
+    return () => {
+      if (typeof window !== "undefined" && "speechSynthesis" in window && window.speechSynthesis) {
+        if (window.speechSynthesis.onvoiceschanged === updateVoices) {
+          window.speechSynthesis.onvoiceschanged = null;
+        }
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setCanPreload(true), 600);
+    return () => window.clearTimeout(timer);
+  }, []);
   const restart = () => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
+    }
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
     }
     setIsSpeaking(false);
     clearProgress(window.localStorage, guide.id);
@@ -285,6 +348,10 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
         window.speechSynthesis.cancel();
       }
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
       setIsSpeaking(false);
     };
   }, [currentStep]);
@@ -323,25 +390,36 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
     }
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
     setIsSpeaking(false);
     setSpeechMessage("Leitura interrompida.");
   };
 
-  const toggleSpeak = () => {
+  const speakWithSynthesis = () => {
     if (!("speechSynthesis" in window) || typeof SpeechSynthesisUtterance === "undefined") {
       setSpeechMessage("A leitura em voz alta não está disponível neste navegador.");
       return;
     }
 
-    if (isSpeaking) {
-      stopSpeaking();
-      return;
-    }
-
     window.speechSynthesis.cancel();
-    const text = `${activeStep.title}. ${activeStep.instruction}${activeStep.warning ? ` Importante: ${activeStep.warning}` : ""}`;
+    const text = `${activeStep.title}. ${activeStep.instruction}${activeStep.warning ? `. Atenção: ${activeStep.warning}` : ""}`;
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "pt-BR";
+    utterance.rate = 0.92; // Cadência mais calma, humana e clara para idosos
+    utterance.pitch = 1.0;
+
+    const availableVoices = voices.length > 0
+      ? voices
+      : typeof window.speechSynthesis.getVoices === "function"
+      ? window.speechSynthesis.getVoices()
+      : [];
+    const bestVoice = selectBestPortugueseVoice(availableVoices);
+    if (bestVoice) {
+      utterance.voice = bestVoice;
+    }
 
     utterance.onstart = () => {
       setIsSpeaking(true);
@@ -363,6 +441,49 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
     window.speechSynthesis.speak(utterance);
     setIsSpeaking(true);
     setSpeechMessage("Instrução sendo lida em voz alta.");
+  };
+
+  const toggleSpeak = () => {
+    if (isSpeaking) {
+      stopSpeaking();
+      return;
+    }
+
+    // Se houver arquivo de áudio narrado (.mp3) e o navegador suportar reprodução de mídia:
+    const canPlayAudioFile = Boolean(
+      activeStep.audioPath &&
+      typeof window !== "undefined" &&
+      typeof window.Audio === "function" &&
+      !process.env.VITEST
+    );
+
+    if (canPlayAudioFile) {
+      try {
+        if (audioRef.current) audioRef.current.pause();
+        const audio = new Audio(activeStep.audioPath);
+        audioRef.current = audio;
+        audio.onplay = () => {
+          setIsSpeaking(true);
+          setSpeechMessage("Instrução sendo lida em voz alta.");
+        };
+        audio.onended = () => {
+          setIsSpeaking(false);
+          setSpeechMessage("Leitura concluída.");
+          audioRef.current = null;
+        };
+        audio.onerror = () => {
+          setIsSpeaking(false);
+          audioRef.current = null;
+          speakWithSynthesis();
+        };
+        void audio.play();
+        return;
+      } catch {
+        // Fallback para síntese caso a reprodução do áudio falhe
+      }
+    }
+
+    speakWithSynthesis();
   };
 
   const finishOrAdvance = () => {
@@ -483,7 +604,7 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
             </button>
           </div>
 
-          <button type="button" className="guide-help-trigger mt-7" aria-haspopup="dialog" onClick={() => setHelpOpen(true)}>
+          <button type="button" className="guide-help-trigger mt-7" aria-label="Preciso de ajuda" aria-haspopup="dialog" onClick={() => setHelpOpen(true)}>
             <span className="guide-help-trigger-label">
               <span className="guide-help-trigger-icon" aria-hidden="true">?</span>
               <span><strong>Preciso de ajuda</strong><small>Orientações rápidas</small></span>
@@ -493,6 +614,28 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
           </section>}
         </div>
       </div>
+      {/* Pré-carregamento em segundo plano das imagens dos passos para navegação instantânea */}
+      {canPreload && (
+        <div className="sr-only" aria-hidden="true" style={{ display: "none" }}>
+          {steps.map((guideStep, idx) => {
+            if (idx === currentStep) return null;
+            if (!guideStep.imagePath || (!guideStep.imagePath.startsWith("https://") && !guideStep.imagePath.startsWith("/api/storage"))) {
+              return null;
+            }
+            return (
+              <div key={`preload-${guideStep.id}`} style={{ position: "relative", width: 496, height: 1000 }}>
+                <Image
+                  src={guideStep.imagePath}
+                  alt=""
+                  fill
+                  sizes="(max-width: 1024px) 92vw, 31rem"
+                  priority
+                />
+              </div>
+            );
+          })}
+        </div>
+      )}
       {helpOpen && <GuideHelpModal onClose={() => setHelpOpen(false)} />}
     </GuidePageShell>
   );

@@ -48,7 +48,7 @@ export default async function ApplicationPage({ params, searchParams }: Applicat
             <div className="internal-page-list">
               {applicationTasks.map((task) => {
                 const action = getActionForTask(task);
-                const sharedTask = task.availability === "preparing" && action
+                const sharedTask = action
                   ? findSharedBankTask(catalog, action.id)
                   : undefined;
                 const visibleTask = sharedTask && sharedTask.availability !== "preparing" ? sharedTask : task;

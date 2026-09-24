@@ -3,12 +3,12 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 function root() {
-  return path.resolve(process.env.LOCAL_STORAGE_DIR ?? ".local/storage");
+  return path.resolve(/*turbopackIgnore: true*/ process.env.LOCAL_STORAGE_DIR ?? ".local/storage");
 }
 
 function safePath(bucket: string, key: string) {
   if (!bucket || !key || key.includes("..") || key.startsWith("/")) throw new Error("Invalid storage key");
-  return path.join(root(), bucket, key);
+  return path.join(/*turbopackIgnore: true*/ root(), bucket, key);
 }
 
 function signingSecret() {

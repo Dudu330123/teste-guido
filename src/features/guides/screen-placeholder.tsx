@@ -16,7 +16,7 @@ export function ScreenPlaceholder({ step }: { step: GuideStep }) {
               fill
               sizes="(max-width: 1024px) 92vw, 31rem"
               className="object-contain"
-              priority={step.order === 1}
+              priority
             />
             {step.evidenceStatus === "VERIFIED" && step.touchTarget && <TouchTargetOverlay touchTarget={step.touchTarget} />}
           </div>

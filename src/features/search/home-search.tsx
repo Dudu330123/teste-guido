@@ -401,7 +401,7 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
                     if (!bankTask) return;
                     event.preventDefault();
                     openBankModalFromSearch({ task });
-                  }} aria-haspopup={bankTask ? "dialog" : undefined} className="home-task-card"><span>{application?.name ?? "Guido"}</span><strong>{task.title}</strong><small>{task.availability === "preparing" ? "Em preparação" : "Abrir guia"}</small><span aria-hidden="true" className="home-card-arrow">→</span></Link>;
+                  }} aria-haspopup={bankTask ? "dialog" : undefined} className="home-task-card"><span>{bankTask ? "Banco" : (application?.name ?? "Guido")}</span><strong>{task.title}</strong><span aria-hidden="true" className="home-card-arrow">→</span></Link>;
                   })}
                 </div>
               </> : <div className="home-task-grid"><p className="home-search-empty"><strong>Não encontramos esse guia.</strong><span>Tente escrever de outra forma.</span></p></div>}

@@ -79,17 +79,19 @@ const coreTasks: Task[] = [
 ];
 
 const genericTaskDefinitions: Array<[string, string, string, string, string[]]> = [
-  ["pagar-conta-codigo-barras", "boleto", "Pagar conta com código de barras", "Reconheça as opções comuns para contas de consumo.", ["conta de luz", "conta de água", "cod barras"]],
   ["fazer-pix", "pix", "Fazer Pix", "Entenda onde normalmente começa uma transferência Pix, sem enviar dinheiro.", ["como fazer pix", "enviar pix", "transferir pix"]],
+  ["enviar-pix-chave", "enviar-pix-chave", "Enviar Pix usando chave", "Entenda o conceito de chave Pix sem informar dados.", ["chave piks", "pix contato"]],
+  ["pagar-pix-qr-code", "pagar-pix-qr-code", "Usar Pix por QR Code", "Reconheça a opção de QR Code sem abrir câmera ou imagem.", ["qrcode pix", "qr pix"]],
+  ["cobrar-via-pix", "cobrar-via-pix", "Cobrar via Pix", "Entenda onde normalmente fica a opção de cobrança Pix, sem criar uma cobrança real.", ["como cobrar pix", "receber pix", "pedir pix", "cobrança pix"]],
+  ["pagar-conta-codigo-barras", "pagar-conta-codigo-barras", "Pagar conta com código de barras", "Reconheça as opções comuns para contas de consumo.", ["conta de luz", "conta de água", "cod barras"]],
   ["ver-comprovante-pix", "comprovante", "Ver comprovante Pix", "Saiba onde normalmente procurar o recibo de uma transferência Pix.", ["comprovante pix", "recibo pix", "pix feito"]],
-  ["cobrar-via-pix", "pix", "Cobrar via Pix", "Entenda onde normalmente fica a opção de cobrança Pix, sem criar uma cobrança real.", ["como cobrar pix", "receber pix", "pedir pix", "cobrança pix"]],
-  ["enviar-pix-chave", "pix", "Enviar Pix usando chave", "Entenda o conceito de chave Pix sem informar dados.", ["chave piks", "pix contato"]],
-  ["pagar-pix-qr-code", "pix", "Usar Pix por QR Code", "Reconheça a opção de QR Code sem abrir câmera ou imagem.", ["qrcode pix", "qr pix"]],
+  ["saldo", "saldo", "Ver saldo", "Saiba onde conferir o valor disponível na sua conta.", ["quanto tenho", "dinheiro na conta", "consultar saldo", "ver conta", "saldo disponível", "extrato da conta"]],
+  ["trocar-senha-app-banco", "trocar-senha-app-banco", "Trocar senha do aplicativo", "Encontre orientações oficiais de segurança sem informar sua senha ao Guido.", ["esqueci senha", "senha banco"]],
   ["baixar-segunda-via-boleto", "boleto", "Encontrar segunda via de boleto", "Saiba como procurar o canal oficial de quem emitiu a conta.", ["2 via", "boleto novo", "segunda bia"]],
-  ["trocar-senha-app-banco", "seguranca", "Trocar senha do aplicativo", "Encontre orientações oficiais de segurança sem informar sua senha ao Guido.", ["esqueci senha", "senha banco"]],
   ["identificar-golpe-bancario", "seguranca", "Identificar golpe bancário", "Conheça sinais de mensagens e pedidos suspeitos.", ["goupe", "fralde", "mensagem suspeita"]],
   ["caiu-em-golpe-banco", "seguranca", "O que fazer ao suspeitar de golpe", "Pare o contato e procure imediatamente os canais oficiais.", ["fui roubado", "perdi dinheiro", "fraude"]],
-  ["falar-atendimento-banco-app", "atendimento", "Encontrar atendimento oficial", "Saiba como procurar ajuda dentro do aplicativo oficial.", ["chat banco", "suporte", "falar banco"]],
+  ["falar-atendimento-banco-app", "falar-atendimento-banco-app", "Encontrar atendimento oficial", "Saiba como procurar ajuda dentro do aplicativo oficial.", ["chat banco", "suporte", "falar banco"]],
+  ["bloquear-cartao", "bloquear-cartao", "Bloquear cartão", "Aprenda a encontrar a opção de bloqueio temporário ou definitivo do seu cartão.", ["bloquear cartao", "cartao perdido", "perdi o cartao", "roubo de cartao", "cancelar cartao"]],
 ];
 
 const additionalGenericTasks: Task[] = genericTaskDefinitions.map(([slug, actionId, title, description, searchTerms]) => ({
@@ -106,21 +108,127 @@ const additionalGenericTasks: Task[] = genericTaskDefinitions.map(([slug, action
   status: "draft" as const,
 }));
 
-const applicationTasks: Task[] = financialApplications.flatMap((application) =>
-  actions.map((action) => ({
-    id: `task-${action.id}-${application.slug}`,
-    applicationId: application.id,
-    actionId: action.id,
-    title: action.taskTitle,
-    slug: `${action.slug}-${application.slug}`,
-    description: `${action.description} O guia de ${application.name} ainda está em revisão.`,
-    difficulty: "medium" as const,
-    safetyWarning: "Guia em preparação. Não siga este registro como tutorial oficial.",
-    searchTerms: [...action.searchTerms, application.name, ...application.searchTerms],
-    availability: "preparing" as const,
-    status: "draft" as const,
-  })),
-);
+export const bankCompletedGuides: Record<string, string[]> = {
+  "banco-do-brasil": [
+    "pix",
+    "enviar-pix-chave",
+    "pagar-pix-qr-code",
+    "cobrar-via-pix",
+    "boleto",
+    "pagar-conta-codigo-barras",
+    "comprovante",
+    "saldo",
+    "trocar-senha-app-banco",
+    "bloquear-cartao",
+    "falar-atendimento-banco-app",
+  ],
+  "banco-inter": [
+    "pix",
+    "enviar-pix-chave",
+    "pagar-pix-qr-code",
+    "cobrar-via-pix",
+    "boleto",
+    "pagar-conta-codigo-barras",
+    "comprovante",
+    "saldo",
+    "trocar-senha-app-banco",
+    "bloquear-cartao",
+    "falar-atendimento-banco-app",
+  ],
+  "mercado-pago": [
+    "pix",
+    "enviar-pix-chave",
+    "pagar-pix-qr-code",
+    "cobrar-via-pix",
+    "boleto",
+    "pagar-conta-codigo-barras",
+    "comprovante",
+    "saldo",
+    "trocar-senha-app-banco",
+    "bloquear-cartao",
+    "falar-atendimento-banco-app",
+  ],
+  nubank: [
+    "pix",
+    "enviar-pix-chave",
+    "pagar-pix-qr-code",
+    "cobrar-via-pix",
+    "boleto",
+    "pagar-conta-codigo-barras",
+    "comprovante",
+    "saldo",
+    "trocar-senha-app-banco",
+    "bloquear-cartao",
+    "falar-atendimento-banco-app",
+  ],
+  picpay: [
+    "pix",
+    "enviar-pix-chave",
+    "pagar-pix-qr-code",
+    "cobrar-via-pix",
+    "boleto",
+    "pagar-conta-codigo-barras",
+    "comprovante",
+    "saldo",
+    "trocar-senha-app-banco",
+    "bloquear-cartao",
+    "falar-atendimento-banco-app",
+  ],
+  bradesco: [
+    "pix",
+    "enviar-pix-chave",
+    "pagar-pix-qr-code",
+    "cobrar-via-pix",
+    "boleto",
+    "pagar-conta-codigo-barras",
+    "comprovante",
+    "saldo",
+    "trocar-senha-app-banco",
+  ],
+  santander: [
+    "pix",
+    "enviar-pix-chave",
+    "pagar-pix-qr-code",
+    "cobrar-via-pix",
+    "boleto",
+    "pagar-conta-codigo-barras",
+    "comprovante",
+    "saldo",
+    "trocar-senha-app-banco",
+  ],
+  caixa: [
+    "pix",
+    "enviar-pix-chave",
+    "pagar-pix-qr-code",
+    "cobrar-via-pix",
+    "boleto",
+    "pagar-conta-codigo-barras",
+    "comprovante",
+    "saldo",
+    "trocar-senha-app-banco",
+  ],
+};
+
+const applicationTasks: Task[] = financialApplications.flatMap((application) => {
+  const allowedActionIds = new Set(
+    bankCompletedGuides[application.slug] ?? actions.map((action) => action.id),
+  );
+  return actions
+    .filter((action) => allowedActionIds.has(action.id))
+    .map((action) => ({
+      id: `task-${action.id}-${application.slug}`,
+      applicationId: application.id,
+      actionId: action.id,
+      title: action.taskTitle,
+      slug: `${action.slug}-${application.slug}`,
+      description: `${action.description} O guia de ${application.name} ainda está em revisão.`,
+      difficulty: "medium" as const,
+      safetyWarning: "Guia em preparação. Não siga este registro como tutorial oficial.",
+      searchTerms: [...action.searchTerms, application.name, ...application.searchTerms],
+      availability: "preparing" as const,
+      status: "draft" as const,
+    }));
+});
 
 export const tasks: Task[] = [...coreTasks, ...additionalGenericTasks, ...applicationTasks];
 
@@ -181,6 +289,7 @@ export const guideSteps: GuideStep[] = guides.flatMap((guide) =>
     guideId: guide.id,
     order: index + 1,
     imagePath: `/guide-placeholders/step-${index + 1}.svg`,
+    audioPath: `/audio/guias/pagar-boleto/step-${index + 1}.mp3`,
   })),
 );
 

@@ -90,14 +90,19 @@ describe("catálogo da página Explorar", () => {
     expect(pixItems).toHaveLength(1);
     expect(getExploreGuideHref(pixItems[0]!)).toBe("/acoes/pix");
     expect(presentationItems.filter((item) => item.action).map((item) => item.action?.slug)).toEqual(expect.arrayContaining([
-      "bloquear-cartao",
-      "boleto",
-      "comprovante",
-      "limite",
+      "cobrar-via-pix",
+      "enviar-pix-chave",
       "pix",
+      "boleto",
+      "pagar-conta-codigo-barras",
+      "trocar-senha-app-banco",
+      "pagar-pix-qr-code",
+      "comprovante",
       "saldo",
+      "bloquear-cartao",
+      "falar-atendimento-banco-app",
     ]));
-    expect(presentationItems.filter((item) => item.action)).toHaveLength(6);
+    expect(presentationItems.filter((item) => item.action)).toHaveLength(11);
   });
 
   it("mantém tarefas específicas quando a busca identifica um banco", () => {
@@ -107,15 +112,21 @@ describe("catálogo da página Explorar", () => {
 
     expect(nubankItems.filter((item) => item.application.slug === "nubank").map((item) => item.task.title)).toEqual([
       "Bloquear cartão",
-      "Encontrar limite do cartão",
+      "Cobrar via Pix",
+      "Encontrar atendimento oficial",
+      "Enviar Pix usando chave",
       "Fazer Pix",
       "Pagar boleto",
+      "Pagar conta com código de barras",
+      "Trocar senha do aplicativo",
+      "Usar Pix por QR Code",
       "Ver comprovante",
       "Ver saldo",
     ]);
-    expect(pixNubankItems).toHaveLength(1);
-    expect(pixNubankItems[0]?.task.slug).toBe("pix-nubank");
-    expect(getExploreGuideHref(pixNubankItems[0]!)).toBe("/tarefas/pix-nubank");
+    expect(pixNubankItems).toHaveLength(4);
+    expect(pixNubankItems.some((item) => item.task.slug === "pix-nubank")).toBe(true);
+    const specificPixNubank = pixNubankItems.find((item) => item.task.slug === "pix-nubank")!;
+    expect(getExploreGuideHref(specificPixNubank)).toBe("/tarefas/pix-nubank");
   });
 
   it("mantém as tarefas específicas de Gov.br e WhatsApp", () => {
@@ -136,6 +147,6 @@ describe("catálogo da página Explorar", () => {
     expect(popularItems).toHaveLength(1);
     expect(popularItems[0]?.action?.slug).toBe("pix");
     expect(remainingItems.some((item) => item.action?.slug === "pix")).toBe(false);
-    expect(getExplorePresentationItems(filterExploreItems(items, "pix nubank", ""), "pix nubank")).toHaveLength(1);
+    expect(getExplorePresentationItems(filterExploreItems(items, "pix nubank", ""), "pix nubank")).toHaveLength(4);
   });
 });

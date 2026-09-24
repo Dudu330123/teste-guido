@@ -30,6 +30,7 @@ import { detectOperatingSystem, readOperatingSystem, saveOperatingSystem } from 
 import { DevicePickerCard } from "./device-picker-card";
 import { deviceOptions, type DeviceOption } from "./device-options";
 import { BankSwitcherModal } from "./bank-switcher-modal";
+import { TaskSwitcherModal, type TaskSwitcherOption } from "./task-switcher-modal";
 
 interface ApplicationOption { slug: string; name: string; logoPath: string | null }
 interface TaskGuideSetupProps {
@@ -43,6 +44,7 @@ interface TaskGuideSetupProps {
   application:         ApplicationOption;
   applicationOptions?: ApplicationOption[];
   selectedApplicationSlug?: string;
+  taskOptions?:        TaskSwitcherOption[];
   canContinue?: boolean;
   returnTo?: string;
 }
@@ -58,6 +60,7 @@ export function TaskGuideSetup({
   application,
   applicationOptions = [],
   selectedApplicationSlug,
+  taskOptions,
   canContinue = true,
   returnTo,
 }: TaskGuideSetupProps) {
@@ -90,6 +93,19 @@ export function TaskGuideSetup({
   const hasMultipleApplications = options.length > 1;
   const device = deviceOptions.find((item) => item.id === deviceId) ?? deviceOptions[0]!;
 
+  const isWhatsAppOrGov = selectedApplication.slug === "whatsapp" || selectedApplication.slug === "gov-br";
+  const hasTaskOptions = Boolean(taskOptions && taskOptions.length > 1 && isWhatsAppOrGov);
+  const [selectedTaskOverride, setSelectedTaskOverride] = useState<TaskSwitcherOption | null>(null);
+  const [taskModalOpen, setTaskModalOpen] = useState(false);
+
+  const activeTask = selectedTaskOverride
+    ?? taskOptions?.find((item) => item.slug === taskSlug)
+    ?? { id: taskId, slug: taskSlug, title: taskTitle, availability: canContinue ? "available" : "preparing" };
+
+  const currentTaskSlug = activeTask.slug;
+  const currentTaskTitle = activeTask.title;
+  const effectiveCanContinue = hasTaskOptions ? true : canContinue;
+
   /* ── Restore saved preference ──────────────────────────────────────── */
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -114,38 +130,31 @@ export function TaskGuideSetup({
     crumbButtonRef.current?.focus({ preventScroll: true });
   };
 
+  /* ── Task Selection ─────────────────────────────────────────────────── */
+  const handleSelectTask = (task: TaskSwitcherOption) => {
+    setSelectedTaskOverride(task);
+    setTaskModalOpen(false);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.pathname = `/tarefas/${task.slug}`;
+      window.history.replaceState(null, "", url.toString());
+    }
+    crumbButtonRef.current?.focus({ preventScroll: true });
+  };
+
   /* ── Navigation ────────────────────────────────────────────────────── */
   const goBack = () => {
-    if (returnTo) {
-      router.push(returnTo);
-      return;
-    }
-
-    const hasInternalReferrer = (() => {
-      if (!window.document.referrer) return false;
-      try {
-        return new URL(window.document.referrer).origin === window.location.origin;
-      } catch {
-        return false;
-      }
-    })();
-
-    if (hasInternalReferrer && window.history.length > 1) {
-      router.back();
-      return;
-    }
-
     router.push("/");
   };
 
   const openGuideForDevice = (selectedDevice: DeviceOption) => {
-    if (!canContinue) return;
+    if (!effectiveCanContinue) return;
     setDeviceId(selectedDevice.id);
     saveOperatingSystem(window.localStorage, selectedDevice.os);
     const search = new URLSearchParams({ os: selectedDevice.os });
     if (applicationOptions.length) search.set("app", currentAppSlug);
     if (returnTo) search.set("returnTo", returnTo);
-    router.push(`/guias/${encodeURIComponent(taskSlug)}?${search}`);
+    router.push(`/guias/${encodeURIComponent(currentTaskSlug)}?${search}`);
   };
 
   const openGuide = () => openGuideForDevice(device);
@@ -190,6 +199,39 @@ export function TaskGuideSetup({
                 </svg>
               </span>
             </button>
+          ) : hasTaskOptions ? (
+            <button
+              ref={crumbButtonRef}
+              type="button"
+              className="task-setup-crumb task-setup-crumb--clickable"
+              onClick={() => setTaskModalOpen(true)}
+              aria-haspopup="dialog"
+              aria-expanded={taskModalOpen}
+              aria-label={`Aplicativo: ${selectedApplication.name}. Tarefa atual: ${currentTaskTitle}. Clique para trocar de tarefa`}
+              title="Clique para trocar de tarefa"
+            >
+              {selectedLogoPath ? (
+                <Image
+                  src={selectedLogoPath}
+                  alt=""
+                  width={28}
+                  height={28}
+                  unoptimized
+                  className="task-setup-crumb-icon"
+                />
+              ) : (
+                <span className="task-setup-crumb-icon task-setup-crumb-icon--fallback" aria-hidden="true">G</span>
+              )}
+              <span className="task-setup-crumb-app">{selectedApplication.name}</span>
+              <span className="task-setup-crumb-sep" aria-hidden="true">›</span>
+              <span className="task-setup-crumb-task">{currentTaskTitle}</span>
+              <span className="task-setup-crumb-badge" aria-hidden="true">
+                <span>Trocar</span>
+                <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13" aria-hidden="true">
+                  <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+                </svg>
+              </span>
+            </button>
           ) : (
             <nav className="task-setup-crumb" aria-label="Contexto da tarefa">
               {selectedLogoPath ? (
@@ -214,7 +256,7 @@ export function TaskGuideSetup({
             type="button"
             className="task-setup-back"
             onClick={goBack}
-            aria-label="Voltar para a página anterior"
+            aria-label="Voltar para a página inicial"
           >
             <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -231,7 +273,7 @@ export function TaskGuideSetup({
           selectedDeviceId={deviceId}
           onSelectDevice={setDeviceId}
           onContinue={openGuide}
-          continueDisabled={!canContinue}
+          continueDisabled={!effectiveCanContinue}
         />
 
         {hasMultipleApplications && (
@@ -242,6 +284,18 @@ export function TaskGuideSetup({
             currentSlug={currentAppSlug}
             taskTitle={taskTitle}
             banks={options}
+          />
+        )}
+
+        {hasTaskOptions && taskOptions && (
+          <TaskSwitcherModal
+            isOpen={taskModalOpen}
+            onClose={() => setTaskModalOpen(false)}
+            onSelect={handleSelectTask}
+            currentSlug={currentTaskSlug}
+            applicationName={selectedApplication.name}
+            applicationLogoPath={selectedLogoPath}
+            tasks={taskOptions}
           />
         )}
 

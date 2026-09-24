@@ -254,4 +254,37 @@ describe("busca e navegação guiada da página inicial", () => {
     expect(screen.getByText("Tente escrever de outra forma.")).toBeVisible();
     expect(screen.queryByText("Talvez você esteja procurando:")).not.toBeInTheDocument();
   });
+
+  it("exibe 'Banco' como rótulo em cima de todos os guias bancários nas sugestões", async () => {
+    const user = userEvent.setup();
+    render(<HomeSearch applications={applications} tasks={tasks} />);
+    await user.type(screen.getByRole("searchbox", { name: "Pesquisar ajuda" }), "pixxxx");
+
+    const suggestionLinks = screen.getAllByRole("link");
+    expect(suggestionLinks).toHaveLength(4);
+    suggestionLinks.forEach((link) => {
+      const topLabel = link.querySelector("span:first-child");
+      expect(topLabel?.textContent).toBe("Banco");
+    });
+  });
+
+  it("mostra Bloquear cartão para PicPay mas não para Bradesco no menu de tarefas", async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(<HomeSearch applications={applications} tasks={tasks} />);
+
+    await user.click(screen.getByRole("button", { name: /Bancos/ }));
+    await user.click(screen.getByRole("button", { name: /PicPay/ }));
+    expect(screen.getByRole("dialog", { name: "Escolha uma tarefa" })).toBeVisible();
+    expect(screen.getByRole("link", { name: /Bloquear cartão/ })).toHaveAttribute("href", "/tarefas/bloquear-cartao-picpay");
+    expect(screen.getByRole("link", { name: /Encontrar atendimento oficial/ })).toHaveAttribute("href", "/tarefas/falar-atendimento-banco-app-picpay");
+
+    unmount();
+    render(<HomeSearch applications={applications} tasks={tasks} />);
+
+    await user.click(screen.getByRole("button", { name: /Bancos/ }));
+    await user.click(screen.getByRole("button", { name: /Bradesco/ }));
+    expect(screen.getByRole("dialog", { name: "Escolha uma tarefa" })).toBeVisible();
+    expect(screen.queryByRole("link", { name: /Bloquear cartão/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Encontrar atendimento oficial/ })).not.toBeInTheDocument();
+  });
 });

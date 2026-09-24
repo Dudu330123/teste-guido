@@ -56,7 +56,7 @@ export default async function ActionPage({ params, searchParams }: ActionPagePro
             // o roteiro genérico da ação. O aplicativo escolhido segue no query
             // string para que o guia mostre o contexto correto sem duplicar conteúdo.
             const usesGenericGuide = !isDemo
-              && applicationTask.availability === "preparing"
+              && application.slug !== "banco-demonstracao"
               && genericTask !== undefined;
             const guideTask = usesGenericGuide ? genericTask : applicationTask;
             const guidePath = selectedOperatingSystem
@@ -78,7 +78,7 @@ export default async function ActionPage({ params, searchParams }: ActionPagePro
                 <h2 className="internal-page-card-title">{application.name}</h2>
                 <p className="internal-page-card-description">{applicationTask.description}</p>
                 <p className="soft-panel internal-page-card-status">
-                  {guideIsDemo ? "Demonstração disponível" : "Guia em preparação"}
+                  {guideIsDemo ? "Demonstração disponível" : guideAvailable ? "Disponível agora" : "Guia em preparação"}
                 </p>
                 <Link
                   href={withReturnPath(guidePath, contextReturnTo)}

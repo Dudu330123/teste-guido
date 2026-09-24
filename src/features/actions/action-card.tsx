@@ -37,6 +37,41 @@ const iconPaths: Record<string, ReactNode> = {
       <path d="m12 17 4-5M7 17h10" />
     </>
   ),
+  "enviar-pix-chave": (
+    <>
+      <circle cx="8" cy="15" r="4" />
+      <path d="m10.8 12.2 7.2-7.2M16 7l2 2M14 9l1 1" />
+    </>
+  ),
+  "pagar-pix-qr-code": (
+    <>
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <path d="M14 14h3v3h-3zM18 18h3v3h-3zM14 20h3M20 14v3" />
+    </>
+  ),
+  "cobrar-via-pix": (
+    <>
+      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+    </>
+  ),
+  "pagar-conta-codigo-barras": (
+    <>
+      <path d="M4 5v14M8 5v14M11 5v14M15 5v14M18 5v14M21 5v14" />
+    </>
+  ),
+  "trocar-senha-app-banco": (
+    <>
+      <rect x="3" y="11" width="18" height="11" rx="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4M12 15v3" />
+    </>
+  ),
+  "falar-atendimento-banco-app": (
+    <>
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </>
+  ),
 };
 
 export function ActionIcon({ slug }: { slug: string }) {

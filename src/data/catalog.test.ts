@@ -4,8 +4,8 @@ import { financialApplications } from "./applications";
 import { getStepsForGuide, guides, tasks } from "./guides";
 
 describe("catálogo migrado", () => {
-  it("cadastra seis ações e oito aplicativos financeiros do MVP anterior", () => {
-    expect(actions).toHaveLength(6);
+  it("cadastra 11 ações e oito aplicativos financeiros", () => {
+    expect(actions).toHaveLength(11);
     expect(financialApplications).toHaveLength(8);
   });
 
@@ -13,7 +13,7 @@ describe("catálogo migrado", () => {
     const applicationTasks = tasks.filter((task) =>
       financialApplications.some((application) => application.id === task.applicationId),
     );
-    expect(applicationTasks).toHaveLength(48);
+    expect(applicationTasks).toHaveLength(82);
     expect(applicationTasks.every((task) => task.availability === "preparing" && task.status === "draft")).toBe(true);
   });
 

@@ -44,10 +44,14 @@ export default async function GuidePage({ searchParams }: GuidePageProps) {
     os,
   );
   if (remoteContent) {
+    const stepsWithAudio = remoteContent.steps.map((step) => ({
+      ...step,
+      audioPath: step.audioPath || `/audio/guias/pagar-boleto/step-${step.order}.mp3`,
+    }));
     return <GuideViewer
       {...remoteContent}
       application={selectedApplication ?? remoteContent.application}
-      steps={applyPublicGuideImages(remoteContent.steps, publicImages)}
+      steps={applyPublicGuideImages(stepsWithAudio, publicImages)}
       returnTo={guideReturnTo}
     />;
   }

@@ -60,13 +60,13 @@ describe("preparação do guia", () => {
     expect(screen.getByText("Pagar um boleto")).toBeVisible();
   });
 
-  it("oferece retorno explícito para a página de origem", async () => {
+  it("retorna para a página inicial ao clicar em voltar", async () => {
     const user = userEvent.setup();
-    render(<TaskGuideSetup {...defaultProps} returnTo="/?q=boleto" />);
+    render(<TaskGuideSetup {...defaultProps} />);
 
-    await user.click(screen.getByRole("button", { name: /voltar para a página anterior/i }));
+    await user.click(screen.getByRole("button", { name: /voltar para a página inicial/i }));
 
-    expect(push).toHaveBeenCalledWith("/?q=boleto");
+    expect(push).toHaveBeenCalledWith("/");
     expect(back).not.toHaveBeenCalled();
   });
 
@@ -157,5 +157,82 @@ describe("preparação do guia", () => {
     await user.keyboard("{Escape}");
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Banco atual: Caixa/i })).toBeInTheDocument();
+  });
+
+  it("abre o modal de trocar tarefa para o WhatsApp e atualiza a seleção para continuar", async () => {
+    const user = userEvent.setup();
+    const whatsappProps = {
+      taskId: "task-fazer-chamada-whatsapp",
+      taskSlug: "fazer-chamada-whatsapp",
+      taskTitle: "Fazer uma chamada",
+      description: "Aprenda a iniciar uma ligação pelo WhatsApp.",
+      safetyWarning: "Guia em preparação.",
+      application: { slug: "whatsapp", name: "WhatsApp", logoPath: "/images/logos/whatsapp-home.png" },
+      taskOptions: [
+        { id: "task-fazer-chamada-whatsapp", slug: "fazer-chamada-whatsapp", title: "Fazer uma chamada" },
+        { id: "task-enviar-audio-whatsapp", slug: "enviar-audio-whatsapp", title: "Enviar um áudio" },
+        { id: "task-bloquear-contato-whatsapp", slug: "bloquear-contato-whatsapp", title: "Bloquear um contato" },
+      ],
+    };
+
+    render(<TaskGuideSetup {...whatsappProps} />);
+
+    // Breadcrumb deve ser um botão clicável com o nome da tarefa atual
+    const crumbButton = screen.getByRole("button", { name: /Aplicativo: WhatsApp\. Tarefa atual: Fazer uma chamada/i });
+    expect(crumbButton).toBeInTheDocument();
+
+    // Clica para abrir o modal de tarefas
+    await user.click(crumbButton);
+
+    const dialog = screen.getByRole("dialog", { name: "Trocar de tarefa" });
+    expect(dialog).toBeVisible();
+    expect(screen.getByText(/Escolha o que você quer fazer no/i)).toBeInTheDocument();
+    expect(screen.getByText("Tarefa atual")).toBeInTheDocument();
+
+    // Seleciona "Enviar um áudio"
+    await user.click(screen.getByRole("button", { name: /Enviar um áudio/i }));
+
+    // Modal fecha e o breadcrumb é atualizado
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Aplicativo: WhatsApp\. Tarefa atual: Enviar um áudio/i })).toBeInTheDocument();
+
+    // Clica em Continuar e verifica navegação para a nova tarefa
+    const continueBtn = screen.getByRole("button", { name: /continuar com/i });
+    expect(continueBtn).toBeEnabled();
+    await user.click(continueBtn);
+    expect(push).toHaveBeenCalledWith("/guias/enviar-audio-whatsapp?os=ios");
+  });
+
+  it("abre o modal de trocar tarefa para o Gov.br e atualiza a seleção", async () => {
+    const user = userEvent.setup();
+    const govProps = {
+      taskId: "task-acessar-gov-br",
+      taskSlug: "acessar-gov-br",
+      taskTitle: "Acessar o Gov.br",
+      description: "Aprenda a localizar o acesso.",
+      safetyWarning: "Guia em preparação.",
+      application: { slug: "gov-br", name: "Gov.br", logoPath: "/images/logos/gov-br-home.webp" },
+      taskOptions: [
+        { id: "task-acessar-gov-br", slug: "acessar-gov-br", title: "Acessar o Gov.br" },
+        { id: "task-recuperar-senha-gov-br", slug: "recuperar-senha-gov-br", title: "Recuperar a senha do Gov.br" },
+      ],
+    };
+
+    render(<TaskGuideSetup {...govProps} />);
+
+    const crumbButton = screen.getByRole("button", { name: /Aplicativo: Gov\.br\. Tarefa atual: Acessar o Gov\.br/i });
+    await user.click(crumbButton);
+
+    const dialog = screen.getByRole("dialog", { name: "Trocar de tarefa" });
+    expect(dialog).toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: /Recuperar a senha do Gov\.br/i }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Aplicativo: Gov\.br\. Tarefa atual: Recuperar a senha do Gov\.br/i })).toBeInTheDocument();
+
+    const continueBtn = screen.getByRole("button", { name: /continuar com/i });
+    expect(continueBtn).toBeEnabled();
+    await user.click(continueBtn);
+    expect(push).toHaveBeenCalledWith("/guias/recuperar-senha-gov-br?os=ios");
   });
 });

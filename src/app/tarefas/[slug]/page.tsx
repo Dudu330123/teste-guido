@@ -37,7 +37,7 @@ export default async function TaskPage({ params, searchParams }: TaskPageProps) 
   const backHref = safeReturnPath(returnTo, defaultBackHref);
 
   const taskAction = getActionForTask(task);
-  if (task.availability === "preparing" && taskApplication.slug !== "banco-demonstracao" && taskAction) {
+  if (taskApplication.slug !== "banco-demonstracao" && taskAction) {
     const genericTask = findSharedBankTask(catalog, taskAction.id);
     if (genericTask && genericTask.availability !== "preparing") {
       // Links antigos podem apontar para uma tarefa específica do banco. Como o
@@ -47,6 +47,17 @@ export default async function TaskPage({ params, searchParams }: TaskPageProps) 
       redirect(withReturnPath(genericPath, returnTo ? backHref : undefined));
     }
   }
+
+  const isWhatsAppOrGov = application.slug === "whatsapp" || application.slug === "gov-br";
+  const appTasks = isWhatsAppOrGov
+    ? catalog.tasks.filter((item) => item.applicationId === taskApplication.id)
+    : undefined;
+  const taskOptions = appTasks?.map(({ id, slug: taskSlug, title, availability }) => ({
+    id,
+    slug: taskSlug,
+    title,
+    availability,
+  }));
 
   return (
     <div className="guido-home internal-page task-setup-shell">
@@ -62,7 +73,8 @@ export default async function TaskPage({ params, searchParams }: TaskPageProps) 
           ? bankApplications.map(({ slug: applicationSlug, name, logoPath }) => ({ slug: applicationSlug, name, logoPath }))
           : undefined}
         selectedApplicationSlug={application.slug}
-        canContinue={task.availability !== "preparing"}
+        taskOptions={taskOptions}
+        canContinue={task.availability !== "preparing" || isWhatsAppOrGov}
         returnTo={returnTo ? backHref : undefined}
       />
     </div>

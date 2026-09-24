@@ -160,6 +160,7 @@ export function getAdminScriptSteps(slug: string, operatingSystem: OperatingSyst
     guideId: `editorial-${slug}-${operatingSystem}`,
     order: index + 1,
     imagePath: "",
+    audioPath: `/audio/guias/${slug}/step-${index + 1}.mp3`,
   }));
 }
 

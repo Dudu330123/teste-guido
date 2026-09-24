@@ -31,4 +31,10 @@ describe("roteiros editoriais do painel", () => {
     expect(getAdminScriptSteps("fazer-pix", "android")[0]?.id).toBe("editorial-fazer-pix-android-1");
     expect(getAdminScriptSteps("fazer-pix", "ios")[0]?.id).toBe("editorial-fazer-pix-ios-1");
   });
+
+  it("inclui o caminho de áudio estático para cada passo", () => {
+    const steps = getAdminScriptSteps("fazer-pix", "android");
+    expect(steps[0]?.audioPath).toBe("/audio/guias/fazer-pix/step-1.mp3");
+    expect(steps[5]?.audioPath).toBe("/audio/guias/fazer-pix/step-6.mp3");
+  });
 });
