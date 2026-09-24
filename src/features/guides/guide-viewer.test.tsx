@@ -1,9 +1,15 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { applications } from "@/data/applications";
 import { getGuide, getStepsForGuide, tasks } from "@/data/guides";
 import { GuideViewer } from "./guide-viewer";
+
+const push = vi.fn();
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push }),
+}));
 
 const application = applications[0]!;
 const task = tasks[0]!;
@@ -13,6 +19,7 @@ const steps = getStepsForGuide(guide.id);
 describe("visualizador do guia", () => {
   beforeEach(() => {
     localStorage.clear();
+    push.mockClear();
   });
 
   it("expõe os controles principais e permite avançar e voltar", async () => {
@@ -73,6 +80,7 @@ describe("visualizador do guia", () => {
 
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent("Demonstração concluída sem realizar qualquer operação bancária.");
+    expect(push).toHaveBeenCalledWith("/");
   });
 
   it("recupera um progresso e oferece continuar ou reiniciar", async () => {
@@ -105,5 +113,14 @@ describe("visualizador do guia", () => {
     expect(screen.getByText(/não inventa etapas/i)).toBeVisible();
     expect(screen.getByRole("link", { name: "Voltar aos guias" })).toHaveAttribute("href", "/explorar");
     expect(screen.queryByText(/demonstração concluída/i)).not.toBeInTheDocument();
+  });
+
+  it("preserva o banco escolhido no link de sair do guia", () => {
+    const bankApplication = applications.find((item) => item.slug === "banco-do-brasil")!;
+    render(<GuideViewer application={bankApplication} guide={guide} steps={steps} task={task} />);
+    expect(screen.getByRole("link", { name: /Sair do guia/i })).toHaveAttribute(
+      "href",
+      "/tarefas/pagar-boleto?app=banco-do-brasil",
+    );
   });
 });

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import type { Application, Guide, GuideStep, Task } from "@/types/content";
@@ -29,6 +30,20 @@ function taskSetupHref(task: Task, application: Application, returnTo?: string) 
   return `/tarefas/${encodeURIComponent(task.slug)}${query ? `?${query}` : ""}`;
 }
 
+function resolveExitHref(task: Task, application: Application, returnTo?: string) {
+  if (!returnTo) return taskSetupHref(task, application);
+  try {
+    const url = new URL(returnTo, "https://guido.local");
+    if (url.pathname.startsWith("/tarefas/") && !url.searchParams.has("app") && application.slug !== "banco-demonstracao") {
+      url.searchParams.set("app", application.slug);
+      return `${url.pathname}${url.search}`;
+    }
+    return returnTo;
+  } catch {
+    return returnTo;
+  }
+}
+
 function GuideToolbar({
   application,
   guide,
@@ -36,7 +51,7 @@ function GuideToolbar({
   returnTo,
   onRestart,
 }: GuideViewerProps & { onRestart: () => void }) {
-  const exitHref = returnTo ?? `/tarefas/${encodeURIComponent(task.slug)}`;
+  const exitHref = resolveExitHref(task, application, returnTo);
   const switchHref = taskSetupHref(task, application, returnTo);
   return (
     <HomeToolbar
@@ -180,6 +195,7 @@ function GuideHelpModal({ onClose }: { onClose: () => void }) {
 }
 
 export function GuideViewer({ application, guide, steps, task, returnTo }: GuideViewerProps) {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(0);
   const [remotePending, setRemotePending] = useState(true);
   const [resumeStep, setResumeStep] = useState<number | null>(null);
@@ -309,6 +325,16 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
         return;
       }
       setCompleted(true);
+      saveProgress(window.localStorage, {
+        guideId: guide.id,
+        currentStep,
+        guideVersion: guide.guideVersion,
+        lastAccessedAt: new Date().toISOString(),
+        status: "completed",
+        operatingSystem: guide.operatingSystem,
+      });
+      void saveRemoteProgress(guide.id, currentStep, "completed");
+      router.push("/");
       return;
     }
     setCurrentStep((value) => nextStep(value, steps.length));

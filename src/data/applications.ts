@@ -20,14 +20,12 @@ const preparingApplications: Array<[string, string, string, string, string[]]> =
   ["gov-br", "Gov.br", "Serviços públicos", "Acesso a serviços digitais do governo.", ["governo", "conta gov", "senha gov", "serviço público"]],
   ["caixa", "Caixa", "Serviços financeiros", "Serviços do aplicativo bancário.", ["caixa econômica", "caicha"]],
   ["banco-do-brasil", "Banco do Brasil", "Serviços financeiros", "Serviços do aplicativo bancário.", ["bb", "banco brasil"]],
-  ["itau", "Itaú", "Serviços financeiros", "Serviços do aplicativo bancário.", ["itau", "itaú"]],
   ["bradesco", "Bradesco", "Serviços financeiros", "Serviços do aplicativo bancário.", ["bradescu"]],
   ["santander", "Santander", "Serviços financeiros", "Serviços do aplicativo bancário.", ["santander banco"]],
   ["nubank", "Nubank", "Serviços financeiros", "Serviços do aplicativo bancário.", ["nu bank", "roxinho"]],
   ["banco-inter", "Banco Inter", "Serviços financeiros", "Serviços do aplicativo bancário.", ["inter", "banco inter"]],
   ["picpay", "PicPay", "Serviços financeiros", "Serviços da carteira digital.", ["pic pay", "picpei"]],
   ["mercado-pago", "Mercado Pago", "Serviços financeiros", "Serviços da carteira digital.", ["mercadopago", "mercado pix"]],
-  ["c6-bank", "C6 Bank", "Serviços financeiros", "Serviços do aplicativo bancário.", ["c6", "c6 banco"]],
 ];
 
 // Os arquivos locais vêm dos ícones exibidos nas listagens oficiais da App Store.
@@ -38,14 +36,12 @@ const localLogoPaths: Record<string, string> = {
   "gov-br": "/images/logos/gov-br-home.webp",
   caixa: "/images/logos/caixa.jpg",
   "banco-do-brasil": "/images/logos/banco-do-brasil.jpg",
-  itau: "/images/logos/itau.jpg",
   bradesco: "/images/logos/bradesco.jpg",
   santander: "/images/logos/santander.jpg",
   nubank: "/images/logos/nubank.jpg",
   "banco-inter": "/images/logos/banco-inter.jpg",
   picpay: "/images/logos/picpay.jpg",
   "mercado-pago": "/images/logos/mercado-pago.jpg",
-  "c6-bank": "/images/logos/c6-bank.jpg",
 };
 
 /**

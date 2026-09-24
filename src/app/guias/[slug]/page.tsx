@@ -23,7 +23,8 @@ export default async function DynamicGuidePage({ params, searchParams }: Dynamic
   const imageApplicationSlug = selectedApplication?.slug
     ?? remoteContent?.imageContext?.applicationSlug
     ?? null;
-  const guideReturnTo = safeReturnPath(returnTo, `/tarefas/${encodeURIComponent(slug)}`);
+  const defaultTaskPath = `/tarefas/${encodeURIComponent(slug)}${selectedApplication ? `?app=${encodeURIComponent(selectedApplication.slug)}` : ""}`;
+  const guideReturnTo = returnTo ? safeReturnPath(returnTo, defaultTaskPath) : defaultTaskPath;
   const publicImages = await getPublicGuideImages(
     imageGuideSlug,
     imageApplicationSlug,

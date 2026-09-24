@@ -4,18 +4,21 @@ import { applications, financialApplications } from "@/data/applications";
 import { getGuide, getStepsForGuide, tasks } from "@/data/guides";
 import { GuideViewer } from "@/features/guides/guide-viewer";
 import { getGuideFromSupabase } from "@/lib/catalog";
+import { safeReturnPath } from "@/lib/navigation/return-path";
 import { applyPublicGuideImages, getPublicGuideImages } from "@/lib/public-guide-images";
 
 interface GuidePageProps {
-  searchParams: Promise<{ os?: string; app?: string; preview?: string }>;
+  searchParams: Promise<{ os?: string; app?: string; preview?: string; returnTo?: string }>;
 }
 
 export const metadata: Metadata = { title: "Guia: Pagar um boleto" };
 
 export default async function GuidePage({ searchParams }: GuidePageProps) {
-  const { os, app, preview } = await searchParams;
+  const { os, app, preview, returnTo } = await searchParams;
   if (os !== "android" && os !== "ios") redirect("/tarefas/pagar-boleto");
   const selectedApplication = financialApplications.find((application) => application.slug === app);
+  const defaultTaskPath = `/tarefas/pagar-boleto${selectedApplication ? `?app=${encodeURIComponent(selectedApplication.slug)}` : ""}`;
+  const guideReturnTo = returnTo ? safeReturnPath(returnTo, defaultTaskPath) : defaultTaskPath;
 
   // Permite revisar o fluxo completo no localhost sem depender do conteúdo
   // remoto. A prévia nunca é habilitada em produção e não altera o catálogo.
@@ -30,6 +33,7 @@ export default async function GuidePage({ searchParams }: GuidePageProps) {
       guide={guide}
       steps={getStepsForGuide(guide.id)}
       task={task}
+      returnTo={guideReturnTo}
     />;
   }
 
@@ -44,6 +48,7 @@ export default async function GuidePage({ searchParams }: GuidePageProps) {
       {...remoteContent}
       application={selectedApplication ?? remoteContent.application}
       steps={applyPublicGuideImages(remoteContent.steps, publicImages)}
+      returnTo={guideReturnTo}
     />;
   }
   const guide = getGuide(os);
@@ -56,5 +61,6 @@ export default async function GuidePage({ searchParams }: GuidePageProps) {
     guide={guide}
     steps={applyPublicGuideImages(getStepsForGuide(guide.id), publicImages)}
     task={task}
+    returnTo={guideReturnTo}
   />;
 }

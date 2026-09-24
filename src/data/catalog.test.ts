@@ -4,16 +4,16 @@ import { financialApplications } from "./applications";
 import { getStepsForGuide, guides, tasks } from "./guides";
 
 describe("catálogo migrado", () => {
-  it("cadastra seis ações e dez aplicativos financeiros do MVP anterior", () => {
+  it("cadastra seis ações e oito aplicativos financeiros do MVP anterior", () => {
     expect(actions).toHaveLength(6);
-    expect(financialApplications).toHaveLength(10);
+    expect(financialApplications).toHaveLength(8);
   });
 
   it("mantém todas as combinações por aplicativo em preparação", () => {
     const applicationTasks = tasks.filter((task) =>
       financialApplications.some((application) => application.id === task.applicationId),
     );
-    expect(applicationTasks).toHaveLength(60);
+    expect(applicationTasks).toHaveLength(48);
     expect(applicationTasks.every((task) => task.availability === "preparing" && task.status === "draft")).toBe(true);
   });
 

@@ -49,14 +49,12 @@ describe("logo do aplicativo", () => {
     "gov-br",
     "caixa",
     "banco-do-brasil",
-    "itau",
     "bradesco",
     "santander",
     "nubank",
     "banco-inter",
     "picpay",
     "mercado-pago",
-    "c6-bank",
   ]) (
     "aponta o logo local de %s para um arquivo existente",
     (slug) => {
