@@ -65,18 +65,23 @@ export function TaskGuideSetup({
 
   /* ── State ─────────────────────────────────────────────────────────── */
   const options = applicationOptions.length ? applicationOptions : [application];
-  const initialAppSlug = options.find((item) => item.slug === selectedApplicationSlug)?.slug ?? options[0]?.slug ?? application.slug;
-  const [currentAppSlug, setCurrentAppSlug] = useState(initialAppSlug);
+  const [selectedAppOverride, setSelectedAppOverride] = useState<string | null>(null);
+  const [prevSelectedSlug, setPrevSelectedSlug] = useState(selectedApplicationSlug);
+
+  if (prevSelectedSlug !== selectedApplicationSlug) {
+    setPrevSelectedSlug(selectedApplicationSlug);
+    setSelectedAppOverride(null);
+  }
+
+  const currentAppSlug =
+    selectedAppOverride
+    ?? options.find((item) => item.slug === selectedApplicationSlug)?.slug
+    ?? options[0]?.slug
+    ?? application.slug;
   const [bankModalOpen, setBankModalOpen] = useState(false);
   const crumbButtonRef = useRef<HTMLButtonElement>(null);
   const visibleDevices = deviceOptions.slice(0, 2);
   const [deviceId, setDeviceId] = useState("iphone");
-
-  useEffect(() => {
-    if (selectedApplicationSlug) {
-      setCurrentAppSlug(selectedApplicationSlug);
-    }
-  }, [selectedApplicationSlug]);
 
   const selectedApplication =
     options.find((item) => item.slug === currentAppSlug) ?? application;
@@ -99,7 +104,7 @@ export function TaskGuideSetup({
 
   /* ── Bank Selection ─────────────────────────────────────────────────── */
   const handleSelectBank = (bank: ApplicationOption) => {
-    setCurrentAppSlug(bank.slug);
+    setSelectedAppOverride(bank.slug);
     setBankModalOpen(false);
     if (typeof window !== "undefined") {
       const url = new URL(window.location.href);
