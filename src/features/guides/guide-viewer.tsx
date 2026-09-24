@@ -239,6 +239,7 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
   const [helpOpen, setHelpOpen] = useState(false);
   const [canPreload, setCanPreload] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const stepTitleRef = useRef<HTMLHeadingElement>(null);
   const previousRenderedStep = useRef(0);
   const step = steps[currentStep];
@@ -268,6 +269,10 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
   const restart = () => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
+    }
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
     }
     setIsSpeaking(false);
     clearProgress(window.localStorage, guide.id);
@@ -343,6 +348,10 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
         window.speechSynthesis.cancel();
       }
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
       setIsSpeaking(false);
     };
   }, [currentStep]);
@@ -380,6 +389,10 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
   const stopSpeaking = () => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
+    }
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
     }
     setIsSpeaking(false);
     setSpeechMessage("Leitura interrompida.");
@@ -434,6 +447,40 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
     if (isSpeaking) {
       stopSpeaking();
       return;
+    }
+
+    // Se houver arquivo de áudio narrado (.mp3) e o navegador suportar reprodução de mídia:
+    const canPlayAudioFile = Boolean(
+      activeStep.audioPath &&
+      typeof window !== "undefined" &&
+      typeof window.Audio === "function" &&
+      !process.env.VITEST
+    );
+
+    if (canPlayAudioFile) {
+      try {
+        if (audioRef.current) audioRef.current.pause();
+        const audio = new Audio(activeStep.audioPath);
+        audioRef.current = audio;
+        audio.onplay = () => {
+          setIsSpeaking(true);
+          setSpeechMessage("Instrução sendo lida em voz alta.");
+        };
+        audio.onended = () => {
+          setIsSpeaking(false);
+          setSpeechMessage("Leitura concluída.");
+          audioRef.current = null;
+        };
+        audio.onerror = () => {
+          setIsSpeaking(false);
+          audioRef.current = null;
+          speakWithSynthesis();
+        };
+        void audio.play();
+        return;
+      } catch {
+        // Fallback para síntese caso a reprodução do áudio falhe
+      }
     }
 
     speakWithSynthesis();
@@ -521,42 +568,25 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
             <ScreenPlaceholder step={activeStep} />
           </div>
 
-          {activeStep.audioPath && !process.env.VITEST ? (
-            <a
-              href={activeStep.audioPath}
-              target="_blank"
-              rel="noreferrer"
-              onClick={() => setSpeechMessage("O áudio abriu em outra aba.")}
-              className="secondary-action guide-audio-button mt-7 min-h-14 w-full px-5 py-3 text-xl font-bold"
-              aria-label="Ouvir instrução"
-            >
-              <svg className="guide-audio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 5 6 9H2v6h4l5 4V5Z" />
-                <path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" />
+          <button
+            type="button"
+            onClick={toggleSpeak}
+            className={`secondary-action guide-audio-button mt-7 min-h-14 w-full px-5 py-3 text-xl font-bold ${isSpeaking ? "is-speaking" : ""}`}
+            aria-label={isSpeaking ? "Parar leitura da instrução" : "Ouvir instrução"}
+          >
+            {isSpeaking ? (
+              <svg className="guide-audio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
+                <rect x="6" y="6" width="12" height="12" rx="2" />
               </svg>
-              <span>Ouvir instrução</span>
-            </a>
-          ) : (
-            <button
-              type="button"
-              onClick={toggleSpeak}
-              className={`secondary-action guide-audio-button mt-7 min-h-14 w-full px-5 py-3 text-xl font-bold ${isSpeaking ? "is-speaking" : ""}`}
-              aria-label={isSpeaking ? "Parar leitura da instrução" : "Ouvir instrução"}
-            >
-              {isSpeaking ? (
-                <svg className="guide-audio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
-                  <rect x="6" y="6" width="12" height="12" rx="2" />
-                </svg>
-              ) : (
+            ) : (
               <svg className="guide-audio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M11 5 6 9H2v6h4l5 4V5Z" />
                 <path d="M15.5 8.5a5 5 0 0 1 0 7" />
                 <path d="M18.5 5.5a9 9 0 0 1 0 13" />
               </svg>
-              )}
-              <span>{isSpeaking ? "Parar instrução" : "Ouvir instrução"}</span>
-            </button>
-          )}
+            )}
+            <span>{isSpeaking ? "Parar instrução" : "Ouvir instrução"}</span>
+          </button>
           <p className="sr-only" aria-live="polite">{speechMessage}</p>
 
           <div className="mt-7 grid gap-5 sm:grid-cols-2">
