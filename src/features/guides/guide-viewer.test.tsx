@@ -123,4 +123,49 @@ describe("visualizador do guia", () => {
       "/tarefas/pagar-boleto?app=banco-do-brasil",
     );
   });
+
+  it("ativa o estado de leitura ao clicar em ouvir instrução e volta ao normal ao clicar novamente", async () => {
+    const user = userEvent.setup();
+    const cancelMock = vi.fn();
+    const speakMock = vi.fn();
+
+    class MockSpeechSynthesisUtterance {
+      text: string;
+      lang = "";
+      onstart: (() => void) | null = null;
+      onend: (() => void) | null = null;
+      onerror: (() => void) | null = null;
+      constructor(text: string) {
+        this.text = text;
+      }
+    }
+
+    vi.stubGlobal("SpeechSynthesisUtterance", MockSpeechSynthesisUtterance);
+    vi.stubGlobal("speechSynthesis", {
+      cancel: cancelMock,
+      speak: speakMock,
+    });
+
+    render(<GuideViewer application={application} guide={guide} steps={steps} task={task} />);
+    await screen.findByText("Passo 1 de 6");
+
+    const audioButton = screen.getByRole("button", { name: "Ouvir instrução" });
+    expect(audioButton).not.toHaveClass("is-speaking");
+
+    // Primeiro clique: inicia fala e fica vermelho (is-speaking)
+    await user.click(audioButton);
+    expect(speakMock).toHaveBeenCalled();
+    expect(audioButton).toHaveClass("is-speaking");
+    expect(screen.getByRole("button", { name: "Parar leitura da instrução" })).toBeVisible();
+    expect(screen.getByText("Instrução sendo lida em voz alta.")).toHaveClass("sr-only");
+
+    // Segundo clique: interrompe e volta ao normal
+    await user.click(audioButton);
+    expect(cancelMock).toHaveBeenCalled();
+    expect(audioButton).not.toHaveClass("is-speaking");
+    expect(screen.getByRole("button", { name: "Ouvir instrução" })).toBeVisible();
+    expect(screen.getByText("Leitura interrompida.")).toHaveClass("sr-only");
+
+    vi.unstubAllGlobals();
+  });
 });

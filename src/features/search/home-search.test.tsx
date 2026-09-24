@@ -223,4 +223,35 @@ describe("busca e navegação guiada da página inicial", () => {
     await user.clear(searchbox);
     expect(screen.queryByText("Não encontramos esse guia.")).not.toBeInTheDocument();
   });
+
+  it("mostra sugestões relevantes ao digitar pix com letras repetidas (pixxxx)", async () => {
+    const user = userEvent.setup();
+    render(<HomeSearch applications={applications} tasks={tasks} />);
+    await user.type(screen.getByRole("searchbox", { name: "Pesquisar ajuda" }), "pixxxx");
+
+    const suggestionLinks = screen.getAllByRole("link");
+    expect(suggestionLinks).toHaveLength(4);
+    expect(suggestionLinks.some((link) => /pix/i.test(link.textContent ?? ""))).toBe(true);
+    expect(screen.getByText("Talvez você esteja procurando:")).toBeVisible();
+    expect(screen.queryByText("Não encontramos esse guia.")).not.toBeInTheDocument();
+  });
+
+  it("abre o menu de bancos ao submeter busca com repetição (pixxxx)", async () => {
+    const user = userEvent.setup();
+    render(<HomeSearch applications={applications} tasks={tasks} />);
+    await user.type(screen.getByRole("searchbox", { name: "Pesquisar ajuda" }), "pixxxx");
+    await user.click(screen.getByRole("button", { name: "Pesquisar" }));
+    expect(screen.getByRole("dialog", { name: "Escolha seu banco" })).toBeVisible();
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it("não exibe guias e mostra orientação para casos extremos sem sentido (asdfghjk)", async () => {
+    const user = userEvent.setup();
+    render(<HomeSearch applications={applications} tasks={tasks} />);
+    await user.type(screen.getByRole("searchbox", { name: "Pesquisar ajuda" }), "asdfghjk");
+
+    expect(screen.getByText("Não encontramos esse guia.")).toBeVisible();
+    expect(screen.getByText("Tente escrever de outra forma.")).toBeVisible();
+    expect(screen.queryByText("Talvez você esteja procurando:")).not.toBeInTheDocument();
+  });
 });

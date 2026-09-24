@@ -115,4 +115,47 @@ describe("preparação do guia", () => {
     // (foco no input via rAF não é verificável em jsdom, mas a seleção é)
     expect(screen.getByRole("button", { name: new RegExp(`continuar com ${secondName ?? firstName ?? ""}`, "i") })).toBeEnabled();
   });
+
+  it("abre o modal de troca de banco ao clicar no breadcrumb e atualiza o banco escolhido", async () => {
+    const user = userEvent.setup();
+    render(<TaskGuideSetup {...defaultProps} />);
+
+    // Verifica que o breadcrumb inicial mostra Caixa
+    expect(screen.getByRole("button", { name: /Banco atual: Caixa/i })).toBeInTheDocument();
+
+    // Clica no breadcrumb para abrir o modal
+    await user.click(screen.getByRole("button", { name: /Banco atual: Caixa/i }));
+
+    // Modal deve estar visível
+    const dialog = screen.getByRole("dialog", { name: "Trocar de banco" });
+    expect(dialog).toBeVisible();
+    expect(screen.getByText(/Escolha seu banco para continuar o guia de/i)).toBeInTheDocument();
+
+    // Opções disponíveis
+    expect(screen.getByRole("button", { name: /Itaú/i })).toBeInTheDocument();
+    expect(screen.getByText("Banco atual")).toBeInTheDocument();
+
+    // Clica em Itaú
+    await user.click(screen.getByRole("button", { name: /Itaú/i }));
+
+    // Modal deve fechar e breadcrumb agora reflete Itaú
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Banco atual: Itaú/i })).toBeInTheDocument();
+
+    // Clica em Continuar com iPhone e confirma que o guia vai abrir com Itaú
+    await user.click(screen.getByRole("button", { name: /Continuar com/i }));
+    expect(push).toHaveBeenCalledWith("/guias/pagar-boleto?os=ios&app=itau");
+  });
+
+  it("fecha o modal com Escape sem trocar o banco", async () => {
+    const user = userEvent.setup();
+    render(<TaskGuideSetup {...defaultProps} />);
+
+    await user.click(screen.getByRole("button", { name: /Banco atual: Caixa/i }));
+    expect(screen.getByRole("dialog", { name: "Trocar de banco" })).toBeVisible();
+
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Banco atual: Caixa/i })).toBeInTheDocument();
+  });
 });

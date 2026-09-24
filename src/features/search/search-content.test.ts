@@ -74,4 +74,36 @@ describe("pontuação da busca", () => {
   it("não inventa resultado para uma palavra sem relação", () => {
     expect(titlesFor("dinossauro")).toEqual([]);
   });
+
+  it("recupera o guia correto quando há repetição acidental de letras", () => {
+    expect(titlesFor("pixxxx", 1)).toEqual(["Fazer Pix"]);
+    expect(titlesFor("boleeeto", 1)).toEqual(["Pagar um boleto"]);
+    expect(titlesFor("whaaatsapp", 1)).toEqual(["Bloquear um contato"]);
+    expect(titlesFor("senhaa")).toEqual(["Recuperar a senha do Gov.br", "Trocar senha do aplicativo"]);
+  });
+
+  it("recupera o guia correto quando há transposição de letras adjacentes", () => {
+    expect(titlesFor("boleot", 1)).toEqual(["Pagar um boleto"]);
+    expect(titlesFor("senah")).toEqual(["Recuperar a senha do Gov.br", "Trocar senha do aplicativo"]);
+  });
+
+  it("encontra o guia mesmo em buscas naturais com palavras de ligação (stop words)", () => {
+    expect(titlesFor("como pagar boleto", 1)).toEqual(["Pagar um boleto"]);
+    expect(titlesFor("como fazer pix", 1)).toEqual(["Fazer Pix"]);
+    expect(titlesFor("como fazer pixxxx", 1)).toEqual(["Fazer Pix"]);
+    expect(titlesFor("quero ver saldo", 1)).toEqual(["Ver saldo"]);
+  });
+
+  it.each([
+    "asdfghjk",
+    "qwertyuiop",
+    "xyz inexistente",
+    "12345678",
+    "receita de bolo",
+    "carro esportivo",
+    "abacate",
+    "zzzzzzz",
+  ])("retorna vazio para casos extremos sem relação com o catálogo: %s", (query) => {
+    expect(titlesFor(query)).toEqual([]);
+  });
 });

@@ -73,12 +73,6 @@ function isBankNicheQuery(query: string) {
     || isBankCategory(normalized);
 }
 
-function taskStatusLabel(task: Task) {
-  if (task.availability === "preparing") return "Guia em preparação";
-  if (task.availability === "demo") return "Demonstração educativa";
-  return "Abrir passo a passo";
-}
-
 function isBankTask(task: Task, applications: Application[]) {
   if (task.applicationId === "app-demo-bancos") return true;
   return applications.some((application) => application.id === task.applicationId && isBankCategory(application.category));
@@ -125,7 +119,6 @@ function TaskCard({ task, modal = false }: { task: Task; modal?: boolean }) {
   return (
     <Link href={taskHref(task)} className={`home-task-card${modal ? " home-task-modal-card" : ""}`}>
       <strong>{task.title}</strong>
-      <small>{taskStatusLabel(task)}</small>
       <span aria-hidden="true" className="home-card-arrow">→</span>
     </Link>
   );

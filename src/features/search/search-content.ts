@@ -1,6 +1,47 @@
 const SEARCH_ALIASES: Record<string, string> = {
+  // Pix variations and keyboard slips
   pok: "pix",
   poki: "pix",
+  pox: "pix",
+  pux: "pix",
+  pics: "pix",
+  pisc: "pix",
+  piks: "pix",
+  piki: "pix",
+  piquis: "pix",
+  pixe: "pix",
+
+  // WhatsApp variations
+  zap: "whatsapp",
+  zapzap: "whatsapp",
+  wpp: "whatsapp",
+  whats: "whatsapp",
+  wats: "whatsapp",
+  watssap: "whatsapp",
+  watsap: "whatsapp",
+  whatapp: "whatsapp",
+  uatsap: "whatsapp",
+  uatisap: "whatsapp",
+  uazap: "whatsapp",
+  watsapp: "whatsapp",
+
+  // Gov.br variations
+  govbr: "gov",
+  governo: "gov",
+  meugov: "gov",
+
+  // Boleto variations
+  boletu: "boleto",
+  boleta: "boleto",
+  fatura: "boleto",
+
+  // Extrato, saldo and comprovante variations
+  estrato: "extrato",
+  comprovanti: "comprovante",
+  conprovante: "comprovante",
+  comprovamte: "comprovante",
+  limiti: "limite",
+  saldu: "saldo",
 };
 
 export interface SearchDocument {
@@ -12,8 +53,33 @@ export interface SearchDocument {
 type SearchValue = string | SearchDocument;
 
 /**
+ * Portuguese stop words that users commonly include in natural queries
+ * (e.g. "como fazer pix", "quero pagar boleto", "como ver meu saldo").
+ */
+const STOP_WORDS = new Set([
+  "como", "para", "de", "do", "da", "dos", "das",
+  "um", "uma", "uns", "umas", "o", "a", "os", "as",
+  "no", "na", "nos", "nas", "em", "por", "com",
+  "quero", "onde", "qual", "quais", "meu", "minha",
+  "meus", "minhas", "seu", "sua", "seus", "suas",
+  "ajuda", "sobre",
+]);
+
+/**
+ * Collapses accidental repeated keystrokes (e.g. "pixxxx" -> "pix", "boleeeto" -> "boleto").
+ * In Brazilian Portuguese, characters are never repeated 3+ times consecutively.
+ * For characters other than 'r' and 's' (which are the only legitimate double consonants),
+ * runs of 2+ can also be safely collapsed to match user typing slips.
+ */
+function collapseRepeatedChars(text: string): string {
+  return text
+    .replace(/(.)\1{2,}/gu, "$1")
+    .replace(/([^rs])\1+/gu, "$1");
+}
+
+/**
  * Keeps the user's original input untouched while making comparisons stable
- * across accents, punctuation, casing and accidental extra spaces.
+ * across accents, punctuation, casing, repeated keystrokes and common typos.
  */
 export function normalizeSearch(value: string): string {
   return value
@@ -24,63 +90,138 @@ export function normalizeSearch(value: string): string {
     .trim()
     .split(/\s+/)
     .filter(Boolean)
-    .map((term) => SEARCH_ALIASES[term] ?? term)
+    .map((term) => {
+      const alias = SEARCH_ALIASES[term];
+      if (alias) return alias;
+      const collapsed = collapseRepeatedChars(term);
+      return SEARCH_ALIASES[collapsed] ?? collapsed;
+    })
     .join(" ");
 }
 
 type MatchKind = "exact" | "starts" | "contains" | "terms" | "fuzzy";
 
-function editDistance(left: string, right: string): number {
+/**
+ * Damerau-Levenshtein distance supporting insertion, deletion, substitution
+ * and transposition of adjacent characters (e.g. "boleot" -> "boleto", "senah" -> "senha").
+ */
+function damerauLevenshtein(left: string, right: string): number {
   if (left === right) return 0;
   if (left.length === 0) return right.length;
   if (right.length === 0) return left.length;
 
-  let previous = Array.from({ length: right.length + 1 }, (_, index) => index);
-  for (let leftIndex = 1; leftIndex <= left.length; leftIndex += 1) {
-    const current = [leftIndex];
-    for (let rightIndex = 1; rightIndex <= right.length; rightIndex += 1) {
-      const substitutionCost = left[leftIndex - 1] === right[rightIndex - 1] ? 0 : 1;
-      current[rightIndex] = Math.min(
-        current[rightIndex - 1] + 1,
-        previous[rightIndex] + 1,
-        previous[rightIndex - 1] + substitutionCost,
+  const leftLength = left.length;
+  const rightLength = right.length;
+
+  const matrix: number[][] = Array.from({ length: leftLength + 1 }, () =>
+    new Array(rightLength + 1).fill(0),
+  );
+
+  for (let i = 0; i <= leftLength; i += 1) matrix[i][0] = i;
+  for (let j = 0; j <= rightLength; j += 1) matrix[0][j] = j;
+
+  for (let i = 1; i <= leftLength; i += 1) {
+    for (let j = 1; j <= rightLength; j += 1) {
+      const cost = left[i - 1] === right[j - 1] ? 0 : 1;
+      let minCost = Math.min(
+        matrix[i - 1][j] + 1,        // deletion
+        matrix[i][j - 1] + 1,        // insertion
+        matrix[i - 1][j - 1] + cost,  // substitution
       );
+
+      // Transposition
+      if (
+        i > 1 &&
+        j > 1 &&
+        left[i - 1] === right[j - 2] &&
+        left[i - 2] === right[j - 1]
+      ) {
+        minCost = Math.min(minCost, matrix[i - 2][j - 2] + cost);
+      }
+
+      matrix[i][j] = minCost;
     }
-    previous = current;
   }
-  return previous[right.length];
+
+  return matrix[leftLength][rightLength];
 }
 
 function fuzzyDistance(queryToken: string, candidateToken: string): number | null {
+  const collapsedQuery = collapseRepeatedChars(queryToken);
+  const collapsedCandidate = collapseRepeatedChars(candidateToken);
+
+  // Exact match after repeated characters collapsed (e.g. "pixxxx" -> "pix", "boleeeto" -> "boleto")
+  if (collapsedQuery === candidateToken || collapsedQuery === collapsedCandidate) {
+    return 0;
+  }
+
   const longestLength = Math.max(queryToken.length, candidateToken.length);
   if (longestLength < 3) return null;
 
-  // A one-character slip is enough for short words; longer words may tolerate
-  // two edits, but never an unbounded number of changes.
-  const maximumDistance = longestLength >= 8 ? 2 : 1;
-  const distance = editDistance(queryToken, candidateToken);
-  // Do not turn a word that merely contains the query (for example, "usando"
-  // for "sando") into a suggestion. Prefixes are handled explicitly below;
-  // fuzzy matching is reserved for a genuine typo in the word itself.
-  if (candidateToken.length === queryToken.length + 1 && candidateToken.slice(1) === queryToken) return null;
-  return distance <= maximumDistance ? distance : null;
+  // Adaptive threshold based on token length:
+  // Short words (3-6 chars) tolerate 1 edit.
+  // Medium words (7-9 chars) tolerate 2 edits.
+  // Long words (10+ chars) tolerate 3 edits (e.g. "comprovante", "transferencia").
+  const maximumDistance = longestLength >= 10 ? 3 : longestLength >= 7 ? 2 : 1;
+
+  const distanceDirect = damerauLevenshtein(queryToken, candidateToken);
+  const distanceCollapsed = damerauLevenshtein(collapsedQuery, candidateToken);
+  const distance = Math.min(distanceDirect, distanceCollapsed);
+
+  // Do not turn a word that merely contains the query (e.g. "usando" for "sando")
+  // into a suggestion. Prefixes are handled explicitly; fuzzy is reserved for typos.
+  if (candidateToken.length === queryToken.length + 1 && candidateToken.slice(1) === queryToken) {
+    return null;
+  }
+
+  // Guard for 3-letter words: do not match completely unrelated words like "pao" with "pix"
+  if (longestLength === 3 && distance > 0) {
+    if (queryToken[0] !== candidateToken[0] && collapsedQuery[0] !== candidateToken[0]) {
+      return null;
+    }
+  }
+
+  if (distance <= maximumDistance) {
+    const similarity = 1 - distance / longestLength;
+    if (similarity >= 0.65) {
+      return distance;
+    }
+  }
+
+  return null;
 }
 
 function matchToken(queryToken: string, candidateToken: string): "exact" | "prefix" | "fuzzy" | null {
   if (queryToken === candidateToken) return "exact";
   if (candidateToken.startsWith(queryToken) && queryToken.length >= 3) return "prefix";
+
+  const collapsedQuery = collapseRepeatedChars(queryToken);
+  const collapsedCandidate = collapseRepeatedChars(candidateToken);
+  if (collapsedQuery === candidateToken || collapsedQuery === collapsedCandidate) {
+    return "fuzzy";
+  }
+
   return fuzzyDistance(queryToken, candidateToken) === null ? null : "fuzzy";
 }
 
 function matchField(value: string, normalizedQuery: string): MatchKind | null {
   const normalizedValue = normalizeSearch(value);
   if (!normalizedValue || !normalizedQuery) return null;
-  const queryTokens = normalizedQuery.split(" ").filter(Boolean);
+
+  const allQueryTokens = normalizedQuery.split(" ").filter(Boolean);
   const candidateTokens = normalizedValue.split(" ").filter(Boolean);
+
   if (normalizedValue === normalizedQuery) return "exact";
   if (normalizedValue.startsWith(normalizedQuery)) return "starts";
-  if (queryTokens.length === 1 && queryTokens[0].length >= 3 && candidateTokens.some((token) => token.startsWith(queryTokens[0]))) return "starts";
   if (` ${normalizedValue} `.includes(` ${normalizedQuery} `)) return "contains";
+
+  // Filter stop words if query contains other meaningful words
+  const meaningfulTokens = allQueryTokens.filter((token) => !STOP_WORDS.has(token));
+  const queryTokens = meaningfulTokens.length > 0 ? meaningfulTokens : allQueryTokens;
+
+  if (queryTokens.length === 1 && queryTokens[0].length >= 3 && candidateTokens.some((token) => token.startsWith(queryTokens[0]))) {
+    return "starts";
+  }
 
   const tokenMatches = queryTokens.map((queryToken) => {
     const matches = candidateTokens.map((candidateToken) => matchToken(queryToken, candidateToken)).filter(Boolean);

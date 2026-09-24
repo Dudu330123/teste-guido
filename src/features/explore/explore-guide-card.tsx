@@ -11,24 +11,9 @@ interface ExploreGuideCardProps {
   returnTo?: string;
 }
 
-function getCardStatus(item: ExploreGuideItem) {
-  if (item.action) return "Escolha o aplicativo";
-  if (item.task.availability === "demo") return "Demonstração disponível";
-  return item.task.availability === "preparing" ? "Guia em preparação" : "Guia disponível";
-}
-
 export function ExploreGuideCard({ item, variant = "standard", returnTo }: ExploreGuideCardProps) {
-  const available = item.task.availability !== "preparing";
   const title = item.action?.taskTitle ?? item.task.title;
   const description = item.action?.description ?? item.task.description;
-  const status = getCardStatus(item);
-  const statusClass = item.action
-    ? "is-action"
-    : item.task.availability === "demo"
-      ? "is-demo"
-      : available
-        ? "is-available"
-        : "is-preparing";
 
   return (
     <Link
@@ -62,9 +47,6 @@ export function ExploreGuideCard({ item, variant = "standard", returnTo }: Explo
         <span className="explore-card-description">{description}</span>
       </div>
       <div className="explore-card-footer">
-        <span className={`explore-card-status ${statusClass}`}>
-          {status}
-        </span>
         <span aria-hidden="true" className="explore-card-arrow">→</span>
       </div>
     </Link>

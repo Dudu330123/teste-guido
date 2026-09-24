@@ -58,7 +58,7 @@ export default async function TaskPage({ params, searchParams }: TaskPageProps) 
         description={task.description}
         safetyWarning={task.safetyWarning}
         application={{ slug: application.slug, name: application.name, logoPath: application.logoPath }}
-        applicationOptions={taskApplication?.slug === "banco-demonstracao"
+        applicationOptions={(taskApplication?.slug === "banco-demonstracao" || isBankCategory(taskApplication.category) || isBankCategory(application.category))
           ? bankApplications.map(({ slug: applicationSlug, name, logoPath }) => ({ slug: applicationSlug, name, logoPath }))
           : undefined}
         selectedApplicationSlug={application.slug}

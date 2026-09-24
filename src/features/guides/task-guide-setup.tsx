@@ -23,11 +23,13 @@
  */
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getLocalApplicationLogoPath } from "@/data/applications";
 import { detectOperatingSystem, readOperatingSystem, saveOperatingSystem } from "./device";
 import { DevicePickerCard } from "./device-picker-card";
 import { deviceOptions, type DeviceOption } from "./device-options";
+import { BankSwitcherModal } from "./bank-switcher-modal";
 
 interface ApplicationOption { slug: string; name: string; logoPath: string | null }
 interface TaskGuideSetupProps {
@@ -63,12 +65,24 @@ export function TaskGuideSetup({
 
   /* ── State ─────────────────────────────────────────────────────────── */
   const options = applicationOptions.length ? applicationOptions : [application];
-  const applicationSlug = options.find((item) => item.slug === selectedApplicationSlug)?.slug ?? options[0]?.slug ?? application.slug;
+  const initialAppSlug = options.find((item) => item.slug === selectedApplicationSlug)?.slug ?? options[0]?.slug ?? application.slug;
+  const [currentAppSlug, setCurrentAppSlug] = useState(initialAppSlug);
+  const [bankModalOpen, setBankModalOpen] = useState(false);
+  const crumbButtonRef = useRef<HTMLButtonElement>(null);
   const visibleDevices = deviceOptions.slice(0, 2);
   const [deviceId, setDeviceId] = useState("iphone");
 
+  useEffect(() => {
+    if (selectedApplicationSlug) {
+      setCurrentAppSlug(selectedApplicationSlug);
+    }
+  }, [selectedApplicationSlug]);
+
   const selectedApplication =
-    options.find((item) => item.slug === applicationSlug) ?? application;
+    options.find((item) => item.slug === currentAppSlug) ?? application;
+  const selectedLogoPath =
+    selectedApplication.logoPath ?? getLocalApplicationLogoPath(selectedApplication.slug);
+  const hasMultipleApplications = options.length > 1;
   const device = deviceOptions.find((item) => item.id === deviceId) ?? deviceOptions[0]!;
 
   /* ── Restore saved preference ──────────────────────────────────────── */
@@ -82,6 +96,18 @@ export function TaskGuideSetup({
     }, 0);
     return () => window.clearTimeout(timer);
   }, [taskId]);
+
+  /* ── Bank Selection ─────────────────────────────────────────────────── */
+  const handleSelectBank = (bank: ApplicationOption) => {
+    setCurrentAppSlug(bank.slug);
+    setBankModalOpen(false);
+    if (typeof window !== "undefined") {
+      const url = new URL(window.location.href);
+      url.searchParams.set("app", bank.slug);
+      window.history.replaceState(null, "", url.toString());
+    }
+    crumbButtonRef.current?.focus({ preventScroll: true });
+  };
 
   /* ── Navigation ────────────────────────────────────────────────────── */
   const goBack = () => {
@@ -112,7 +138,7 @@ export function TaskGuideSetup({
     setDeviceId(selectedDevice.id);
     saveOperatingSystem(window.localStorage, selectedDevice.os);
     const search = new URLSearchParams({ os: selectedDevice.os });
-    if (applicationOptions.length) search.set("app", applicationSlug);
+    if (applicationOptions.length) search.set("app", currentAppSlug);
     if (returnTo) search.set("returnTo", returnTo);
     router.push(`/guias/${encodeURIComponent(taskSlug)}?${search}`);
   };
@@ -126,23 +152,58 @@ export function TaskGuideSetup({
 
         <div className="task-setup-context">
           {/* ── Compact breadcrumb ──────────────────────────────────── */}
-          <nav className="task-setup-crumb" aria-label="Contexto da tarefa">
-            {selectedApplication.logoPath ? (
-              <Image
-                src={selectedApplication.logoPath}
-                alt=""
-                width={28}
-                height={28}
-                unoptimized
-                className="task-setup-crumb-icon"
-              />
-            ) : (
-              <span className="task-setup-crumb-icon task-setup-crumb-icon--fallback" aria-hidden="true">G</span>
-            )}
-            <span className="task-setup-crumb-app">{selectedApplication.name}</span>
-            <span className="task-setup-crumb-sep" aria-hidden="true">›</span>
-            <span className="task-setup-crumb-task">{taskTitle}</span>
-          </nav>
+          {hasMultipleApplications ? (
+            <button
+              ref={crumbButtonRef}
+              type="button"
+              className="task-setup-crumb task-setup-crumb--clickable"
+              onClick={() => setBankModalOpen(true)}
+              aria-haspopup="dialog"
+              aria-expanded={bankModalOpen}
+              aria-label={`Banco atual: ${selectedApplication.name}. Tarefa: ${taskTitle}. Clique para trocar de banco`}
+              title="Clique para trocar de banco"
+            >
+              {selectedLogoPath ? (
+                <Image
+                  src={selectedLogoPath}
+                  alt=""
+                  width={28}
+                  height={28}
+                  unoptimized
+                  className="task-setup-crumb-icon"
+                />
+              ) : (
+                <span className="task-setup-crumb-icon task-setup-crumb-icon--fallback" aria-hidden="true">G</span>
+              )}
+              <span className="task-setup-crumb-app">{selectedApplication.name}</span>
+              <span className="task-setup-crumb-sep" aria-hidden="true">›</span>
+              <span className="task-setup-crumb-task">{taskTitle}</span>
+              <span className="task-setup-crumb-badge" aria-hidden="true">
+                <span>Trocar</span>
+                <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13" aria-hidden="true">
+                  <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" />
+                </svg>
+              </span>
+            </button>
+          ) : (
+            <nav className="task-setup-crumb" aria-label="Contexto da tarefa">
+              {selectedLogoPath ? (
+                <Image
+                  src={selectedLogoPath}
+                  alt=""
+                  width={28}
+                  height={28}
+                  unoptimized
+                  className="task-setup-crumb-icon"
+                />
+              ) : (
+                <span className="task-setup-crumb-icon task-setup-crumb-icon--fallback" aria-hidden="true">G</span>
+              )}
+              <span className="task-setup-crumb-app">{selectedApplication.name}</span>
+              <span className="task-setup-crumb-sep" aria-hidden="true">›</span>
+              <span className="task-setup-crumb-task">{taskTitle}</span>
+            </nav>
+          )}
 
           <button
             type="button"
@@ -167,6 +228,17 @@ export function TaskGuideSetup({
           onContinue={openGuide}
           continueDisabled={!canContinue}
         />
+
+        {hasMultipleApplications && (
+          <BankSwitcherModal
+            isOpen={bankModalOpen}
+            onClose={() => setBankModalOpen(false)}
+            onSelect={handleSelectBank}
+            currentSlug={currentAppSlug}
+            taskTitle={taskTitle}
+            banks={options}
+          />
+        )}
 
       </div>
     </main>

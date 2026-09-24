@@ -38,11 +38,12 @@ const item = {
 };
 
 describe("ExploreGuideCard", () => {
-  it("renderiza o card padrão com status e destino do item", () => {
+  it("renderiza o card padrão com título, destino e sem mensagens de status", () => {
     render(<ExploreGuideCard item={item} />);
 
     expect(screen.getByRole("link", { name: /fazer pix/i })).toHaveAttribute("href", "/acoes/pix");
-    expect(screen.getByText("Escolha o aplicativo")).toBeVisible();
+    expect(screen.queryByText("Escolha o aplicativo")).not.toBeInTheDocument();
+    expect(screen.queryByText("Guia em preparação")).not.toBeInTheDocument();
   });
 
   it("aplica a variante destacada sem criar um segundo link", () => {
@@ -52,18 +53,17 @@ describe("ExploreGuideCard", () => {
     expect(screen.getAllByRole("link")).toHaveLength(1);
   });
 
-  it.each([
-    ["demo", "Demonstração disponível", "is-demo"],
-    ["available", "Guia disponível", "is-available"],
-    ["preparing", "Guia em preparação", "is-preparing"],
-  ] as const)("comunica o estado %s com texto e classe", (availability, label, statusClass) => {
+  it("não renderiza mensagens de status como guia em preparação ou escolha o aplicativo", () => {
     const statusItem = {
       application,
-      task: { ...task, actionId: undefined, availability },
+      task: { ...task, actionId: undefined, availability: "preparing" as const },
     };
 
     render(<ExploreGuideCard item={statusItem} />);
 
-    expect(screen.getByText(label)).toHaveClass(statusClass);
+    expect(screen.queryByText("Guia em preparação")).not.toBeInTheDocument();
+    expect(screen.queryByText("Escolha o aplicativo")).not.toBeInTheDocument();
+    expect(screen.queryByText("Guia disponível")).not.toBeInTheDocument();
+    expect(screen.queryByText("Demonstração disponível")).not.toBeInTheDocument();
   });
 });
