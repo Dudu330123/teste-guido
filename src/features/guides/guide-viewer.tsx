@@ -240,6 +240,7 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
   const [canPreload, setCanPreload] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioFallbackAttemptedRef = useRef(false);
   const stepTitleRef = useRef<HTMLHeadingElement>(null);
   const previousRenderedStep = useRef(0);
   const step = steps[currentStep];
@@ -272,7 +273,7 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
     }
     if (audioRef.current) {
       audioRef.current.pause();
-      audioRef.current = null;
+      audioRef.current.currentTime = 0;
     }
     setIsSpeaking(false);
     clearProgress(window.localStorage, guide.id);
@@ -344,13 +345,14 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
   }, [currentStep, resumeStep]);
 
   useEffect(() => {
+    const audioElement = audioRef.current;
     return () => {
       if (typeof window !== "undefined" && "speechSynthesis" in window) {
         window.speechSynthesis.cancel();
       }
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
+      if (audioElement) {
+        audioElement.pause();
+        audioElement.currentTime = 0;
       }
       setIsSpeaking(false);
     };
@@ -392,7 +394,7 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
     }
     if (audioRef.current) {
       audioRef.current.pause();
-      audioRef.current = null;
+      audioRef.current.currentTime = 0;
     }
     setIsSpeaking(false);
     setSpeechMessage("Leitura interrompida.");
@@ -443,40 +445,32 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
     setSpeechMessage("Instrução sendo lida em voz alta.");
   };
 
+  const fallbackToSpeech = () => {
+    if (audioFallbackAttemptedRef.current) return;
+    audioFallbackAttemptedRef.current = true;
+    speakWithSynthesis();
+  };
+
   const toggleSpeak = () => {
     if (isSpeaking) {
       stopSpeaking();
       return;
     }
 
-    // Se houver arquivo de áudio narrado (.mp3) e o navegador suportar reprodução de mídia:
+    // Use o elemento de áudio renderizado na página: o Safari móvel pode
+    // bloquear a reprodução de objetos Audio criados dinamicamente.
     const canPlayAudioFile = Boolean(
       activeStep.audioPath &&
       typeof window !== "undefined" &&
-      typeof window.Audio === "function" &&
+      audioRef.current &&
       !process.env.VITEST
     );
 
     if (canPlayAudioFile) {
       try {
-        if (audioRef.current) audioRef.current.pause();
-        const audio = new Audio(activeStep.audioPath);
-        audioRef.current = audio;
-        audio.onplay = () => {
-          setIsSpeaking(true);
-          setSpeechMessage("Instrução sendo lida em voz alta.");
-        };
-        audio.onended = () => {
-          setIsSpeaking(false);
-          setSpeechMessage("Leitura concluída.");
-          audioRef.current = null;
-        };
-        const fallbackToSpeech = () => {
-          if (audioRef.current !== audio) return;
-          audioRef.current = null;
-          speakWithSynthesis();
-        };
-        audio.onerror = fallbackToSpeech;
+        const audio = audioRef.current!;
+        audio.currentTime = 0;
+        audioFallbackAttemptedRef.current = false;
         void audio.play().catch(fallbackToSpeech);
         return;
       } catch {
@@ -588,6 +582,26 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
             )}
             <span>{isSpeaking ? "Parar instrução" : "Ouvir instrução"}</span>
           </button>
+          {activeStep.audioPath && (
+            <audio
+              ref={audioRef}
+              src={activeStep.audioPath}
+              controls
+              preload="none"
+              aria-label="Player de áudio da instrução"
+              className="mt-4 w-full"
+              onPlay={() => {
+                audioFallbackAttemptedRef.current = false;
+                setIsSpeaking(true);
+                setSpeechMessage("Instrução sendo lida em voz alta.");
+              }}
+              onEnded={() => {
+                setIsSpeaking(false);
+                setSpeechMessage("Leitura concluída.");
+              }}
+              onError={fallbackToSpeech}
+            />
+          )}
           <p className="sr-only" aria-live="polite">{speechMessage}</p>
 
           <div className="mt-7 grid gap-5 sm:grid-cols-2">
