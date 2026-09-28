@@ -48,6 +48,8 @@ export interface Task {
   searchTerms: string[];
   availability: TaskAvailability;
   status: ContentStatus;
+  categoryGroup?: string;
+  stepCount?: number;
 }
 
 export interface Guide {

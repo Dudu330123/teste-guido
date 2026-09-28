@@ -1,3 +1,6 @@
+import { govBrScripts } from "@/data/gov-br-guides";
+import { otherAppsScripts } from "@/data/other-apps-guides";
+import { whatsappScripts } from "@/data/whatsapp-guides";
 import type { GuideStep, OperatingSystem } from "@/types/content";
 
 interface EditorialStep {
@@ -114,42 +117,9 @@ const scripts: Record<string, EditorialStep[]> = {
     { title: "Procure Limites", instruction: "Procure Limite, Meus limites ou Limite disponível.", imageAlt: "Tela de cartão com a área de limites destacada." },
     { title: "Diferencie total e disponível", instruction: "Confira se o valor mostrado é limite total, usado ou disponível.", imageAlt: "Tela demonstrativa de limite sem valores reais." },
   ],
-  "enviar-audio-whatsapp": [
-    { title: "Abra a conversa", instruction: "No WhatsApp, abra a conversa da pessoa certa.", imageAlt: "Lista fictícia de conversas com um contato destacado." },
-    { title: "Encontre o microfone", instruction: "Procure o botão de microfone perto do campo de mensagem.", imageAlt: "Conversa fictícia com o botão de microfone destacado." },
-    { title: "Grave a mensagem", instruction: "Segure o microfone enquanto fala. Em algumas versões, deslize para travar a gravação.", imageAlt: "Tela fictícia mostrando uma gravação de voz em andamento." },
-    { title: "Revise ou apague", instruction: "Se a tela permitir, ouça a gravação. Use a lixeira para apagar e tentar novamente.", imageAlt: "Prévia fictícia de áudio com reprodução e lixeira destacadas." },
-    { title: "Envie para o contato certo", instruction: "Confira o nome da conversa e toque em enviar.", imageAlt: "Mensagem de voz fictícia pronta para envio." },
-  ],
-  "fazer-chamada-whatsapp": [
-    { title: "Abra a conversa", instruction: "No WhatsApp, abra a conversa da pessoa que deseja ligar.", imageAlt: "Lista fictícia de conversas com um contato destacado." },
-    { title: "Confira o contato", instruction: "Confira o nome e a foto antes de iniciar a chamada.", imageAlt: "Conversa fictícia com o nome do contato destacado." },
-    { title: "Toque no telefone", instruction: "Toque no símbolo de telefone para fazer uma chamada de voz.", imageAlt: "Conversa fictícia com o botão de chamada destacado." },
-    { title: "Permita o microfone", instruction: "Se o celular perguntar, permita o uso do microfone pelo WhatsApp.", imageAlt: "Pedido demonstrativo de permissão do microfone." },
-    { title: "Encerre a chamada", instruction: "Quando terminar, toque no botão vermelho para desligar.", imageAlt: "Chamada fictícia com o botão de encerrar destacado." },
-  ],
-  "bloquear-contato-whatsapp": [
-    { title: "Abra a conversa", instruction: "Abra a conversa da pessoa ou número que deseja bloquear.", imageAlt: "Lista fictícia de conversas com um contato destacado." },
-    { title: "Abra os dados do contato", instruction: "Toque no nome do contato ou no menu de opções da conversa.", imageAlt: "Conversa fictícia com nome ou menu destacado." },
-    { title: "Procure Bloquear", instruction: "Role a tela e procure Bloquear contato ou Bloquear.", imageAlt: "Dados fictícios do contato com a opção Bloquear destacada." },
-    { title: "Escolha bloquear ou denunciar", instruction: "Leia as opções. Denunciar também envia informações recentes ao WhatsApp para análise.", imageAlt: "Confirmação fictícia com opções de bloquear e denunciar." },
-    { title: "Confirme o bloqueio", instruction: "Confirme somente se for o contato certo.", imageAlt: "Tela fictícia confirmando que o contato foi bloqueado." },
-  ],
-  "acessar-gov-br": [
-    { title: "Abra o canal oficial", instruction: "Abra o aplicativo gov.br ou o endereço oficial terminado em gov.br.", imageAlt: "Tela inicial com o aplicativo ou site oficial gov.br destacado." },
-    { title: "Toque em Entrar", instruction: "Procure e toque em Entrar com gov.br.", imageAlt: "Tela oficial demonstrativa com o botão Entrar destacado." },
-    { title: "Informe o CPF no gov.br", instruction: "Digite o CPF somente na tela oficial e toque em Continuar.", imageAlt: "Tela demonstrativa de CPF, sem números reais." },
-    { title: "Informe a senha", instruction: "Digite sua senha somente no gov.br. O Guido não vê nem guarda essa informação.", imageAlt: "Tela demonstrativa de senha, sem caracteres reais." },
-    { title: "Conclua a verificação", instruction: "Se for solicitado, use o código gerado no aplicativo gov.br ou o método oficial apresentado.", imageAlt: "Tela demonstrativa de verificação em duas etapas." },
-  ],
-  "recuperar-senha-gov-br": [
-    { title: "Abra o acesso oficial", instruction: "Abra o aplicativo gov.br ou a página oficial de acesso.", imageAlt: "Tela inicial com o canal oficial gov.br destacado." },
-    { title: "Informe o CPF", instruction: "Digite o CPF na tela oficial e toque em Continuar.", imageAlt: "Tela demonstrativa de CPF, sem números reais." },
-    { title: "Escolha Esqueci minha senha", instruction: "Toque em Esqueci minha senha para iniciar a recuperação.", imageAlt: "Tela demonstrativa com a recuperação de senha destacada." },
-    { title: "Escolha um método disponível", instruction: "Use reconhecimento facial, banco, e-mail, celular ou outra opção oficial apresentada.", imageAlt: "Tela demonstrativa com métodos oficiais de recuperação." },
-    { title: "Use o código somente no gov.br", instruction: "Não diga códigos a outras pessoas. Digite-os apenas na tela oficial.", imageAlt: "Tela demonstrativa de código de recuperação." },
-    { title: "Crie uma senha nova", instruction: "Cadastre uma senha nova e exclusiva dentro do gov.br.", imageAlt: "Tela demonstrativa para criação de senha, sem caracteres reais." },
-  ],
+  ...whatsappScripts,
+  ...govBrScripts,
+  ...otherAppsScripts,
 };
 
 /** Gera IDs editoriais estáveis; eles vinculam o print ao mesmo passo em novos deploys. */

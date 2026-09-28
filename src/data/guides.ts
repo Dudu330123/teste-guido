@@ -1,5 +1,8 @@
 import { actions } from "@/data/actions";
 import { financialApplications } from "@/data/applications";
+import { govBrTasks } from "@/data/gov-br-guides";
+import { otherAppsTasks } from "@/data/other-apps-guides";
+import { whatsappTasks } from "@/data/whatsapp-guides";
 import type { Guide, GuideStep, Task } from "@/types/content";
 
 const coreTasks: Task[] = [
@@ -16,66 +19,9 @@ const coreTasks: Task[] = [
     availability: "demo",
     status: "draft",
   },
-  {
-    id: "task-enviar-audio-whatsapp",
-    applicationId: "app-whatsapp",
-    title: "Enviar um áudio",
-    slug: "enviar-audio-whatsapp",
-    description: "Aprenda a gravar e enviar uma mensagem de voz.",
-    difficulty: "easy",
-    safetyWarning: "Guia em preparação. Ainda não há conteúdo validado.",
-    searchTerms: ["mandar áudio", "mensagem de voz", "audio", "gravar voz", "zap"],
-    availability: "preparing",
-    status: "draft",
-  },
-  {
-    id: "task-fazer-chamada-whatsapp",
-    applicationId: "app-whatsapp",
-    title: "Fazer uma chamada",
-    slug: "fazer-chamada-whatsapp",
-    description: "Aprenda a iniciar uma ligação pelo WhatsApp.",
-    difficulty: "easy",
-    safetyWarning: "Guia em preparação. Ainda não há conteúdo validado.",
-    searchTerms: ["ligar", "ligação", "telefonar", "chamada de voz", "zap"],
-    availability: "preparing",
-    status: "draft",
-  },
-  {
-    id: "task-bloquear-contato-whatsapp",
-    applicationId: "app-whatsapp",
-    title: "Bloquear um contato",
-    slug: "bloquear-contato-whatsapp",
-    description: "Saiba onde procurar a opção de bloquear uma pessoa.",
-    difficulty: "easy",
-    safetyWarning: "Guia em preparação. Ainda não há conteúdo validado.",
-    searchTerms: ["bloquear pessoa", "contato indesejado", "mensagem suspeita", "zap"],
-    availability: "preparing",
-    status: "draft",
-  },
-  {
-    id: "task-acessar-gov-br",
-    applicationId: "app-gov-br",
-    title: "Acessar o Gov.br",
-    slug: "acessar-gov-br",
-    description: "Aprenda a localizar o acesso à sua conta Gov.br.",
-    difficulty: "medium",
-    safetyWarning: "Guia em preparação. Nunca informe códigos de acesso fora do aplicativo ou site oficial.",
-    searchTerms: ["entrar gov", "conta governo", "login gov", "acessar governo"],
-    availability: "preparing",
-    status: "draft",
-  },
-  {
-    id: "task-recuperar-senha-gov-br",
-    applicationId: "app-gov-br",
-    title: "Recuperar a senha do Gov.br",
-    slug: "recuperar-senha-gov-br",
-    description: "Saiba como encontrar o processo oficial de recuperação de acesso.",
-    difficulty: "medium",
-    safetyWarning: "Guia em preparação. O Guido nunca pede sua senha ou código de recuperação.",
-    searchTerms: ["esqueci senha", "senha gov", "recuperar conta", "não consigo entrar"],
-    availability: "preparing",
-    status: "draft",
-  },
+  ...whatsappTasks,
+  ...govBrTasks,
+  ...otherAppsTasks,
 ];
 
 const genericTaskDefinitions: Array<[string, string, string, string, string[]]> = [

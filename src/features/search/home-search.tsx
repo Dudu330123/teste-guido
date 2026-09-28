@@ -1,142 +1,79 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { actions } from "@/data/actions";
-import { isBankCategory } from "@/data/applications";
 import { ApplicationLogo } from "@/features/applications/application-logo";
-import type { Action, Application, Task } from "@/types/content";
-import { normalizeSearch, rankSearch } from "./search-content";
-import type { SearchDocument } from "./search-content";
+import type { Application, Task } from "@/types/content";
+import { OtherAppsModal } from "./other-apps-modal";
+import type { OtherApp } from "@/data/other-apps";
 
-interface HomeSearchProps { applications: Application[]; tasks: Task[]; }
-type GuidedCategory = "banks" | "whatsapp" | "government";
-
-const categoryOptions: Array<{ id: GuidedCategory; title: string; description: string; icon: "bank" | "message" | "government"; applicationSlug?: string }> = [
-  { id: "banks", title: "Bancos", description: "Pix, boleto e cartão", icon: "bank" },
-  { id: "whatsapp", title: "WhatsApp", description: "Mensagens e chamadas", icon: "message", applicationSlug: "whatsapp" },
-  { id: "government", title: "Gov.br", description: "Conta e serviços", icon: "government", applicationSlug: "gov-br" },
-];
-
-const quickQueries = ["Pix", "boleto", "recuperar senha"] as const;
-
-function CategoryIcon({ type }: { type: "bank" | "message" | "government" }) {
-  if (type === "bank") return <svg aria-hidden="true" viewBox="0 0 32 32"><path d="M16 3 3 10v3h26v-3L16 3ZM6 15v9H4v4h24v-4h-2v-9h-4v9h-4v-9h-4v9h-4v-9H6Z" /></svg>;
-  if (type === "government") return <svg aria-hidden="true" viewBox="0 0 32 32"><path d="M16 2 5 6v8c0 7.2 4.7 13.2 11 16 6.3-2.8 11-8.8 11-16V6L16 2Zm6.2 10.8-7.5 8-4-4 2.2-2.2 1.8 1.8 5.3-5.7 2.2 2.1Z" /></svg>;
-  return <svg aria-hidden="true" viewBox="0 0 32 32"><path d="M4 5h24v18H13l-7 6v-6H4V5Zm7 8a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm5 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm5 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z" /></svg>;
+interface HomeSearchProps {
+  applications: Application[];
+  tasks: Task[];
 }
+
+export type GuidedCategory = "banks" | "whatsapp" | "government" | "others";
 
 function ApplicationMark({ application }: { application: Application }) {
   return <ApplicationLogo application={application} />;
 }
 
-function taskHref(task: Task) { return `/tarefas/${task.slug}`; }
-
-function taskSearchDocument(task: Task, applications: Application[], includeApplicationName = true): SearchDocument {
-  const application = applications.find((item) => item.id === task.applicationId);
-  return {
-    title: task.title,
-    aliases: [...task.searchTerms, ...(includeApplicationName && application ? [application.name] : [])],
-    description: task.description,
-  };
-}
-
-function actionSearchDocument(action: Action): SearchDocument {
-  return {
-    title: action.taskTitle,
-    aliases: [action.title, ...action.searchTerms],
-    description: action.description,
-  };
-}
-
-function applicationSearchDocument(application: Application): SearchDocument {
-  return {
-    title: application.name,
-    aliases: [application.category, ...application.searchTerms],
-    description: application.description,
-  };
-}
-
-function searchTaskHref(task: Task, applications: Application[]) {
-  if (task.availability !== "preparing") return taskHref(task);
-  if (task.applicationId === "app-demo-bancos" && task.actionId) return `/acoes/${task.actionId}`;
-  const application = applications.find((item) => item.id === task.applicationId);
-  return `/aplicativos/${application?.slug ?? ""}`;
-}
-
-function isBankNicheQuery(query: string) {
-  const normalized = normalizeSearch(query);
-  return ["banco", "bancos", "servicos financeiros", "servico financeiro", "financeiro", "financeira", "servicos bancarios", "servico bancario"]
-    .some((term) => normalized === term)
-    || isBankCategory(normalized);
-}
-
-function isBankTask(task: Task, applications: Application[]) {
-  if (task.applicationId === "app-demo-bancos") return true;
-  return applications.some((application) => application.id === task.applicationId && isBankCategory(application.category));
-}
-
-type SearchBankTarget = { action?: Action; task?: Task };
-
-function resolveSearchTask(target: SearchBankTarget, bank: Application, tasks: Task[]) {
-  const sourceTask = target.task;
-  const actionId = target.action?.id ?? sourceTask?.actionId;
-
-  if (sourceTask?.applicationId === bank.id) return { task: sourceTask };
-
-  // Preserve the only validated demo when the search identifies boleto.
-  if (sourceTask?.applicationId === "app-demo-bancos" && sourceTask.availability !== "preparing") {
-    return { task: sourceTask, applicationSlug: bank.slug };
-  }
-
-  if (actionId && sourceTask?.applicationId === "app-demo-bancos") {
-    const availableDemo = tasks.find((task) => task.applicationId === "app-demo-bancos" && task.actionId === actionId && task.availability !== "preparing");
-    if (availableDemo) return { task: availableDemo, applicationSlug: bank.slug };
-  }
-
-  if (actionId) {
-    const bankTask = tasks.find((task) => task.applicationId === bank.id && task.actionId === actionId);
-    if (bankTask) return { task: bankTask };
-  }
-
-  if (sourceTask) {
-    return sourceTask.applicationId === "app-demo-bancos"
-      ? { task: sourceTask, applicationSlug: bank.slug }
-      : { task: sourceTask };
-  }
-
-  return null;
-}
-
-function taskRoute(task: Task, applicationSlug?: string) {
-  const query = applicationSlug ? `?app=${encodeURIComponent(applicationSlug)}` : "";
-  return `/tarefas/${encodeURIComponent(task.slug)}${query}`;
+function taskHref(task: Task) {
+  return `/tarefas/${task.slug}`;
 }
 
 function TaskCard({ task, modal = false }: { task: Task; modal?: boolean }) {
+  const isPreparing = task.availability === "preparing" || task.status !== "published";
   return (
     <Link href={taskHref(task)} className={`home-task-card${modal ? " home-task-modal-card" : ""}`}>
-      <strong>{task.title}</strong>
-      <span aria-hidden="true" className="home-card-arrow">→</span>
+      <span className="flex flex-col gap-0.5">
+        <strong>{task.title}</strong>
+        {isPreparing ? (
+          <small className="block text-base font-normal">Em preparação</small>
+        ) : task.stepCount ? (
+          <small className="block text-sm font-semibold text-emerald-800 dark:text-emerald-300">
+            {task.stepCount} passos simples
+          </small>
+        ) : null}
+      </span>
+      <span aria-hidden="true" className="home-card-arrow">
+        →
+      </span>
     </Link>
   );
 }
 
-function TaskGroup({ label, tasks: groupTasks, modal = false, showHeading = true }: { label: string; tasks: Task[]; modal?: boolean; showHeading?: boolean }) {
+function TaskGroup({
+  label,
+  tasks: groupTasks,
+  modal = false,
+  showHeading = true,
+}: {
+  label: string;
+  tasks: Task[];
+  modal?: boolean;
+  showHeading?: boolean;
+}) {
   if (groupTasks.length === 0) return null;
   return (
     <section className={`home-task-group${modal ? " home-task-modal-group" : ""}`} aria-label={showHeading ? label : undefined}>
       {showHeading && <h3>{label}</h3>}
       <div className="home-task-grid">
-        {groupTasks.map((task) => <TaskCard key={task.id} task={task} modal={modal} />)}
+        {groupTasks.map((task) => (
+          <TaskCard key={task.id} task={task} modal={modal} />
+        ))}
       </div>
     </section>
   );
 }
 
-interface BankModalProps { banks: Application[]; onClose: () => void; onSelect: (bank: Application) => void; }
+interface BankModalProps {
+  banks: Application[];
+  onClose: () => void;
+  onSelect: (bank: Application) => void;
+}
 
 function BankModal({ banks, onClose, onSelect }: BankModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
@@ -146,21 +83,39 @@ function BankModal({ banks, onClose, onSelect }: BankModalProps) {
     const modal = modalRef.current;
     if (!modal) return;
     const backgroundElements = Array.from(document.body.children).filter((element) => element !== modal) as HTMLElement[];
-    const previousStates = backgroundElements.map((element) => ({ element, ariaHidden: element.getAttribute("aria-hidden"), inert: element.inert }));
-    backgroundElements.forEach((element) => { element.inert = true; element.setAttribute("aria-hidden", "true"); });
+    const previousStates = backgroundElements.map((element) => ({
+      element,
+      ariaHidden: element.getAttribute("aria-hidden"),
+      inert: element.inert,
+    }));
+    backgroundElements.forEach((element) => {
+      element.inert = true;
+      element.setAttribute("aria-hidden", "true");
+    });
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     closeRef.current?.focus({ preventScroll: true });
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") { event.preventDefault(); onClose(); return; }
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+        return;
+      }
       if (event.key !== "Tab") return;
-      const focusable = Array.from(modal.querySelectorAll<HTMLElement>('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'));
+      const focusable = Array.from(
+        modal.querySelectorAll<HTMLElement>('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'),
+      );
       if (focusable.length === 0) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
 
     document.addEventListener("keydown", handleKeyDown);
@@ -169,60 +124,127 @@ function BankModal({ banks, onClose, onSelect }: BankModalProps) {
       document.body.style.overflow = previousOverflow;
       previousStates.forEach(({ element, ariaHidden, inert }) => {
         element.inert = inert;
-        if (ariaHidden === null) element.removeAttribute("aria-hidden"); else element.setAttribute("aria-hidden", ariaHidden);
+        if (ariaHidden === null) element.removeAttribute("aria-hidden");
+        else element.setAttribute("aria-hidden", ariaHidden);
       });
     };
   }, [onClose]);
 
   return createPortal(
-    <div ref={modalRef} className="home-bank-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <div
+      ref={modalRef}
+      className="home-bank-modal-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
       <section role="dialog" aria-modal="true" aria-labelledby="bank-modal-title" className="home-bank-modal">
         <header>
-          <div><h2 id="bank-modal-title">Escolha seu banco</h2><p>Selecione o aplicativo que você usa.</p></div>
+          <div>
+            <h2 id="bank-modal-title">Escolha seu banco</h2>
+            <p>Selecione o aplicativo que você usa.</p>
+          </div>
           <button ref={closeRef} type="button" onClick={onClose} aria-label="Fechar lista de bancos" className="home-modal-close">
-            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" /></svg>
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="m6 6 12 12M18 6 6 18" />
+            </svg>
           </button>
         </header>
         <div className="home-bank-modal-list">
           {banks.map((bank) => (
             <button key={bank.id} type="button" onClick={() => onSelect(bank)} className="home-bank-modal-option">
-              <span className="home-application-mark" aria-hidden="true"><ApplicationMark application={bank} /></span>
-              <span>{bank.name}</span><span aria-hidden="true" className="home-card-arrow">→</span>
+              <span className="home-application-mark" aria-hidden="true">
+                <ApplicationMark application={bank} />
+              </span>
+              <span>{bank.name}</span>
+              <span aria-hidden="true" className="home-card-arrow">
+                →
+              </span>
             </button>
           ))}
         </div>
       </section>
-    </div>, document.body,
+    </div>,
+    document.body,
   );
 }
 
-interface TaskModalProps { applicationName: string; tasks: Task[]; onClose: () => void; }
+interface TaskModalProps {
+  applicationName: string;
+  tasks: Task[];
+  onClose: () => void;
+}
 
 function TaskModal({ applicationName, tasks: modalTasks, onClose }: TaskModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
-  const availableTasks = modalTasks.filter((task) => task.availability !== "preparing");
-  const preparingTasks = modalTasks.filter((task) => task.availability === "preparing");
+  const hasCategoryGroups = useMemo(
+    () => modalTasks.some((task) => Boolean(task.categoryGroup)),
+    [modalTasks],
+  );
+
+  const groupedSections = useMemo(() => {
+    if (!hasCategoryGroups) {
+      const available = modalTasks.filter((task) => task.availability !== "preparing");
+      const preparing = modalTasks.filter((task) => task.availability === "preparing");
+      const result = [];
+      if (available.length > 0) result.push({ label: "Disponíveis agora", tasks: available, showHeading: true });
+      if (preparing.length > 0) result.push({ label: "Em preparação", tasks: preparing, showHeading: false });
+      return result;
+    }
+
+    const groupsMap = new Map<string, Task[]>();
+    for (const task of modalTasks) {
+      const group = task.categoryGroup ?? "Outras tarefas";
+      if (!groupsMap.has(group)) groupsMap.set(group, []);
+      groupsMap.get(group)!.push(task);
+    }
+
+    return Array.from(groupsMap.entries()).map(([label, tasks]) => ({
+      label,
+      tasks,
+      showHeading: true,
+    }));
+  }, [modalTasks, hasCategoryGroups]);
 
   useEffect(() => {
     const modal = modalRef.current;
     if (!modal) return;
     const backgroundElements = Array.from(document.body.children).filter((element) => element !== modal) as HTMLElement[];
-    const previousStates = backgroundElements.map((element) => ({ element, ariaHidden: element.getAttribute("aria-hidden"), inert: element.inert }));
-    backgroundElements.forEach((element) => { element.inert = true; element.setAttribute("aria-hidden", "true"); });
+    const previousStates = backgroundElements.map((element) => ({
+      element,
+      ariaHidden: element.getAttribute("aria-hidden"),
+      inert: element.inert,
+    }));
+    backgroundElements.forEach((element) => {
+      element.inert = true;
+      element.setAttribute("aria-hidden", "true");
+    });
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     closeRef.current?.focus({ preventScroll: true });
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") { event.preventDefault(); onClose(); return; }
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+        return;
+      }
       if (event.key !== "Tab") return;
-      const focusable = Array.from(modal.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+      const focusable = Array.from(
+        modal.querySelectorAll<HTMLElement>('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'),
+      );
       if (focusable.length === 0) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
 
     document.addEventListener("keydown", handleKeyDown);
@@ -231,221 +253,335 @@ function TaskModal({ applicationName, tasks: modalTasks, onClose }: TaskModalPro
       document.body.style.overflow = previousOverflow;
       previousStates.forEach(({ element, ariaHidden, inert }) => {
         element.inert = inert;
-        if (ariaHidden === null) element.removeAttribute("aria-hidden"); else element.setAttribute("aria-hidden", ariaHidden);
+        if (ariaHidden === null) element.removeAttribute("aria-hidden");
+        else element.setAttribute("aria-hidden", ariaHidden);
       });
     };
   }, [onClose]);
 
   return createPortal(
-    <div ref={modalRef} className="home-bank-modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <div
+      ref={modalRef}
+      className="home-bank-modal-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
       <section role="dialog" aria-modal="true" aria-labelledby="task-modal-title" className="home-bank-modal home-task-modal">
         <header>
-          <div><h2 id="task-modal-title">Escolha uma tarefa</h2><p>Selecione o que você quer fazer em {applicationName}.</p></div>
+          <div>
+            <h2 id="task-modal-title">Escolha uma tarefa</h2>
+            <p>Selecione o que você quer fazer em {applicationName}.</p>
+          </div>
           <button ref={closeRef} type="button" onClick={onClose} aria-label="Fechar lista de tarefas" className="home-modal-close">
-            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" /></svg>
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <path d="m6 6 12 12M18 6 6 18" />
+            </svg>
           </button>
         </header>
         <div className="home-task-modal-list">
-          {modalTasks.length > 0 ? <>
-            <TaskGroup label="Disponíveis agora" tasks={availableTasks} modal />
-            <TaskGroup label="Em preparação" tasks={preparingTasks} modal showHeading={false} />
-          </> : <p className="home-task-modal-empty">Ainda não há tarefas cadastradas para este aplicativo.</p>}
+          {modalTasks.length > 0 ? (
+            groupedSections.map((section) => (
+              <TaskGroup
+                key={section.label}
+                label={section.label}
+                tasks={section.tasks}
+                modal
+                showHeading={section.showHeading}
+              />
+            ))
+          ) : (
+            <p className="home-task-modal-empty">Ainda não há tarefas cadastradas para este aplicativo.</p>
+          )}
         </div>
       </section>
-    </div>, document.body,
+    </div>,
+    document.body,
   );
 }
 
 export function HomeSearch({ applications, tasks }: HomeSearchProps) {
-  const router = useRouter();
-  const [query, setQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<GuidedCategory | null>(null);
   const [selectedBank, setSelectedBank] = useState<Application | null>(null);
+  const [selectedOtherApp, setSelectedOtherApp] = useState<OtherApp | null>(null);
   const [bankModalOpen, setBankModalOpen] = useState(false);
+  const [otherAppsModalOpen, setOtherAppsModalOpen] = useState(false);
   const [taskModalOpen, setTaskModalOpen] = useState(false);
-  const [pendingBankTarget, setPendingBankTarget] = useState<SearchBankTarget | null>(null);
-  const [isPending, startTransition] = useTransition();
-  const categoryButtonRefs = useRef<Record<GuidedCategory, HTMLButtonElement | null>>({ banks: null, whatsapp: null, government: null });
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const searchSubmitButtonRef = useRef<HTMLButtonElement>(null);
-  const modalOriginRef = useRef<"category" | "search">("category");
-  const liveQuery = normalizeSearch(query);
 
-  const financialApplications = useMemo(() => applications.filter((application) => application.category === "Serviços financeiros" && application.id !== "app-demo-bancos"), [applications]);
-  const liveSuggestions = liveQuery
-    ? rankSearch(tasks, liveQuery, (task) => taskSearchDocument(task, applications), 40)
-      .filter((task, index, rankedTasks) => rankedTasks.findIndex((candidate) => normalizeSearch(candidate.title) === normalizeSearch(task.title)) === index)
-      .slice(0, 4)
-    : [];
-  const selectedApplication = selectedCategory === "whatsapp"
-    ? applications.find((application) => application.slug === "whatsapp")
-    : selectedCategory === "government" ? applications.find((application) => application.slug === "gov-br") : selectedBank ?? undefined;
-  const selectedTasks = selectedApplication ? tasks.filter((task) => task.applicationId === selectedApplication.id) : [];
+  const categoryButtonRefs = useRef<Record<GuidedCategory, HTMLButtonElement | null>>({
+    banks: null,
+    whatsapp: null,
+    government: null,
+    others: null,
+  });
 
-  const navigateTo = (href: string) => startTransition(() => router.push(href));
-  const openBankModalFromSearch = (target: SearchBankTarget) => {
-    modalOriginRef.current = "search";
-    setPendingBankTarget(target);
-    setSelectedCategory("banks");
-    setSelectedBank(null);
-    setBankModalOpen(true);
-  };
-  const chooseQuickQuery = (value: string) => {
-    setQuery(value);
-    window.requestAnimationFrame(() => searchInputRef.current?.focus({ preventScroll: true }));
-  };
+  const financialApplications = useMemo(
+    () => applications.filter((application) => application.category === "Serviços financeiros" && application.id !== "app-demo-bancos"),
+    [applications],
+  );
+
+  const selectedApplication =
+    selectedCategory === "whatsapp"
+      ? applications.find((application) => application.slug === "whatsapp")
+      : selectedCategory === "government"
+        ? applications.find((application) => application.slug === "gov-br")
+        : (selectedBank ?? undefined);
+
+  const activeTaskModalTasks = selectedOtherApp
+    ? selectedOtherApp.tasks
+    : selectedApplication
+      ? tasks.filter((task) => task.applicationId === selectedApplication.id)
+      : [];
+
+  const activeTaskModalTitle = selectedOtherApp
+    ? selectedOtherApp.name
+    : (selectedApplication?.name ?? "Aplicativo");
+
   const chooseCategory = (category: GuidedCategory) => {
-    modalOriginRef.current = "category";
     setSelectedBank(null);
+    setSelectedOtherApp(null);
     if (category === "banks") {
       setBankModalOpen(true);
+      return;
+    }
+    if (category === "others") {
+      setOtherAppsModalOpen(true);
       return;
     }
     setSelectedCategory(category);
     setTaskModalOpen(true);
   };
+
   const closeBankModal = () => {
-    const origin = modalOriginRef.current;
     setBankModalOpen(false);
-    if (origin === "search") {
-      setPendingBankTarget(null);
-      setSelectedCategory(null);
-      setSelectedBank(null);
-    }
     window.requestAnimationFrame(() => {
-      const target = origin === "search" ? searchSubmitButtonRef.current : categoryButtonRefs.current.banks;
-      target?.focus({ preventScroll: true });
+      categoryButtonRefs.current.banks?.focus({ preventScroll: true });
     });
   };
+
+  const closeOtherAppsModal = () => {
+    setOtherAppsModalOpen(false);
+    window.requestAnimationFrame(() => {
+      categoryButtonRefs.current.others?.focus({ preventScroll: true });
+    });
+  };
+
   const chooseBank = (bank: Application) => {
-    const searchTarget = pendingBankTarget;
-    if (searchTarget) {
-      const resolved = resolveSearchTask(searchTarget, bank, tasks);
-      setPendingBankTarget(null);
-      setSelectedCategory(null);
-      setSelectedBank(null);
-      setBankModalOpen(false);
-      if (resolved) {
-        navigateTo(taskRoute(resolved.task, resolved.applicationSlug));
-        return;
-      }
-    }
     setSelectedCategory("banks");
     setSelectedBank(bank);
+    setSelectedOtherApp(null);
     setBankModalOpen(false);
     setTaskModalOpen(true);
   };
+
+  const chooseOtherApp = (app: OtherApp) => {
+    setSelectedCategory("others");
+    setSelectedBank(null);
+    setSelectedOtherApp(app);
+    setOtherAppsModalOpen(false);
+    setTaskModalOpen(true);
+  };
+
   const closeTaskModal = () => {
     const categoryToFocus = selectedCategory;
-    const origin = modalOriginRef.current;
     setTaskModalOpen(false);
     setSelectedCategory(null);
     setSelectedBank(null);
+    setSelectedOtherApp(null);
     window.requestAnimationFrame(() => {
-      const target = origin === "search" ? searchSubmitButtonRef.current : categoryToFocus ? categoryButtonRefs.current[categoryToFocus] : null;
+      const target = categoryToFocus ? categoryButtonRefs.current[categoryToFocus] : null;
       target?.focus({ preventScroll: true });
     });
   };
 
   return (
-    <section aria-labelledby="search-title" className={`home-hero${liveQuery ? " home-hero--results" : ""}`}>
-      <div className="home-hero-copy">
-        <h1 id="search-title" className="home-title">O que você precisa <span className="home-title-accent">fazer?</span></h1>
-        <p className="home-subtitle">Encontre ajuda passo a passo para resolver tarefas do dia a dia.</p>
+    <section className="home-hero-section" aria-labelledby="home-category-title">
+      <div className="home-hero-layout">
+        {/* Conteúdo Principal à Esquerda */}
+        <div className="home-hero-left">
+          <p className="home-eyebrow">TECNOLOGIA NO SEU RITMO</p>
+          <h1 id="home-category-title" className="home-hero-title">
+            <span>Escolha uma</span>{" "}
+            <br />
+            <span className="home-title-highlight">categoria</span>
+          </h1>
 
-        <form className="guido-search-form" role="search" onSubmit={(event) => {
-          event.preventDefault();
-          if (!liveQuery || isPending) return;
-          if (isBankNicheQuery(query)) {
-            navigateTo("/explorar?categoria=Bancos");
-            return;
-          }
-          const matchingAction = rankSearch(actions, query, actionSearchDocument, 1)[0];
-          if (matchingAction) {
-            openBankModalFromSearch({ action: matchingAction });
-            return;
-          }
-          const matchingTask = rankSearch(tasks, query, (task) => taskSearchDocument(task, applications, false), 1)[0];
-          if (matchingTask) {
-            if (isBankTask(matchingTask, applications)) {
-              openBankModalFromSearch({ task: matchingTask });
-              return;
-            }
-            navigateTo(taskRoute(matchingTask));
-            return;
-          }
-          const matchingApplication = rankSearch(applications, query, applicationSearchDocument, 1)[0];
-          if (matchingApplication) { navigateTo(`/aplicativos/${matchingApplication.slug}`); return; }
-        }}>
-          <label htmlFor="home-search" className="sr-only">Pesquisar ajuda</label>
-          <input ref={searchInputRef} id="home-search" type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Digite: Pix, boleto, senha..." className="home-search-input" />
-          <svg aria-hidden="true" viewBox="0 0 24 24" className="home-search-icon fill-none" stroke="currentColor" strokeWidth="2.25"><circle cx="10.5" cy="10.5" r="6.5" /><path d="m15.5 15.5 5 5" strokeLinecap="round" /></svg>
-          <button ref={searchSubmitButtonRef} type="submit" aria-label="Pesquisar" aria-busy={isPending} disabled={!liveQuery || isPending} className="guido-search-button">
-            <svg aria-hidden="true" viewBox="0 0 24 24" className="home-search-arrow size-7 fill-none" stroke="currentColor" strokeWidth="2.2"><path d="M5 12h14M14 7l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            {isPending && <svg aria-hidden="true" viewBox="0 0 24 24" className="home-search-spinner size-7 fill-none" stroke="currentColor" strokeWidth="2.2"><path d="M20 12a8 8 0 1 1-2.34-5.66" strokeLinecap="round" /></svg>}
-          </button>
-        </form>
-        <p className="sr-only" role="status" aria-live="polite">{isPending ? "Abrindo o guia selecionado." : liveQuery ? `${liveSuggestions.length} sugestões relacionadas encontradas.` : ""}</p>
-
-        <div className="home-guided-area">
-          {liveQuery ? (
-            <section className="home-suggestions" aria-labelledby="home-suggestions-title">
-              <h2 id="home-suggestions-title">Sugestões para você</h2>
-              {liveSuggestions.length > 0 ? <>
-                <p className="home-suggestions-context">Talvez você esteja procurando:</p>
-                <div className="home-task-grid">
-                  {liveSuggestions.map((task) => {
-                  const application = applications.find((item) => item.id === task.applicationId);
-                  const bankTask = isBankTask(task, applications);
-                  return <Link key={task.id} href={searchTaskHref(task, applications)} onClick={(event) => {
-                    if (!bankTask) return;
-                    event.preventDefault();
-                    openBankModalFromSearch({ task });
-                  }} aria-haspopup={bankTask ? "dialog" : undefined} className="home-task-card"><span>{bankTask ? "Banco" : (application?.name ?? "Guido")}</span><strong>{task.title}</strong><span aria-hidden="true" className="home-card-arrow">→</span></Link>;
-                  })}
+          {/* 4 Cards de Categorias */}
+          <div className="home-categories-grid" role="region" aria-label="Categorias principais">
+            {/* Card 1: Bancos */}
+            <button
+              type="button"
+              ref={(el) => { categoryButtonRefs.current.banks = el; }}
+              onClick={() => chooseCategory("banks")}
+              className="home-category-card group"
+              aria-label="Bancos: Pix, boleto e cartão"
+            >
+              <div className="home-card-header">
+                <div className="home-card-badge home-card-badge--bank" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" className="size-6 text-[#1559c7] fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m2 7 10-5 10 5v2H2z" />
+                    <path d="M4 10v9" />
+                    <path d="M8 10v9" />
+                    <path d="M16 10v9" />
+                    <path d="M20 10v9" />
+                    <path d="M2 19h20v3H2z" />
+                  </svg>
                 </div>
-              </> : <div className="home-task-grid"><p className="home-search-empty"><strong>Não encontramos esse guia.</strong><span>Tente escrever de outra forma.</span></p></div>}
-            </section>
-          ) : selectedCategory === null || taskModalOpen ? (
-            <>
-              <div className="home-quick-suggestions" role="group" aria-label="Sugestões rápidas">
-                <span className="home-quick-suggestions-label">Sugestões</span>
-                {quickQueries.map((suggestion) => (
-                  <button key={suggestion} type="button" className="home-quick-query" onClick={() => chooseQuickQuery(suggestion)}>
-                    {suggestion}
-                  </button>
-                ))}
+                <div className="home-card-info">
+                  <strong className="home-card-name">Bancos</strong>
+                  <span className="home-card-subtitle">Pix, boleto e cartão</span>
+                </div>
               </div>
-              <section className="home-category-picker" aria-labelledby="category-picker-title">
-                <h2 id="category-picker-title">Escolha uma categoria</h2>
-                <div className="home-category-grid">
-                  {categoryOptions.map((category) => {
-                    const categoryApplication = category.applicationSlug
-                      ? applications.find((application) => application.slug === category.applicationSlug)
-                      : undefined;
+              <div className="home-card-footer" aria-hidden="true">
+                <span className="home-card-arrow">
+                  <svg viewBox="0 0 24 24" className="size-4 fill-none stroke-current" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </div>
+            </button>
 
-                    return (
-                    <button ref={(element) => { categoryButtonRefs.current[category.id] = element; }} key={category.id} type="button" onClick={() => chooseCategory(category.id)} className={`home-category-button home-category-button--${category.id}`}>
-                      <span className={`home-category-icon${categoryApplication ? " home-category-icon--application" : ""}`}>
-                        {categoryApplication ? <ApplicationMark application={categoryApplication} /> : <CategoryIcon type={category.icon} />}
-                      </span>
-                      <span><strong>{category.title}</strong><small>{category.description}</small></span><span aria-hidden="true" className="home-card-arrow">→</span>
-                    </button>
-                    );
-                  })}
+            {/* Card 2: WhatsApp */}
+            <button
+              type="button"
+              ref={(el) => { categoryButtonRefs.current.whatsapp = el; }}
+              onClick={() => chooseCategory("whatsapp")}
+              className="home-category-card group"
+              aria-label="WhatsApp: Mensagens e chamadas"
+            >
+              <div className="home-card-header">
+                <div className="home-card-badge home-card-badge--whatsapp" aria-hidden="true">
+                  <Image
+                    src="/images/logos/whatsapp-home.png"
+                    alt=""
+                    width={48}
+                    height={48}
+                    className="size-8 object-contain"
+                    aria-hidden="true"
+                  />
                 </div>
-              </section>
-            </>
-          ) : null}
+                <div className="home-card-info">
+                  <strong className="home-card-name">WhatsApp</strong>
+                  <span className="home-card-subtitle">Mensagens e chamadas</span>
+                </div>
+              </div>
+              <div className="home-card-footer" aria-hidden="true">
+                <span className="home-card-arrow">
+                  <svg viewBox="0 0 24 24" className="size-4 fill-none stroke-current" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </div>
+            </button>
+
+            {/* Card 3: Gov.br */}
+            <button
+              type="button"
+              ref={(el) => { categoryButtonRefs.current.government = el; }}
+              onClick={() => chooseCategory("government")}
+              className="home-category-card group"
+              aria-label="Gov.br: Conta e serviços"
+            >
+              <div className="home-card-header">
+                <div className="home-card-badge home-card-badge--gov" aria-hidden="true">
+                  <Image
+                    src="/images/logos/gov-br-home.webp"
+                    alt=""
+                    width={48}
+                    height={48}
+                    className="size-9 object-contain"
+                    aria-hidden="true"
+                  />
+                </div>
+                <div className="home-card-info">
+                  <strong className="home-card-name">Gov.br</strong>
+                  <span className="home-card-subtitle">Conta e serviços</span>
+                </div>
+              </div>
+              <div className="home-card-footer" aria-hidden="true">
+                <span className="home-card-arrow">
+                  <svg viewBox="0 0 24 24" className="size-4 fill-none stroke-current" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </div>
+            </button>
+
+            {/* Card 4: Outros */}
+            <button
+              type="button"
+              ref={(el) => { categoryButtonRefs.current.others = el; }}
+              onClick={() => chooseCategory("others")}
+              className="home-category-card group"
+              aria-label="Outros: Gmail e mais apps"
+            >
+              <div className="home-card-header">
+                <div className="home-card-badge home-card-badge--others" aria-hidden="true">
+                  <div className="grid grid-cols-2 gap-1" aria-hidden="true">
+                    <span className="size-2.5 rounded-[3px] bg-[#0084ff]" />
+                    <span className="size-2.5 rounded-[3px] bg-[#0084ff]" />
+                    <span className="size-2.5 rounded-[3px] bg-[#0084ff]" />
+                    <span className="size-2.5 rounded-[3px] bg-[#0084ff]" />
+                  </div>
+                </div>
+                <div className="home-card-info">
+                  <strong className="home-card-name">Outros</strong>
+                  <span className="home-card-subtitle">Gmail e mais apps</span>
+                </div>
+              </div>
+              <div className="home-card-footer" aria-hidden="true">
+                <span className="home-card-arrow">
+                  <svg viewBox="0 0 24 24" className="size-4 fill-none stroke-current" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </div>
+            </button>
+          </div>
         </div>
 
+        {/* Mascote Guido à Direita */}
+        <aside className="home-hero-right" aria-label="Mascote Guido lendo um livro">
+          <div className="home-mascot-scene">
+            <Image
+              src="/images/home/mascote-guido-dark.webp"
+              alt="Mascote Guido lendo um livro"
+              width={1199}
+              height={1312}
+              priority
+              className="home-mascot-image home-mascot-dark"
+              sizes="(max-width: 768px) 260px, (max-width: 1200px) 380px, 480px"
+            />
+            <Image
+              src="/images/home/mascote-guido-lendo.webp"
+              alt="Mascote Guido lendo um livro"
+              width={1106}
+              height={1295}
+              priority
+              className="home-mascot-image home-mascot-light"
+              sizes="(max-width: 768px) 260px, (max-width: 1200px) 380px, 480px"
+            />
+          </div>
+        </aside>
       </div>
 
-      <div className="home-mascot" aria-hidden="true">
-        <span className="home-mascot-visual" />
-      </div>
-      {bankModalOpen && <BankModal banks={financialApplications} onClose={closeBankModal} onSelect={chooseBank} />}
-      {taskModalOpen && selectedApplication && <TaskModal applicationName={selectedApplication.name} tasks={selectedTasks} onClose={closeTaskModal} />}
+      {/* Modais de Seleção */}
+      {bankModalOpen && (
+        <BankModal banks={financialApplications} onClose={closeBankModal} onSelect={chooseBank} />
+      )}
+
+      {otherAppsModalOpen && (
+        <OtherAppsModal onClose={closeOtherAppsModal} onSelectApp={chooseOtherApp} />
+      )}
+
+      {taskModalOpen && (selectedApplication || selectedOtherApp) && (
+        <TaskModal
+          applicationName={activeTaskModalTitle}
+          tasks={activeTaskModalTasks}
+          onClose={closeTaskModal}
+        />
+      )}
     </section>
   );
 }

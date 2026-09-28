@@ -494,6 +494,18 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
         return;
       }
       setCompleted(true);
+      if (typeof window !== "undefined" && !process.env.VITEST) {
+        try {
+          import("canvas-confetti").then((module) => {
+            const confetti = module.default;
+            confetti({
+              particleCount: 80,
+              spread: 70,
+              origin: { y: 0.6 },
+            });
+          });
+        } catch {}
+      }
       saveProgress(window.localStorage, {
         guideId: guide.id,
         currentStep,
@@ -526,7 +538,7 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
     <GuidePageShell toolbar={guideToolbar}>
       <div className="guide-reader-layout">
         <div className="guide-reader-visual guide-reader-visual--desktop">
-          {preparing ? <GuidePreparationPhoneScreen /> : <ScreenPlaceholder step={activeStep} />}
+          {preparing ? <GuidePreparationPhoneScreen /> : <ScreenPlaceholder step={activeStep} application={application} task={task} />}
         </div>
         <div className="guide-reader-content">
           <GuideProgressStepper
@@ -565,7 +577,7 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
           {/* No celular, o print pertence ao passo em leitura. A cópia visual
               evita alterar o fluxo desktop e ambos continuam usando o mesmo dado. */}
           <div className="guide-reader-visual guide-reader-visual--mobile">
-            <ScreenPlaceholder step={activeStep} />
+            <ScreenPlaceholder step={activeStep} application={application} task={task} />
           </div>
 
           <button

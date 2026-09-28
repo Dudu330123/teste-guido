@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
+import { adminScriptSlugs } from "@/data/admin-guide-scripts";
 import { getActionForTask } from "@/data/actions";
 import { applications, isBankCategory } from "@/data/applications";
 import { tasks } from "@/data/guides";
@@ -74,7 +75,7 @@ export default async function TaskPage({ params, searchParams }: TaskPageProps) 
           : undefined}
         selectedApplicationSlug={application.slug}
         taskOptions={taskOptions}
-        canContinue={task.availability !== "preparing" || isWhatsAppOrGov}
+        canContinue={task.availability !== "preparing" || isWhatsAppOrGov || adminScriptSlugs.includes(task.slug)}
         returnTo={returnTo ? backHref : undefined}
       />
     </div>

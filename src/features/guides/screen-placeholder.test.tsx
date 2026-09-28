@@ -32,6 +32,8 @@ describe("ilustração do passo", () => {
 
     expect(screen.getByRole("img", { name: publishedStep.imageAlt })).toBeVisible();
     expect(container.querySelector(".guide-evidence-viewport")).toBeInTheDocument();
-    expect(screen.getByText(/publicada pela administração/i)).toBeVisible();
+    expect(screen.getByText(/aparência pode variar/i)).toBeVisible();
+    expect(screen.getByRole("link", { name: /Ampliar captura/ })).toHaveAttribute("href", publishedStep.imagePath);
+    expect(screen.getByRole("img", { name: publishedStep.imageAlt })).toHaveClass("object-contain");
   });
 });

@@ -76,6 +76,31 @@ html[data-theme="dark"] {
   --sky-base: #01040c;
 }
 
+/* Escalonamento de acessibilidade de fontes para idosos (WCAG AAA) */
+html[data-font-size="large"] {
+  font-size: 115% !important;
+}
+
+html[data-font-size="huge"] {
+  font-size: 130% !important;
+}
+
+/* Modo de Alto Contraste WCAG AAA (Preto & Amarelo Ouro) */
+html[data-contrast="high-contrast"] {
+  --background: #000000 !important;
+  --foreground: #ffffff !important;
+  --surface: #0a0a0a !important;
+  --surface-solid: #050505 !important;
+  --surface-soft: #141414 !important;
+  --primary: #ffd600 !important;
+  --primary-dark: #ffe600 !important;
+  --primary-action: #ffd600 !important;
+  --primary-action-hover: #fff066 !important;
+  --primary-contrast: #000000 !important;
+  --border: #ffd600 !important;
+  --muted: #f1f5f9 !important;
+}
+
 * {
   box-sizing: border-box;
 }

@@ -7,7 +7,8 @@ import { GuideViewer } from "@/features/guides/guide-viewer";
 import { getGuideFromSupabase } from "@/lib/catalog";
 import { safeReturnPath } from "@/lib/navigation/return-path";
 import { applyPublicGuideImages, getPublicGuideImages } from "@/lib/public-guide-images";
-import type { Guide, OperatingSystem } from "@/types/content";
+import { getGuideTouchTarget } from "@/data/touch-targets";
+import type { Guide, GuideStep, OperatingSystem } from "@/types/content";
 
 interface DynamicGuidePageProps {
   params: Promise<{ slug: string }>;
@@ -33,6 +34,13 @@ export default async function DynamicGuidePage({ params, searchParams }: Dynamic
     imageApplicationSlug,
     currentOs,
   );
+  const enrichSteps = (steps: GuideStep[]) => {
+    return applyPublicGuideImages(steps, publicImages).map((step) => ({
+      ...step,
+      touchTarget: step.touchTarget ?? getGuideTouchTarget(slug, step.order, currentOs),
+    }));
+  };
+
   if (remoteContent) {
     const stepsWithAudio = remoteContent.steps.map((step) => ({
       ...step,
@@ -41,7 +49,7 @@ export default async function DynamicGuidePage({ params, searchParams }: Dynamic
     return <GuideViewer
       {...remoteContent}
       application={selectedApplication ?? remoteContent.application}
-      steps={applyPublicGuideImages(stepsWithAudio, publicImages)}
+      steps={enrichSteps(stepsWithAudio)}
       returnTo={guideReturnTo}
     />;
   }
@@ -55,7 +63,7 @@ export default async function DynamicGuidePage({ params, searchParams }: Dynamic
     return <GuideViewer
       application={selectedApplication ?? application}
       guide={guide}
-      steps={applyPublicGuideImages(getStepsForGuide(guide.id), publicImages)}
+      steps={enrichSteps(getStepsForGuide(guide.id))}
       task={task}
       returnTo={guideReturnTo}
     />;
@@ -78,7 +86,7 @@ export default async function DynamicGuidePage({ params, searchParams }: Dynamic
     return <GuideViewer
       application={selectedApplication ?? taskApp}
       guide={guide}
-      steps={applyPublicGuideImages(scriptSteps, publicImages)}
+      steps={enrichSteps(scriptSteps)}
       task={task}
       returnTo={guideReturnTo}
     />;

@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
+import { AccessibilityProvider } from "@/features/accessibility/accessibility-context";
+import { DeviceProvider } from "@/features/device-picker/device-context";
 import "./globals.css";
+import "./learning-home.css";
 
 export const metadata: Metadata = {
   title: {
@@ -31,7 +34,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="pt-BR" suppressHydrationWarning>
       <body>
         <Script src="/theme-init.js" strategy="beforeInteractive" />
-        {children}
+        <AccessibilityProvider>
+          <DeviceProvider>
+            {children}
+          </DeviceProvider>
+        </AccessibilityProvider>
       </body>
     </html>
   );

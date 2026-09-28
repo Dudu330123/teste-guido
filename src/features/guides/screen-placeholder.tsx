@@ -1,33 +1,101 @@
 import Image from "next/image";
-import type { GuideStep } from "@/types/content";
+import type { Application, Task, GuideStep } from "@/types/content";
 import { TouchTargetOverlay } from "./touch-target-overlay";
+import { UniversalPhoneSimulator } from "@/features/simulator/universal-phone-simulator";
 
 const demoBankIconPath = "/guide-placeholders/banco-demonstracao-icon.png";
 
-export function ScreenPlaceholder({ step }: { step: GuideStep }) {
-  if (step.imagePath.startsWith("https://") || step.imagePath.startsWith("/api/storage")) {
+interface ScreenPlaceholderProps {
+  step: GuideStep;
+  application?: Application & { isDemo?: boolean };
+  task?: Task;
+}
+
+export function ScreenPlaceholder({ step, application, task }: ScreenPlaceholderProps) {
+  const isBankDemo = !application || application.slug === "banco-demonstracao" || application.isDemo;
+  const appSlug = application?.slug || "banco-demonstracao";
+  const taskSlug = task?.slug || "fazer-pix";
+
+  // Se houver imagem real (do Supabase ou local):
+  if (step.imagePath && (step.imagePath.startsWith("https://") || step.imagePath.startsWith("/api/storage") || step.imagePath.startsWith("/images/"))) {
     return (
-      <figure className="guide-evidence">
-        <div className="guide-evidence-frame">
-          <div className="guide-evidence-viewport">
+      <div className="mx-auto w-full max-w-[21.5rem] sm:max-w-[22.5rem]">
+        {/* Chassi externo do Celular */}
+        <div
+          className="guide-evidence-viewport guide-evidence-viewport--natural relative rounded-[3rem] border-[10px] sm:border-[12px] border-slate-800 bg-slate-950 p-2 shadow-[0_25px_60px_-15px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.12)] transition-all select-none"
+        >
+          {/* Botões físicos laterais de hardware */}
+          <div aria-hidden="true" className="absolute -left-[14px] top-24 h-11 w-[4px] rounded-l-sm bg-slate-700 pointer-events-none" />
+          <div aria-hidden="true" className="absolute -left-[14px] top-38 h-11 w-[4px] rounded-l-sm bg-slate-700 pointer-events-none" />
+          <div aria-hidden="true" className="absolute -right-[14px] top-28 h-16 w-[4px] rounded-r-sm bg-slate-700 pointer-events-none" />
+
+          {/* Alto-falante de ouvido no topo da borda */}
+          <div aria-hidden="true" className="absolute left-1/2 top-2 z-30 h-1 w-14 -translate-x-1/2 rounded-full bg-slate-700/80 pointer-events-none" />
+
+          {/* Tela interna com proporção de smartphone moderna */}
+          <div className="relative aspect-[9/19.5] w-full overflow-hidden rounded-[2.2rem] bg-black">
+            {/* Dynamic Island / Câmera frontal centralizada */}
+            <div
+              aria-hidden="true"
+              className="absolute left-1/2 top-2.5 z-30 flex h-4 w-20 -translate-x-1/2 items-center justify-end rounded-full bg-black/95 px-2 shadow-sm pointer-events-none"
+            >
+              <div className="size-2 rounded-full bg-slate-900 ring-1 ring-slate-800" />
+            </div>
+
+            {/* Captura de tela real preenchendo a tela */}
             <Image
               src={step.imagePath}
-              alt={step.imageAlt}
+              alt={step.imageAlt || step.title}
               fill
               sizes="(max-width: 1024px) 92vw, 31rem"
-              className="object-contain"
+              className="object-contain object-top"
               priority
             />
-            {step.evidenceStatus === "VERIFIED" && step.touchTarget && <TouchTargetOverlay touchTarget={step.touchTarget} />}
+
+            {/* Linha amarela dinâmica ("Toque aqui 👉") sobre a tela */}
+            {step.touchTarget && <TouchTargetOverlay touchTarget={step.touchTarget} />}
+
+            {/* Barra de navegação por gestos na base da tela */}
+            <div
+              aria-hidden="true"
+              className="absolute bottom-1.5 left-1/2 z-30 h-1 w-28 -translate-x-1/2 rounded-full bg-white/45 pointer-events-none backdrop-blur-xs"
+            />
           </div>
         </div>
-        <figcaption className="guide-evidence-caption">
-          Imagem demonstrativa publicada pela administração. Confirme se a tela do aplicativo continua igual.
-        </figcaption>
-      </figure>
+
+        {/* Legenda e atalho para ver em tela cheia */}
+        <p className="mt-3 text-center text-xs font-bold text-slate-500">
+          📱 Demonstração no celular · A aparência pode variar conforme seu aparelho
+        </p>
+        <div className="mt-1 text-center">
+          <a
+            href={step.imagePath}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-800 underline underline-offset-2"
+          >
+            <span>Ampliar captura em tamanho real</span>
+            <span aria-hidden="true">↗</span>
+          </a>
+        </div>
+      </div>
     );
   }
 
+  // Se não houver imagem e não for banco de demonstração, usa o simulador temático do app (ex: WhatsApp, Gov.br)
+  if (!isBankDemo) {
+    return (
+      <UniversalPhoneSimulator
+        step={step}
+        appSlug={appSlug}
+        appName={application?.name}
+        taskSlug={taskSlug}
+        taskTitle={task?.title}
+      />
+    );
+  }
+
+  // Fallback padrão do Banco de Demonstração
   return (
     <div role="img" aria-label={step.imageAlt} className="mock-phone mx-auto aspect-[9/18] w-full max-w-[22rem] rounded-[2.75rem] border-[11px] p-2 shadow-2xl">
       <div className="relative flex h-full flex-col overflow-hidden rounded-[2rem] bg-[#f7fbff]" aria-hidden="true">

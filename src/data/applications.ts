@@ -1,3 +1,4 @@
+import { externalApplications } from "@/data/other-apps-guides";
 import type { Application } from "@/types/content";
 
 const baseDate = "2026-07-28T00:00:00.000Z";
@@ -77,6 +78,7 @@ export const applications: Application[] = [
     createdAt: baseDate,
     updatedAt: baseDate,
   })),
+  ...externalApplications,
 ];
 
 export function getApplicationBySlug(slug: string) {

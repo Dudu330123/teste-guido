@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { SessionNavigation } from "@/features/auth/session-navigation";
+import { useAccessibility } from "@/features/accessibility/accessibility-context";
+import { AskGuidoModal } from "@/features/ai/ask-guido-modal";
 
 type ThemePreference = "light" | "dark" | "system";
 
@@ -25,8 +27,6 @@ function applyThemePreference(preference: ThemePreference, save = true) {
   document.documentElement.dataset.themePreference = preference;
   document.documentElement.dataset.theme = resolved;
   document.documentElement.style.colorScheme = resolved;
-  // A barra do navegador precisa acompanhar o tema escolhido, não apenas o
-  // tema do sistema, para não criar uma faixa preta ao redor da câmera.
   document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((meta) => {
     meta.content = resolved === "dark" ? "#01040c" : "#eaf3fc";
     meta.removeAttribute("media");
@@ -52,13 +52,13 @@ function ThemeToggleButton({ onClick, className = "home-icon-button" }: { onClic
       onClick={onClick}
       aria-label="Alternar entre modo claro e escuro"
       className={className}
-      title="Alternar modo claro e escuro"
+      title="Alternar entre modo claro e escuro"
     >
-      <svg aria-hidden="true" viewBox="0 0 24 24" className="home-theme-sun size-6 fill-none" stroke="currentColor" strokeWidth="2">
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="home-theme-sun size-5 fill-none" stroke="currentColor" strokeWidth="2">
         <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.64 5.64l1.42 1.42M16.94 16.94l1.42 1.42M18.36 5.64l-1.42 1.42M7.06 16.94l-1.42 1.42" strokeLinecap="round" />
         <circle cx="12" cy="12" r="4" />
       </svg>
-      <svg aria-hidden="true" viewBox="0 0 24 24" className="home-theme-moon size-6 fill-none" stroke="currentColor" strokeWidth="2">
+      <svg aria-hidden="true" viewBox="0 0 24 24" className="home-theme-moon size-5 fill-none" stroke="currentColor" strokeWidth="2">
         <path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5 8.5 8.5 0 1 0 20.5 14.6Z" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </button>
@@ -74,6 +74,9 @@ export function HomeToolbar({
 }: HomeToolbarProps) {
   const [helpOpen, setHelpOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [askGuidoOpen, setAskGuidoOpen] = useState(false);
+  const { fontSize, cycleFontSize, toggleContrast } = useAccessibility();
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
   const helpButtonRef = useRef<HTMLButtonElement>(null);
   const helpCloseRef = useRef<HTMLButtonElement>(null);
 
@@ -115,7 +118,10 @@ export function HomeToolbar({
   useEffect(() => {
     if (!mobileMenuOpen) return;
     const closeWithEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMobileMenuOpen(false);
+      if (event.key === "Escape") {
+        setMobileMenuOpen(false);
+        menuButtonRef.current?.focus();
+      }
     };
     window.addEventListener("keydown", closeWithEscape);
     return () => window.removeEventListener("keydown", closeWithEscape);
@@ -130,7 +136,25 @@ export function HomeToolbar({
     return (
       <header className="guide-toolbar">
         <div className="guide-toolbar-left">{guideLeft}</div>
-        <div className="guide-toolbar-actions">
+        <div className="guide-toolbar-actions flex items-center gap-2">
+          <button
+            type="button"
+            onClick={cycleFontSize}
+            className="guide-theme-toggle flex items-center justify-center font-black text-sm"
+            aria-label="Ajustar tamanho da letra"
+            title="Ajustar tamanho da letra"
+          >
+            {fontSize === "normal" ? "A" : fontSize === "large" ? "A+" : "A++"}
+          </button>
+          <button
+            type="button"
+            onClick={toggleContrast}
+            className="guide-theme-toggle flex items-center justify-center font-black text-sm"
+            aria-label="Alternar alto contraste"
+            title="Alternar alto contraste"
+          >
+            ◐
+          </button>
           {guideActions}
           <ThemeToggleButton onClick={toggleTheme} className="guide-theme-toggle" />
         </div>
@@ -149,23 +173,44 @@ export function HomeToolbar({
               width={2076}
               height={757}
               className="home-logo-light"
-              sizes="(max-width: 640px) 128px, 208px"
+              sizes="(max-width: 640px) 115px, 145px"
+              priority
             />
             <Image
               src="/images/home/logo-guido-branca-dark.png"
-              alt=""
+              alt="Guido"
               width={1184}
               height={308}
               className="home-logo-dark"
-              sizes="(max-width: 640px) 128px, 208px"
+              sizes="(max-width: 640px) 115px, 145px"
+              priority
             />
           </span>
         </Link>
 
+        {/* Menu central com apenas: Início, Explorar, Criar e editar guias, Sobre */}
         <nav id="home-main-navigation" aria-label="Navegação principal" className={`home-main-nav${mobileMenuOpen ? " is-open" : ""}`}>
-          <Link href="/" onClick={() => setMobileMenuOpen(false)} aria-current={activePage === "home" ? "page" : undefined}>Início</Link>
-          <Link href="/explorar" onClick={() => setMobileMenuOpen(false)} aria-current={activePage === "explore" ? "page" : undefined}>Explorar</Link>
-          <Link prefetch={false} href="/admin/guias/preview" onClick={() => setMobileMenuOpen(false)} aria-current={activePage === "guides" ? "page" : undefined}>Criar e editar guias</Link>
+          <Link
+            href="/"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-current={activePage === "home" ? "page" : undefined}
+          >
+            Início
+          </Link>
+          <Link
+            href="/explorar"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-current={activePage === "explore" ? "page" : undefined}
+          >
+            Explorar
+          </Link>
+          <Link
+            href="/admin/guias/preview"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-current={activePage === "guides" ? "page" : undefined}
+          >
+            Criar e editar guias
+          </Link>
           <button
             ref={helpButtonRef}
             type="button"
@@ -186,36 +231,81 @@ export function HomeToolbar({
           )}
         </nav>
 
-        <nav aria-label="Acesso à conta e aparência" className="home-account-nav">
-          <ThemeToggleButton onClick={toggleTheme} />
+        {/* Lado direito: controles compactos e discretos */}
+        <nav id="home-account-navigation" aria-label="Acesso à conta e aparência" className={`home-account-nav${mobileMenuOpen ? " is-open" : ""}`}>
+          {/* Controle de tamanho do texto */}
+          <button
+            type="button"
+            onClick={cycleFontSize}
+            className="home-icon-button"
+            aria-label="Ajustar tamanho da fonte"
+            title={`Tamanho do texto: ${fontSize === "normal" ? "normal" : fontSize === "large" ? "grande" : "muito grande"}`}
+          >
+            <span className="font-bold text-base leading-none">A</span>
+          </button>
+
+          {/* Controle de alto contraste */}
+          <button
+            type="button"
+            onClick={toggleContrast}
+            className="home-icon-button"
+            aria-label="Alternar alto contraste"
+            title="Alternar alto contraste"
+          >
+            <span className="text-base leading-none" aria-hidden="true">◐</span>
+          </button>
+
+          {/* Controle claro/escuro */}
+          <ThemeToggleButton onClick={toggleTheme} className="home-icon-button" />
+
+          {/* Botão Pergunte ao Guido */}
+          <button
+            type="button"
+            onClick={() => {
+              setMobileMenuOpen(false);
+              setAskGuidoOpen(true);
+            }}
+            className="home-ask-button"
+            aria-label="Pergunte ao Guido"
+          >
+            Pergunte ao Guido
+          </button>
+
+          {/* Botão Entrar */}
           <SessionNavigation loginLabel="Entrar" showAdmin={showAdmin} showUpload={false} />
         </nav>
 
+        {/* Botão Hambúrguer Mobile */}
         <button
           type="button"
+          ref={menuButtonRef}
           className="home-mobile-menu-button"
           aria-label={mobileMenuOpen ? "Fechar menu" : "Abrir menu"}
           aria-expanded={mobileMenuOpen}
-          aria-controls="home-main-navigation"
+          aria-controls="home-main-navigation home-account-navigation"
           onClick={() => setMobileMenuOpen((open) => !open)}
         >
-          <span aria-hidden="true" />
-          <span aria-hidden="true" />
-          <span aria-hidden="true" />
+          <span />
+          <span />
+          <span />
         </button>
       </header>
 
       {helpOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-5" role="presentation">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-5" role="presentation">
           <section
             role="dialog"
             aria-modal="true"
             aria-labelledby="home-help-title"
-            className="glass-panel w-full max-w-lg rounded-3xl p-6 text-[var(--foreground)] sm:p-8"
+            className="home-bank-modal w-full max-w-lg rounded-3xl p-6 text-[var(--foreground)] sm:p-8"
           >
-            <h2 id="home-help-title" className="text-3xl font-bold">Como usar o Guido</h2>
-            <p className="mt-4">Digite o que você deseja fazer ou escolha um dos exemplos abaixo da pesquisa.</p>
-            <p className="mt-4 font-bold">Nunca informe senhas, códigos ou dados bancários.</p>
+            <h2 id="home-help-title" className="text-2xl font-bold">Como usar o Guido</h2>
+            <p className="mt-4 text-slate-200">
+              Escolha uma categoria na tela inicial para ver os guias passo a passo de cada aplicativo.
+            </p>
+            <p className="mt-4 font-bold text-blue-300">
+              O Guido nunca solicita senhas, códigos de segurança ou dados bancários.
+            </p>
             <button
               ref={helpCloseRef}
               type="button"
@@ -229,6 +319,10 @@ export function HomeToolbar({
             </button>
           </section>
         </div>
+      )}
+
+      {askGuidoOpen && (
+        <AskGuidoModal isOpen={askGuidoOpen} onClose={() => setAskGuidoOpen(false)} />
       )}
     </>
   );
