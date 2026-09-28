@@ -20,4 +20,14 @@ describe("estrutura de autenticação", () => {
     expect(screen.getByRole("form", { name: "Formulário de acesso" })).toBeVisible();
     expect(screen.getByRole("link", { name: /Voltar ao início/i })).toHaveAttribute("href", "/");
   });
+
+  it("não renderiza descrição quando omitida", () => {
+    const { container } = render(
+      <AuthShell title="Entrar">
+        <div>Conteúdo</div>
+      </AuthShell>,
+    );
+
+    expect(container.querySelector(".internal-page-description")).toBeNull();
+  });
 });

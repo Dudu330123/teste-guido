@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { SiteHeader } from "@/components/site-header";
 
-export function AuthShell({ children, description, title, className = "" }: { children: ReactNode; description: string; title: string; className?: string }) {
+export function AuthShell({ children, description, title, className = "" }: { children: ReactNode; description?: string; title: string; className?: string }) {
   return (
     <main className={`guido-home internal-page min-h-screen ${className}`.trim()} aria-labelledby="auth-page-title">
       <SiteHeader />
@@ -11,7 +11,7 @@ export function AuthShell({ children, description, title, className = "" }: { ch
         <div className="glass-panel auth-page-card">
           <header>
             <h1 id="auth-page-title" className="internal-page-title auth-page-title">{title}</h1>
-            <p className="internal-page-description">{description}</p>
+            {description ? <p className="internal-page-description">{description}</p> : null}
           </header>
           {children}
         </div>
