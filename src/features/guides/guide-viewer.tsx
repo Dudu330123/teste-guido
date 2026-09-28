@@ -628,7 +628,9 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
               </button>
               <button type="button" onClick={finishOrAdvance} className="primary-action guide-next-button font-bold">
                 <span className="guide-btn-text">{currentStep === steps.length - 1 ? hasUnpublishedNextStep ? "Ver próxima etapa" : "Concluir demonstração" : "Próximo"}</span>
-                <span className="guide-next-arrow" aria-hidden="true">→</span>
+                <svg className="guide-next-arrow" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m9 18 6-6-6-6" />
+                </svg>
               </button>
             </div>
           </div>

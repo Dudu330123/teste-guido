@@ -5295,6 +5295,12 @@ html[data-theme="light"] .guide-audio-button.is-speaking {
   line-height: 1;
 }
 
+.guide-next-arrow {
+  width: 1.3rem;
+  height: 1.3rem;
+  flex: 0 0 auto;
+}
+
 .guide-reader-visual .mock-phone {
   width: auto;
   height: min(100%, 42rem);

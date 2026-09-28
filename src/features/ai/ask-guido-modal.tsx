@@ -423,26 +423,18 @@ export function AskGuidoModal({
     >
       <div className="relative flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-3xl bg-white text-slate-900 shadow-2xl border-4 border-blue-600">
         {/* Cabeçalho */}
-        <header className="flex items-center justify-between border-b border-blue-500 bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4 text-white">
-          <div className="flex items-center gap-3">
-            <div className="flex size-12 items-center justify-center rounded-2xl bg-white/20 text-3xl shadow-sm">
+        <header className="flex items-center justify-between border-b border-blue-500/60 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 px-4 py-3 sm:px-6 sm:py-4 text-white">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+            <div className="flex size-10 sm:size-12 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-white/20 text-2xl sm:text-3xl shadow-sm">
               🤖
             </div>
-            <div>
-              <h2 id="ask-guido-title" className="text-2xl font-black leading-tight tracking-tight">
+            <div className="min-w-0">
+              <h2 id="ask-guido-title" className="text-lg sm:text-2xl font-black leading-tight tracking-tight text-white">
                 Falar com o Guido
               </h2>
-              <p className="text-xs font-semibold text-blue-100 flex items-center gap-1.5">
-                <span>Voz acolhedora e inteligência artificial</span>
-                {usingStudioVoice && (
-                  <span className="rounded-md bg-emerald-500/30 px-1.5 py-0.5 text-[10px] font-bold text-emerald-100 border border-emerald-400/40">
-                    Estúdio ElevenLabs
-                  </span>
-                )}
-              </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0 ml-2">
             <button
               type="button"
               onClick={() => setShowConfig(!showConfig)}
