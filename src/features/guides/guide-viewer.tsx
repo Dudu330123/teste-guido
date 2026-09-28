@@ -601,7 +601,7 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
                     <path d="M18.5 5.5a9 9 0 0 1 0 13" />
                   </svg>
                 )}
-                <span>{isSpeaking ? "Parar instrução" : "Ouvir instrução"}</span>
+                <span className="guide-btn-text">{isSpeaking ? "Parar instrução" : "Ouvir instrução"}</span>
               </button>
 
               <button
@@ -612,13 +612,22 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
                 aria-label="Voltar"
               >
                 <span className="guide-prev-arrow" aria-hidden="true">←</span>
-                <span>Voltar</span>
+                <span className="guide-btn-text">Voltar</span>
               </button>
             </div>
 
             <div className="guide-nav-right-col">
+              <button
+                type="button"
+                className="secondary-action guide-help-button-mobile font-bold"
+                aria-label="Preciso de ajuda"
+                aria-haspopup="dialog"
+                onClick={() => setHelpOpen(true)}
+              >
+                <span className="guide-help-trigger-icon" aria-hidden="true">?</span>
+              </button>
               <button type="button" onClick={finishOrAdvance} className="primary-action guide-next-button font-bold">
-                <span>{currentStep === steps.length - 1 ? hasUnpublishedNextStep ? "Ver próxima etapa" : "Concluir demonstração" : "Próximo"}</span>
+                <span className="guide-btn-text">{currentStep === steps.length - 1 ? hasUnpublishedNextStep ? "Ver próxima etapa" : "Concluir demonstração" : "Próximo"}</span>
                 <span className="guide-next-arrow" aria-hidden="true">→</span>
               </button>
             </div>

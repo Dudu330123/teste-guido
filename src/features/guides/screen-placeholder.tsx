@@ -62,22 +62,6 @@ export function ScreenPlaceholder({ step, application, task }: ScreenPlaceholder
             />
           </div>
         </div>
-
-        {/* Legenda e atalho para ver em tela cheia */}
-        <p className="mt-3 text-center text-xs font-bold text-slate-500">
-          📱 Demonstração no celular · A aparência pode variar conforme seu aparelho
-        </p>
-        <div className="mt-1 text-center">
-          <a
-            href={step.imagePath}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-800 underline underline-offset-2"
-          >
-            <span>Ampliar captura em tamanho real</span>
-            <span aria-hidden="true">↗</span>
-          </a>
-        </div>
       </div>
     );
   }
@@ -200,3 +184,4 @@ function MockScreen({ step }: { step: GuideStep }) {
     </div>
   );
 }
+

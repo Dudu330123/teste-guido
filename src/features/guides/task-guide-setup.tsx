@@ -31,6 +31,7 @@ import { DevicePickerCard } from "./device-picker-card";
 import { deviceOptions, type DeviceOption } from "./device-options";
 import { BankSwitcherModal } from "./bank-switcher-modal";
 import { TaskSwitcherModal, type TaskSwitcherOption } from "./task-switcher-modal";
+import { fixMojibake } from "@/lib/text-utils";
 
 interface ApplicationOption { slug: string; name: string; logoPath: string | null }
 interface TaskGuideSetupProps {
@@ -98,12 +99,13 @@ export function TaskGuideSetup({
   const [selectedTaskOverride, setSelectedTaskOverride] = useState<TaskSwitcherOption | null>(null);
   const [taskModalOpen, setTaskModalOpen] = useState(false);
 
+  const cleanTaskTitle = fixMojibake(taskTitle);
   const activeTask = selectedTaskOverride
     ?? taskOptions?.find((item) => item.slug === taskSlug)
-    ?? { id: taskId, slug: taskSlug, title: taskTitle, availability: canContinue ? "available" : "preparing" };
+    ?? { id: taskId, slug: taskSlug, title: cleanTaskTitle, availability: canContinue ? "available" : "preparing" };
 
   const currentTaskSlug = activeTask.slug;
-  const currentTaskTitle = activeTask.title;
+  const currentTaskTitle = fixMojibake(activeTask.title);
   const effectiveCanContinue = hasTaskOptions ? true : canContinue;
 
   /* ── Restore saved preference ──────────────────────────────────────── */
@@ -174,7 +176,7 @@ export function TaskGuideSetup({
               onClick={() => setBankModalOpen(true)}
               aria-haspopup="dialog"
               aria-expanded={bankModalOpen}
-              aria-label={`Banco atual: ${selectedApplication.name}. Tarefa: ${taskTitle}. Clique para trocar de banco`}
+              aria-label={`Banco atual: ${selectedApplication.name}. Tarefa: ${cleanTaskTitle}. Clique para trocar de banco`}
               title="Clique para trocar de banco"
             >
               {selectedLogoPath ? (
@@ -191,7 +193,7 @@ export function TaskGuideSetup({
               )}
               <span className="task-setup-crumb-app">{selectedApplication.name}</span>
               <span className="task-setup-crumb-sep" aria-hidden="true">›</span>
-              <span className="task-setup-crumb-task">{taskTitle}</span>
+              <span className="task-setup-crumb-task">{cleanTaskTitle}</span>
               <span className="task-setup-crumb-badge" aria-hidden="true">
                 <span>Trocar</span>
                 <svg viewBox="0 0 20 20" fill="currentColor" width="13" height="13" aria-hidden="true">

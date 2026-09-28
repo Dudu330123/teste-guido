@@ -8609,3 +8609,214 @@ html[data-theme="dark"] .guide-help-modal-option p {
     height: calc(100dvh - 4rem - env(safe-area-inset-top, 0px));
   }
 }
+
+  /* MAXX MOBILE TWEAKS V3 */
+  @media (max-width: 60rem) {
+    /* 1. Toolbar super discreta flutuando no topo */
+    .guide-toolbar {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100% !important;
+      z-index: 50 !important;
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      padding: 0.5rem !important;
+    }
+
+    .guide-toolbar-brand {
+      display: none !important;
+    }
+
+    .guide-toolbar-exit,
+    .guide-theme-toggle {
+      width: 2.5rem !important;
+      height: 2.5rem !important;
+      min-height: 0 !important;
+      padding: 0 !important;
+      border-radius: 50% !important;
+      font-size: 0 !important;
+      background: rgba(255, 255, 255, 0.85) !important;
+      border: 2px solid rgba(0, 0, 0, 0.2) !important;
+      backdrop-filter: blur(8px) !important;
+      -webkit-backdrop-filter: blur(8px) !important;
+      color: #000 !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+    }
+    
+    .guide-toolbar-exit svg {
+      width: 1.3rem !important;
+      height: 1.3rem !important;
+      margin: auto !important;
+    }
+
+    .guide-toolbar-actions {
+      position: absolute !important;
+      top: 0.5rem !important;
+      right: 0.5rem !important;
+    }
+
+    html[data-theme="dark"] .guide-toolbar-exit,
+    html[data-theme="dark"] .guide-theme-toggle {
+      background: rgba(15, 23, 42, 0.85) !important;
+      border-color: rgba(255, 255, 255, 0.3) !important;
+      color: #fff !important;
+    }
+
+    /* 2. Trilha de passos mais compacta e subindo o máximo possível */
+    .guide-page .guide-progress {
+      padding: 0.3rem 0.5rem !important;
+      margin-top: 1.5rem !important; /* Subiu bastante */
+    }
+    .guide-page .guide-progress-heading > p:first-child {
+      font-size: 0.85rem !important;
+    }
+    .guide-page .guide-progress-meta p:first-child {
+      padding: 0.15rem 0.4rem !important;
+      font-size: 0.7rem !important;
+    }
+    .guide-page .guide-progress-track {
+      margin-top: 0.25rem !important;
+    }
+    .guide-page .guide-progress-segment {
+      height: 0.35rem !important;
+    }
+
+    /* Remover espaçamentos extras da instrução */
+    .guide-page .guide-reader-instruction {
+      padding: 0.4rem 0.4rem 0 0.4rem !important;
+      min-height: 0 !important;
+    }
+
+    /* 3. Aumentar a imagem do mock-phone para pegar o máximo de espaço */
+    .guide-page .guide-reader-visual--mobile .mock-phone,
+    .guide-page .guide-reader-visual--mobile .guide-preparation-phone,
+    .guide-page .guide-reader-visual--mobile .guide-evidence {
+      width: 95vw !important;
+      max-width: 95vw !important;
+      height: 75vh !important;
+      max-height: 80vh !important;
+      aspect-ratio: 9 / 19 !important;
+      margin: 0 auto !important;
+    }
+    
+    .guide-reader-visual--mobile {
+      margin-top: 0.2rem !important;
+      margin-bottom: 0.2rem !important;
+    }
+
+    /* 4. Posicionar botões sobre a imagem nos locais desenhados */
+    .guide-nav-controls {
+      display: block !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .guide-nav-left-col,
+    .guide-nav-right-col {
+      display: block !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    .guide-nav-controls button {
+      position: fixed !important;
+      pointer-events: auto !important;
+      width: 3.8rem !important;
+      height: 3.5rem !important;
+      min-height: 3.5rem !important;
+      padding: 0 !important;
+      border-radius: 1.2rem !important;
+      z-index: 100 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+
+      /* Estilo mais sólido e visível para idosos */
+      background: rgba(255, 255, 255, 0.9) !important;
+      border: 2px solid rgba(0, 0, 0, 0.2) !important;
+      backdrop-filter: blur(12px) !important;
+      -webkit-backdrop-filter: blur(12px) !important;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25) !important;
+      color: #000 !important;
+    }
+
+    html[data-theme="dark"] .guide-nav-controls button {
+      background: rgba(15, 23, 42, 0.9) !important;
+      border-color: rgba(255, 255, 255, 0.25) !important;
+      color: #ffffff !important;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4) !important;
+    }
+    
+    .guide-nav-controls button.is-speaking {
+      background: rgba(220, 38, 38, 0.95) !important;
+      border-color: rgba(255, 255, 255, 0.4) !important;
+      color: #fff !important;
+    }
+
+    .guide-prev-arrow,
+    .guide-next-arrow,
+    .guide-help-trigger-icon,
+    .guide-audio-icon {
+      font-size: 1.75rem !important;
+      width: 1.75rem !important;
+      height: 1.75rem !important;
+      margin: 0 !important;
+    }
+    
+    .guide-help-trigger-icon {
+      width: 2rem !important;
+      height: 2rem !important;
+    }
+
+    /* Posições exatas baseadas na imagem 3 */
+    /* <- Voltar (Red Box - Bottom Left) */
+    .guide-nav-left-col .guide-back-button {
+      bottom: 1.5rem !important;
+      left: 0.8rem !important;
+    }
+
+    /* -> Próximo (Yellow Box - Bottom Right) */
+    .guide-nav-right-col .guide-next-button {
+      bottom: 1.5rem !important;
+      right: 0.8rem !important;
+      left: auto !important;
+      top: auto !important; /* Resetar qualquer herdado */
+    }
+
+    /* Audio (Blue Box - Above Voltar) */
+    .guide-nav-left-col .guide-audio-button {
+      bottom: 5.8rem !important;
+      left: 0.8rem !important;
+    }
+
+    /* Ajuda (Brown Box - Above Audio) */
+    .guide-help-button-mobile {
+      bottom: 10.1rem !important;
+      left: 0.8rem !important;
+      display: flex !important;
+    }
+
+    .guide-btn-text {
+      display: none !important;
+    }
+  
+    .guide-page .guide-reader-instruction .guide-help-trigger {
+      display: none !important;
+    }
+  }
+
+  .guide-help-button-mobile {
+    display: none;
+  }
+
+  @media (max-width: 60rem) {
+    .guide-next-arrow {
+      font-size: 2rem !important;
+      width: 2rem !important;
+      height: 2rem !important;
+    }
+  }

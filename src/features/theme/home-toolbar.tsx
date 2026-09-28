@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Sparkles } from "lucide-react";
+import { Mic } from "lucide-react";
 import { SessionNavigation } from "@/features/auth/session-navigation";
 import { useAccessibility } from "@/features/accessibility/accessibility-context";
 import { AskGuidoModal } from "@/features/ai/ask-guido-modal";
@@ -241,11 +241,26 @@ export function HomeToolbar({
               Tarefas automáticas
             </Link>
           )}
+          <button
+            type="button"
+            onClick={() => {
+              setMobileMenuOpen(false);
+              if (onOpenAskGuido) {
+                onOpenAskGuido();
+              } else {
+                setAskGuidoOpen(true);
+              }
+            }}
+            className="home-nav-button home-nav-button--guido-mobile"
+          >
+            <Mic className="size-4.5 shrink-0 text-sky-400" aria-hidden="true" />
+            <span>Falar com o Guido</span>
+          </button>
         </nav>
 
-        {/* Lado direito: Botão Pergunte ao Guido substituindo a área amarela */}
+        {/* Lado direito: Botão Falar com o Guido no Desktop e Botão Entrar */}
         <nav id="home-account-navigation" aria-label="Acesso à conta e assistente" className={`home-account-nav${mobileMenuOpen ? " is-open" : ""}`}>
-          {/* Botão Pergunte ao Guido em destaque */}
+          {/* Botão Guido em destaque no Desktop */}
           <button
             type="button"
             onClick={() => {
@@ -257,10 +272,11 @@ export function HomeToolbar({
               }
             }}
             className="home-ask-button"
-            aria-label="Pergunte ao Guido"
+            aria-label="Falar com o Guido por voz"
+            title="Falar com o Guido por voz"
           >
-            <Sparkles className="size-4 shrink-0 text-sky-400" aria-hidden="true" />
-            <span>Pergunte ao Guido</span>
+            <Mic className="size-4 shrink-0 text-sky-300 animate-pulse" aria-hidden="true" />
+            <span>Falar com o Guido</span>
           </button>
 
           {/* Botão Entrar */}
@@ -283,9 +299,35 @@ export function HomeToolbar({
         </button>
       </header>
 
-      {/* Botão de alternar tema claro/escuro movido para baixo */}
+      {/* Botão de alternar tema claro/escuro */}
       <div className="home-bottom-theme-dock">
         <ThemeToggleButton onClick={toggleTheme} className="home-theme-bottom-btn" showLabel />
+      </div>
+
+      {/* Botão Flutuante de Voz do Guido (FAB Acessível no Rodapé) */}
+      <div className="home-bottom-guido-dock">
+        <button
+          type="button"
+          onClick={() => {
+            if (onOpenAskGuido) {
+              onOpenAskGuido();
+            } else {
+              setAskGuidoOpen(true);
+            }
+          }}
+          className="home-guido-fab-btn"
+          aria-label="Falar com o Guido por voz"
+          title="Falar com o Guido por voz"
+        >
+          <span className="home-guido-fab-icon-wrap" aria-hidden="true">
+            <Mic className="size-6 text-white" />
+            <span className="home-guido-fab-pulse" />
+          </span>
+          <span className="home-guido-fab-content">
+            <span className="home-guido-fab-title">Falar com o Guido</span>
+            <span className="home-guido-fab-subtitle">Ajuda por voz</span>
+          </span>
+        </button>
       </div>
 
       {helpOpen && (
@@ -319,7 +361,11 @@ export function HomeToolbar({
       )}
 
       {!onOpenAskGuido && askGuidoOpen && (
-        <AskGuidoModal isOpen={askGuidoOpen} onClose={() => setAskGuidoOpen(false)} />
+        <AskGuidoModal
+          isOpen={askGuidoOpen}
+          initialListening={true}
+          onClose={() => setAskGuidoOpen(false)}
+        />
       )}
     </>
   );

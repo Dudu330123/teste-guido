@@ -5,6 +5,7 @@ import { getActionForTask } from "@/data/actions";
 import { isBankCategory } from "@/data/applications";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { getSupabasePublicClient } from "@/lib/supabase/public";
+import { fixMojibake } from "@/lib/text-utils";
 
 const publicationStatusSchema = z.enum(["draft", "under_review", "published", "outdated"]);
 const mediaSchema = z.object({
@@ -333,12 +334,12 @@ export function parseSupabaseCatalogRows(
     tasks: tutorialRows.data.map((row) => ({
       id: row.id,
       applicationId: row.application_id,
-      title: row.title,
+      title: fixMojibake(row.title),
       slug: row.slug,
-      description: row.description,
+      description: fixMojibake(row.description),
       difficulty: row.difficulty,
-      safetyWarning: row.safety_warning,
-      searchTerms: row.tutorial_search_terms.map(({ term }) => term),
+      safetyWarning: fixMojibake(row.safety_warning),
+      searchTerms: row.tutorial_search_terms.map(({ term }) => fixMojibake(term)),
       availability: row.is_demo
         ? "demo"
         : row.guide_versions.some(({ status }) => status === "published")

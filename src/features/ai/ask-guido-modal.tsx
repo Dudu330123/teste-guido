@@ -432,10 +432,10 @@ export function AskGuidoModal({
             </div>
             <div>
               <h2 id="ask-guido-title" className="text-2xl font-black leading-tight tracking-tight">
-                Pergunte ao Guido
+                Falar com o Guido
               </h2>
               <p className="text-xs font-semibold text-blue-100 flex items-center gap-1.5">
-                <span>Voz humana e inteligência artificial</span>
+                <span>Voz acolhedora e inteligência artificial</span>
                 {usingStudioVoice && (
                   <span className="rounded-md bg-emerald-500/30 px-1.5 py-0.5 text-[10px] font-bold text-emerald-100 border border-emerald-400/40">
                     Estúdio ElevenLabs
