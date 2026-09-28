@@ -106,4 +106,17 @@ describe("controles da página inicial", () => {
     expect(screen.queryByRole("button", { name: "Falar com o Guido por voz" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Entrar" })).not.toBeInTheDocument();
   });
+
+  it("exibe o botão de alternar tema somente na página inicial, mas oculta nas páginas internas e explorar", () => {
+    const { unmount } = render(<HomeToolbar />);
+    expect(screen.getByRole("button", { name: "Alternar entre modo claro e escuro" })).toBeInTheDocument();
+    unmount();
+
+    const { unmount: unmountInternal } = render(<HomeToolbar isInternal />);
+    expect(screen.queryByRole("button", { name: "Alternar entre modo claro e escuro" })).not.toBeInTheDocument();
+    unmountInternal();
+
+    render(<HomeToolbar activePage="explore" />);
+    expect(screen.queryByRole("button", { name: "Alternar entre modo claro e escuro" })).not.toBeInTheDocument();
+  });
 });

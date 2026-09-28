@@ -35,7 +35,7 @@ describe("visualizador do guia", () => {
     expect(screen.queryByText("Caixa · Outro")).not.toBeInTheDocument();
     expect(screen.getByText("Trilha do guia")).toBeVisible();
     expect(screen.getByText("Passo 1 de 6")).toBeVisible();
-    expect(screen.getByRole("button", { name: "Alternar entre modo claro e escuro" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Alternar entre modo claro e escuro" })).not.toBeInTheDocument();
     expect(screen.getByText("O que fazer agora")).toBeVisible();
     expect(screen.getByText("1")).toHaveClass("guide-step-number");
     expect(screen.getAllByRole("button", { name: "Ajuda" })[0]).toBeVisible();

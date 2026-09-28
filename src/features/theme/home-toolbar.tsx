@@ -171,7 +171,6 @@ export function HomeToolbar({
             ◐
           </button>
           {guideActions}
-          <ThemeToggleButton onClick={toggleTheme} className="guide-theme-toggle" />
         </div>
       </header>
     );
@@ -298,10 +297,12 @@ export function HomeToolbar({
         )}
       </header>
 
-      {/* Botão de alternar tema claro/escuro */}
-      <div className="home-bottom-theme-dock">
-        <ThemeToggleButton onClick={toggleTheme} className="home-theme-bottom-btn" showLabel />
-      </div>
+      {/* Botão de alternar tema claro/escuro - somente na página inicial */}
+      {isHome && (
+        <div className="home-bottom-theme-dock">
+          <ThemeToggleButton onClick={toggleTheme} className="home-theme-bottom-btn" showLabel />
+        </div>
+      )}
 
       {helpOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-5" role="presentation">
