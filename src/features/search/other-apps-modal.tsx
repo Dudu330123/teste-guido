@@ -93,7 +93,6 @@ export function OtherAppsModal({ onClose, onSelectApp }: OtherAppsModalProps) {
         <header>
           <div>
             <h2 id="other-apps-modal-title">Escolha seu aplicativo</h2>
-            <p>Selecione o aplicativo que você quer ajuda.</p>
           </div>
           <button
             ref={closeRef}

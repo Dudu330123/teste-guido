@@ -146,7 +146,6 @@ function BankModal({ banks, onClose, onSelect }: BankModalProps) {
         <header>
           <div>
             <h2 id="bank-modal-title">Escolha seu banco</h2>
-            <p>Selecione o aplicativo que você usa.</p>
           </div>
           <button ref={closeRef} type="button" onClick={onClose} aria-label="Fechar lista de bancos" className="home-modal-close">
             <svg aria-hidden="true" viewBox="0 0 24 24">
@@ -275,7 +274,6 @@ function TaskModal({ applicationName, tasks: modalTasks, onClose }: TaskModalPro
         <header>
           <div>
             <h2 id="task-modal-title">Escolha uma tarefa</h2>
-            <p>Selecione o que você quer fazer em {applicationName}.</p>
           </div>
           <button ref={closeRef} type="button" onClick={onClose} aria-label="Fechar lista de tarefas" className="home-modal-close">
             <svg aria-hidden="true" viewBox="0 0 24 24">
