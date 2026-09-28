@@ -111,7 +111,6 @@ export function AskGuidoModal({
 
   const recognitionRef = useRef<VoiceRecognition | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
-  const promptInputRef = useRef<HTMLInputElement>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
   // Carrega configurações locais ao montar
@@ -310,8 +309,7 @@ export function AskGuidoModal({
       (window as VoiceWindow).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      setSpeechStatus("Reconhecimento de voz não suportado neste navegador. Digite sua dúvida abaixo.");
-      promptInputRef.current?.focus();
+      setSpeechStatus("Reconhecimento de voz não suportado neste navegador. Use o Chrome ou Edge.");
       return;
     }
 
@@ -345,7 +343,7 @@ export function AskGuidoModal({
 
       recognition.onerror = () => {
         setIsListening(false);
-        setSpeechStatus("Não consegui ouvir direitinho. Pode falar novamente ou escrever abaixo!");
+        setSpeechStatus("Não consegui ouvir direitinho. Toque no microfone e fale novamente!");
       };
 
       recognition.onend = () => {
@@ -555,22 +553,19 @@ export function AskGuidoModal({
 
           {/* Estado inicial: Pergunta */}
           {!generatedGuide && !isLoading && (
-            <div className="space-y-6 text-center">
+            <div className="space-y-6 text-center py-6">
               <div>
                 <p className="text-2xl font-black text-slate-800">
                   No que você está tendo dificuldade hoje?
                 </p>
-                <p className="mt-1 text-base text-slate-600 font-medium">
-                  Aperte o microfone grande e fale com calma, ou digite abaixo.
-                </p>
               </div>
 
               {/* Botão de voz grande */}
-              <div className="flex flex-col items-center justify-center py-2">
+              <div className="flex flex-col items-center justify-center py-4">
                 <button
                   type="button"
                   onClick={isListening ? stopVoiceInput : startVoiceInput}
-                  className={`group relative flex size-32 items-center justify-center rounded-full transition-all duration-300 shadow-2xl ${
+                  className={`group relative flex size-36 items-center justify-center rounded-full transition-all duration-300 shadow-2xl ${
                     isListening
                       ? "bg-red-500 text-white animate-pulse ring-8 ring-red-300 scale-105"
                       : "bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 ring-8 ring-blue-100"
@@ -578,79 +573,21 @@ export function AskGuidoModal({
                   aria-label={isListening ? "Concluir e escutar explicação" : "Falar com o Guido"}
                 >
                   {isListening ? (
-                    <MicOff className="size-14 animate-bounce" />
+                    <MicOff className="size-16 animate-bounce" />
                   ) : (
-                    <Mic className="size-14" />
+                    <Mic className="size-16" />
                   )}
                 </button>
 
                 <div className="mt-4 space-y-1">
-                  <p className="text-base font-black text-slate-800">
-                    {isListening
-                      ? "🔴 Estou ouvindo com atenção... Toque para escutar a resposta!"
-                      : "Toque no microfone para falar"}
-                  </p>
+                  {isListening && (
+                    <p className="text-base font-black text-slate-800">
+                      🔴 Estou ouvindo com atenção... Pode falar com calma!
+                    </p>
+                  )}
                   {speechStatus && (
                     <p className="text-sm font-bold text-blue-700 animate-pulse">{speechStatus}</p>
                   )}
-                </div>
-              </div>
-
-              {/* Campo de texto alternativo */}
-              <div className="space-y-2 text-left pt-2 border-t border-slate-100">
-                <label
-                  htmlFor="guido-prompt-input"
-                  className="text-xs font-black uppercase tracking-wider text-slate-500"
-                >
-                  Ou digite a sua pergunta:
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    ref={promptInputRef}
-                    id="guido-prompt-input"
-                    type="text"
-                    value={prompt}
-                    onChange={(e) => setPrompt(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") handleGenerate();
-                    }}
-                    placeholder="Ex: Como faço um Pix no Nubank?"
-                    className="flex-1 rounded-2xl border-2 border-slate-300 bg-slate-50 px-4 py-3.5 text-base font-bold text-slate-900 focus:border-blue-600 focus:bg-white focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleGenerate()}
-                    disabled={!prompt.trim()}
-                    className="flex items-center gap-2 rounded-2xl bg-blue-600 px-6 py-3.5 text-base font-bold text-white shadow-md hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    <span>Perguntar</span>
-                    <Sparkles className="size-5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Sugestões rápidas */}
-              <div className="space-y-2 text-left">
-                <p className="text-xs font-bold text-slate-500">Sugestões rápidas:</p>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    "Como fazer um Pix?",
-                    "Como mandar áudio no WhatsApp?",
-                    "Como pagar conta de luz?",
-                    "Como pedir um Uber?",
-                  ].map((sug) => (
-                    <button
-                      key={sug}
-                      type="button"
-                      onClick={() => {
-                        setPrompt(sug);
-                        handleGenerate(sug);
-                      }}
-                      className="rounded-xl border border-slate-200 bg-slate-100 px-3.5 py-2.5 text-sm font-bold text-slate-700 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-300 transition-colors"
-                    >
-                      {sug}
-                    </button>
-                  ))}
                 </div>
               </div>
             </div>
