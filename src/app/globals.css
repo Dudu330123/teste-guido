@@ -376,14 +376,7 @@ button:disabled,
 }
 
 .guido-home::before {
-  position: absolute;
-  inset: 0;
-  z-index: 20;
-  border: clamp(0.5rem, 1vw, 1rem) solid rgba(35, 116, 179, 0.78);
-  border-radius: clamp(1rem, 1.7vw, 1.65rem);
-  box-shadow: inset 0 0 0 1px rgba(229, 244, 255, 0.58);
-  content: "";
-  pointer-events: none;
+  display: none;
 }
 
 .guido-home::after {
@@ -407,8 +400,7 @@ html[data-theme="dark"] .guido-home {
 }
 
 html[data-theme="dark"] .guido-home::before {
-  border-color: rgba(4, 31, 74, 0.92);
-  box-shadow: inset 0 0 0 1px rgba(92, 159, 230, 0.2);
+  display: none;
 }
 
 .guido-home-content {
