@@ -7,12 +7,14 @@ import {
   Sparkles,
   X,
   ArrowRight,
+  ArrowLeft,
   Settings,
   Volume2,
   VolumeX,
   RotateCcw,
   CheckCircle2,
   Heart,
+  Check,
 } from "lucide-react";
 import { generateGuideWithAi, type GeneratedGuide } from "@/services/ai-guide-generator";
 
@@ -46,9 +48,119 @@ interface AskGuidoModalProps {
   initialListening?: boolean;
 }
 
-/**
- * Pontuação para selecionar a voz mais humana disponível no sistema.
- */
+export interface VoiceProfile {
+  id: "guido" | "helena" | "lucas";
+  name: string;
+  label: string;
+  badge: string;
+  badgeColor: string;
+  description: string;
+  previewText: string;
+  elevenVoiceId: string;
+  gender: "male" | "female";
+  rate: number;
+  pitch: number;
+  preferredVoices: string[];
+}
+
+export const VOICE_PROFILES: VoiceProfile[] = [
+  {
+    id: "guido",
+    name: "Guido",
+    label: "Voz Acolhedora & Calma",
+    badge: "Masculina · Calma",
+    badgeColor: "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/50 dark:text-blue-200 dark:border-blue-700",
+    description: "Tom amigo, pausado e paciente. Fala clara e tranquila para entender cada passo no seu ritmo.",
+    previewText: "Olá! Eu sou o Guido. Estou aqui para te ajudar no seu ritmo, com calma e paciência.",
+    elevenVoiceId: "ErXwobaYiN019PkySvjV", // Antoni (ElevenLabs)
+    gender: "male",
+    rate: 0.98,
+    pitch: 0.95,
+    preferredVoices: ["antonio", "antônio", "felipe", "daniel", "google", "pt-br"],
+  },
+  {
+    id: "helena",
+    name: "Helena",
+    label: "Voz Suave & Doce",
+    badge: "Feminina · Suave",
+    badgeColor: "bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900/50 dark:text-purple-200 dark:border-purple-700",
+    description: "Voz doce, calorosa e muito acolhedora. Perfeita para uma explicação carinhosa e paciente.",
+    previewText: "Oi, tudo bem? Eu sou a Helena. Conte comigo para aprender tudo no celular bem explicadinho.",
+    elevenVoiceId: "21m00Tcm4TlvDq8ikWAM", // Rachel (ElevenLabs)
+    gender: "female",
+    rate: 1.0,
+    pitch: 1.05,
+    preferredVoices: ["francisca", "thalita", "luciana", "maria", "google", "pt-br"],
+  },
+  {
+    id: "lucas",
+    name: "Lucas",
+    label: "Voz Jovem & Dinâmica",
+    badge: "Jovem · Dinâmica",
+    badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-900/50 dark:text-emerald-200 dark:border-emerald-700",
+    description: "Voz jovem, nítida e direta ao ponto. Explicações ágeis, modernas e muito objetivas.",
+    previewText: "E aí! Eu sou o Lucas. Vou te mostrar o caminho mais rápido e direto para resolver qualquer coisa.",
+    elevenVoiceId: "pNInz6obpgDQGcFmaJgB", // Adam (ElevenLabs)
+    gender: "male",
+    rate: 1.05,
+    pitch: 1.08,
+    preferredVoices: ["antonio", "felipe", "google", "daniel", "pt-br"],
+  },
+];
+
+export interface AvatarOption {
+  id: string;
+  name: string;
+  emoji: string;
+  gradient: string;
+  description: string;
+}
+
+export const AVATAR_OPTIONS: AvatarOption[] = [
+  {
+    id: "robo-guido",
+    name: "Guido Robô",
+    emoji: "🤖",
+    gradient: "from-blue-500 to-indigo-600",
+    description: "O mascote oficial e inteligente",
+  },
+  {
+    id: "vovo-guido",
+    name: "Vovô Guido",
+    emoji: "👴",
+    gradient: "from-amber-500 to-orange-600",
+    description: "Sábio, paciente e amigo",
+  },
+  {
+    id: "helena",
+    name: "Profª Helena",
+    emoji: "👩‍🏫",
+    gradient: "from-purple-500 to-pink-600",
+    description: "Doce, calma e atenciosa",
+  },
+  {
+    id: "lucas",
+    name: "Lucas Amigo",
+    emoji: "🧑‍💼",
+    gradient: "from-emerald-500 to-teal-600",
+    description: "Jovem, prestativo e dinâmico",
+  },
+  {
+    id: "corujinha",
+    name: "Corujinha Sábia",
+    emoji: "🦉",
+    gradient: "from-indigo-500 to-violet-600",
+    description: "Esperta e cheia de dicas",
+  },
+  {
+    id: "coracao",
+    name: "Coração Amigo",
+    emoji: "💙",
+    gradient: "from-sky-500 to-blue-600",
+    description: "Apoio e carinho a cada passo",
+  },
+];
+
 function rankVoice(v: SpeechSynthesisVoice): number {
   const name = v.name.toLowerCase();
   const lang = (v.lang || "").toLowerCase();
@@ -71,6 +183,58 @@ function rankVoice(v: SpeechSynthesisVoice): number {
   if (name.includes("sapi")) score -= 150;
 
   return score;
+}
+
+function findBestVoiceForProfile(
+  voices: SpeechSynthesisVoice[],
+  profile: VoiceProfile
+): SpeechSynthesisVoice | null {
+  const ptVoices = voices
+    .filter((v) => (v.lang || "").toLowerCase().startsWith("pt"))
+    .sort((a, b) => rankVoice(b) - rankVoice(a));
+
+  if (ptVoices.length === 0) return null;
+
+  // 1. Tenta encontrar pelas palavras-chave preferidas
+  for (const pref of profile.preferredVoices) {
+    const match = ptVoices.find((v) => v.name.toLowerCase().includes(pref));
+    if (match) return match;
+  }
+
+  // 2. Tenta por gênero
+  if (profile.gender === "female") {
+    const femaleMatch = ptVoices.find((v) => {
+      const n = v.name.toLowerCase();
+      return (
+        n.includes("female") ||
+        n.includes("mulher") ||
+        n.includes("francisca") ||
+        n.includes("thalita") ||
+        n.includes("luciana") ||
+        n.includes("maria") ||
+        n.includes("fernanda") ||
+        n.includes("raquel")
+      );
+    });
+    if (femaleMatch) return femaleMatch;
+  } else {
+    const maleMatch = ptVoices.find((v) => {
+      const n = v.name.toLowerCase();
+      return (
+        n.includes("male") ||
+        n.includes("homem") ||
+        n.includes("antonio") ||
+        n.includes("antônio") ||
+        n.includes("daniel") ||
+        n.includes("felipe") ||
+        n.includes("carlos")
+      );
+    });
+    if (maleMatch) return maleMatch;
+  }
+
+  // 3. Fallback: voz pt mais bem ranqueada
+  return ptVoices[0] || null;
 }
 
 function formatTextForNaturalSpeech(text: string): string {
@@ -100,61 +264,38 @@ export function AskGuidoModal({
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [generatedGuide, setGeneratedGuide] = useState<GeneratedGuide | null>(null);
 
-  const [geminiApiKey, setGeminiApiKey] = useState("");
-  const [elevenLabsApiKey, setElevenLabsApiKey] = useState("");
-  const [showConfig, setShowConfig] = useState(false);
   const [speechStatus, setSpeechStatus] = useState("");
   const [usingStudioVoice, setUsingStudioVoice] = useState(false);
 
-  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [selectedVoiceName, setSelectedVoiceName] = useState<string>("");
+  // Seleção de voz e avatar
+  const [selectedVoiceId, setSelectedVoiceId] = useState<"guido" | "helena" | "lucas">("guido");
+  const [selectedAvatarId, setSelectedAvatarId] = useState<string>("robo-guido");
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+  const [previewingVoiceId, setPreviewingVoiceId] = useState<string | null>(null);
 
   const recognitionRef = useRef<VoiceRecognition | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
-  // Carrega configurações locais ao montar
+  const currentVoiceProfile =
+    VOICE_PROFILES.find((v) => v.id === selectedVoiceId) || VOICE_PROFILES[0];
+  const currentAvatar =
+    AVATAR_OPTIONS.find((a) => a.id === selectedAvatarId) || AVATAR_OPTIONS[0];
+
+  // Carrega preferências de voz e avatar salvas ao montar
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    let frame: number;
     try {
-      frame = window.requestAnimationFrame(() => {
-        setGeminiApiKey(window.localStorage.getItem("guido-gemini-key") || "");
-        setElevenLabsApiKey(window.localStorage.getItem("guido-elevenlabs-key") || "");
-      });
+      const savedVoice = window.localStorage.getItem("guido-voice-id");
+      if (savedVoice === "guido" || savedVoice === "helena" || savedVoice === "lucas") {
+        setSelectedVoiceId(savedVoice);
+      }
+      const savedAvatar = window.localStorage.getItem("guido-avatar-id");
+      if (savedAvatar && AVATAR_OPTIONS.some((a) => a.id === savedAvatar)) {
+        setSelectedAvatarId(savedAvatar);
+      }
     } catch {}
-
-    if ("speechSynthesis" in window) {
-      const loadVoices = () => {
-        const allVoices = window.speechSynthesis.getVoices();
-        const ptVoices = allVoices
-          .filter((v) => (v.lang || "").toLowerCase().startsWith("pt"))
-          .sort((a, b) => rankVoice(b) - rankVoice(a));
-
-        if (ptVoices.length > 0) {
-          setAvailableVoices(ptVoices);
-          setSelectedVoiceName((current) => {
-            if (current && ptVoices.some((v) => v.name === current)) return current;
-            return ptVoices[0]?.name || "";
-          });
-        }
-      };
-
-      loadVoices();
-      window.speechSynthesis.onvoiceschanged = loadVoices;
-
-      return () => {
-        if (frame) window.cancelAnimationFrame(frame);
-        if ("speechSynthesis" in window) {
-          window.speechSynthesis.onvoiceschanged = null;
-        }
-      };
-    }
-
-    return () => {
-      if (frame) window.cancelAnimationFrame(frame);
-    };
   }, []);
 
   const stopSpeaking = useCallback(() => {
@@ -167,12 +308,14 @@ export function AskGuidoModal({
       window.speechSynthesis.cancel();
     }
     setIsSpeaking(false);
+    setPreviewingVoiceId(null);
   }, []);
 
   const speakWithBrowserSynthesis = useCallback(
-    (textToSpeak: string) => {
+    (textToSpeak: string, profileOverride?: VoiceProfile, onEndCallback?: () => void) => {
       if (typeof window === "undefined" || !("speechSynthesis" in window)) {
         setIsSpeaking(false);
+        onEndCallback?.();
         return;
       }
 
@@ -180,51 +323,62 @@ export function AskGuidoModal({
       const clean = formatTextForNaturalSpeech(textToSpeak);
       const utterance = new SpeechSynthesisUtterance(clean);
       utterance.lang = "pt-BR";
-      utterance.rate = 1.05; // Velocidade ágil e dinâmica (sem arrastar)
-      utterance.pitch = 1.0;
+
+      const profile = profileOverride || currentVoiceProfile;
+      utterance.rate = profile.rate;
+      utterance.pitch = profile.pitch;
 
       const voices = window.speechSynthesis.getVoices();
-      const voice =
-        voices.find((v) => v.name === selectedVoiceName) ||
-        voices.filter((v) => (v.lang || "").toLowerCase().startsWith("pt")).sort((a, b) => rankVoice(b) - rankVoice(a))[0];
+      const voice = findBestVoiceForProfile(voices, profile);
 
       if (voice) {
         utterance.voice = voice;
       }
 
       utterance.onstart = () => setIsSpeaking(true);
-      utterance.onend = () => setIsSpeaking(false);
-      utterance.onerror = () => setIsSpeaking(false);
+      utterance.onend = () => {
+        setIsSpeaking(false);
+        onEndCallback?.();
+      };
+      utterance.onerror = () => {
+        setIsSpeaking(false);
+        onEndCallback?.();
+      };
 
       window.speechSynthesis.speak(utterance);
       setIsSpeaking(true);
     },
-    [selectedVoiceName]
+    [currentVoiceProfile]
   );
 
   const speakText = useCallback(
-    async (textToSpeak: string) => {
+    async (
+      textToSpeak: string,
+      profileOverride?: VoiceProfile,
+      onEndCallback?: () => void
+    ) => {
       if (typeof window === "undefined") return;
 
       stopSpeaking();
       const cleanText = formatTextForNaturalSpeech(textToSpeak);
       if (!cleanText) return;
 
+      const profile = profileOverride || currentVoiceProfile;
       setIsSpeaking(true);
 
       // 1. TENTA PRIMEIRO A VOZ ELEVENLABS (Qualidade de Dublador Profissional de Cinema)
       try {
         const storedElevenKey =
-          elevenLabsApiKey.trim() ||
           (typeof window !== "undefined"
             ? window.localStorage.getItem("guido-elevenlabs-key")?.trim()
-            : "");
+            : "") || "";
 
         const res = await fetch("/api/ai/tts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             text: cleanText.slice(0, 600),
+            voiceId: profile.elevenVoiceId,
             apiKey: storedElevenKey || undefined,
           }),
         });
@@ -242,26 +396,27 @@ export function AskGuidoModal({
             setIsSpeaking(false);
             audioPlayerRef.current = null;
             URL.revokeObjectURL(audioUrl);
+            onEndCallback?.();
           };
 
           audio.onerror = () => {
             URL.revokeObjectURL(audioUrl);
             setUsingStudioVoice(false);
-            speakWithBrowserSynthesis(cleanText);
+            speakWithBrowserSynthesis(cleanText, profile, onEndCallback);
           };
 
           await audio.play();
           return;
         }
       } catch {
-        // Fallback imediato sem delay
+        // Fallback imediato para síntese do navegador
       }
 
-      // 2. FALLBACK IMEDIATO: Síntese nativa com velocidade corrigida (1.05x)
+      // 2. FALLBACK IMEDIATO: Síntese nativa fluida com voz, pitch e rate ajustados
       setUsingStudioVoice(false);
-      speakWithBrowserSynthesis(cleanText);
+      speakWithBrowserSynthesis(cleanText, profile, onEndCallback);
     },
-    [elevenLabsApiKey, speakWithBrowserSynthesis, stopSpeaking]
+    [currentVoiceProfile, speakWithBrowserSynthesis, stopSpeaking]
   );
 
   const stopVoiceInput = useCallback(() => {
@@ -376,7 +531,13 @@ export function AskGuidoModal({
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         event.preventDefault();
-        onClose();
+        if (showSettingsMenu) {
+          stopSpeaking();
+          setPreviewingVoiceId(null);
+          setShowSettingsMenu(false);
+        } else {
+          onClose();
+        }
       }
       if (event.key !== "Tab") return;
       const items = Array.from(
@@ -401,13 +562,19 @@ export function AskGuidoModal({
       stopSpeaking();
       opener?.focus();
     };
-  }, [initialListening, isOpen, onClose, startVoiceInput, stopSpeaking]);
+  }, [initialListening, isOpen, onClose, showSettingsMenu, startVoiceInput, stopSpeaking]);
 
-  const handleSaveConfig = () => {
+  const selectVoice = (id: "guido" | "helena" | "lucas") => {
+    setSelectedVoiceId(id);
     if (typeof window !== "undefined") {
-      window.localStorage.setItem("guido-gemini-key", geminiApiKey.trim());
-      window.localStorage.setItem("guido-elevenlabs-key", elevenLabsApiKey.trim());
-      setShowConfig(false);
+      window.localStorage.setItem("guido-voice-id", id);
+    }
+  };
+
+  const selectAvatar = (id: string) => {
+    setSelectedAvatarId(id);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("guido-avatar-id", id);
     }
   };
 
@@ -421,12 +588,233 @@ export function AskGuidoModal({
       aria-labelledby="ask-guido-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm animate-in fade-in duration-200"
     >
+      {/* MENU DE TELA CHEIA: PERSONALIZAR VOZ E AVATAR */}
+      {showSettingsMenu && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Personalizar Voz e Avatar"
+          className="fixed inset-0 z-[60] flex flex-col bg-slate-900 text-white overflow-y-auto animate-in fade-in duration-200"
+        >
+          {/* Cabeçalho do Menu de Configurações */}
+          <div className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-800 bg-slate-900/95 px-4 py-4 backdrop-blur-md sm:px-6">
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => {
+                  stopSpeaking();
+                  setPreviewingVoiceId(null);
+                  setShowSettingsMenu(false);
+                }}
+                className="flex items-center gap-2 rounded-2xl bg-white/10 px-3.5 py-2 text-sm sm:text-base font-bold text-white hover:bg-white/20 active:scale-95 transition-all"
+                aria-label="Voltar para falar com o Guido"
+              >
+                <ArrowLeft className="size-5" />
+                <span>Voltar</span>
+              </button>
+              <div>
+                <h3 className="text-lg sm:text-2xl font-black text-white leading-tight">
+                  Personalizar Voz e Avatar
+                </h3>
+                <p className="text-xs sm:text-sm font-medium text-slate-400">
+                  Escolha quem fala com você e como ele aparece
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                stopSpeaking();
+                setPreviewingVoiceId(null);
+                setShowSettingsMenu(false);
+              }}
+              className="rounded-full p-2 text-slate-400 hover:bg-white/10 hover:text-white transition-colors"
+              aria-label="Fechar personalização"
+            >
+              <X className="size-6" />
+            </button>
+          </div>
+
+          {/* Conteúdo do Menu */}
+          <div className="mx-auto w-full max-w-2xl flex-1 px-4 py-6 space-y-8 sm:px-6 sm:py-8">
+            {/* SEÇÃO 1: ESCOLHER AVATAR */}
+            <section className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
+                    <span>🎭</span> Escolha o Avatar
+                  </h4>
+                  <p className="text-xs sm:text-sm text-slate-400">
+                    O ícone que vai te acompanhar em cada ajuda
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 rounded-2xl bg-slate-800/90 px-3.5 py-1.5 border border-slate-700">
+                  <span className="text-2xl">{currentAvatar.emoji}</span>
+                  <span className="text-xs font-bold text-slate-200">{currentAvatar.name}</span>
+                </div>
+              </div>
+
+              {/* Grade de Avatares */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {AVATAR_OPTIONS.map((av) => {
+                  const isSelected = av.id === selectedAvatarId;
+                  return (
+                    <button
+                      key={av.id}
+                      type="button"
+                      onClick={() => selectAvatar(av.id)}
+                      className={`relative flex flex-col items-center justify-center p-4 rounded-3xl border-2 transition-all text-center ${
+                        isSelected
+                          ? "border-blue-500 bg-blue-950/60 ring-4 ring-blue-500/40 scale-[1.02]"
+                          : "border-slate-800 bg-slate-800/50 hover:border-slate-700 hover:bg-slate-800"
+                      }`}
+                      aria-pressed={isSelected}
+                    >
+                      {isSelected && (
+                        <span className="absolute top-2.5 right-2.5 flex size-5 items-center justify-center rounded-full bg-blue-500 text-white text-xs font-black shadow-md">
+                          ✓
+                        </span>
+                      )}
+                      <div
+                        className={`flex size-14 sm:size-16 items-center justify-center rounded-2xl bg-gradient-to-br ${av.gradient} text-3xl shadow-lg mb-2`}
+                      >
+                        {av.emoji}
+                      </div>
+                      <strong className="text-sm font-bold text-white">{av.name}</strong>
+                      <span className="text-[11px] text-slate-400 mt-0.5 line-clamp-1">
+                        {av.description}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* SEÇÃO 2: ESCOLHER VOZ (3 VOZES MAIS HUMANAS E FLUIDAS) */}
+            <section className="space-y-4">
+              <div>
+                <h4 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
+                  <span>🗣️</span> Escolha a Voz (3 Vozes Humanas)
+                </h4>
+                <p className="text-xs sm:text-sm text-slate-400">
+                  Vozes acolhedoras, naturais e sem sotaque robotizado em português
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                {VOICE_PROFILES.map((vp) => {
+                  const isSelected = vp.id === selectedVoiceId;
+                  const isPlayingThis = isSpeaking && previewingVoiceId === vp.id;
+
+                  return (
+                    <div
+                      key={vp.id}
+                      onClick={() => selectVoice(vp.id)}
+                      className={`relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-3xl border-2 transition-all cursor-pointer ${
+                        isSelected
+                          ? "border-blue-500 bg-blue-950/50 ring-4 ring-blue-500/30"
+                          : "border-slate-800 bg-slate-800/40 hover:border-slate-700 hover:bg-slate-800/70"
+                      }`}
+                    >
+                      <div className="flex items-start gap-3.5 flex-1 min-w-0">
+                        <div
+                          className={`flex size-6 shrink-0 mt-0.5 items-center justify-center rounded-full border-2 ${
+                            isSelected
+                              ? "border-blue-400 bg-blue-500 text-white"
+                              : "border-slate-600 bg-slate-800"
+                          }`}
+                        >
+                          {isSelected && <Check className="size-3.5 stroke-[3]" />}
+                        </div>
+                        <div className="space-y-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-lg font-black text-white">{vp.name}</span>
+                            <span className={`rounded-lg px-2 py-0.5 text-xs font-bold border ${vp.badgeColor}`}>
+                              {vp.badge}
+                            </span>
+                            {isSelected && (
+                              <span className="rounded-lg bg-blue-500/20 text-blue-300 text-[11px] font-bold px-2 py-0.5 border border-blue-400/30">
+                                Voz Ativa
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                            {vp.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-end pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-800">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (isPlayingThis) {
+                              stopSpeaking();
+                              setPreviewingVoiceId(null);
+                            } else {
+                              selectVoice(vp.id);
+                              setPreviewingVoiceId(vp.id);
+                              void speakText(vp.previewText, vp, () => {
+                                setPreviewingVoiceId(null);
+                              });
+                            }
+                          }}
+                          className={`flex items-center gap-2 rounded-2xl px-4 py-2.5 text-xs font-bold transition-all shadow-md active:scale-95 ${
+                            isPlayingThis
+                              ? "bg-rose-600 text-white animate-pulse"
+                              : "bg-blue-600 hover:bg-blue-500 text-white"
+                          }`}
+                          aria-label={isPlayingThis ? `Parar voz de ${vp.name}` : `Ouvir demonstração da voz de ${vp.name}`}
+                        >
+                          {isPlayingThis ? (
+                            <>
+                              <VolumeX className="size-4" />
+                              <span>Parar</span>
+                            </>
+                          ) : (
+                            <>
+                              <Volume2 className="size-4" />
+                              <span>Ouvir demonstração</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
+            {/* BOTÃO DE CONFIRMAR E VOLTAR */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  stopSpeaking();
+                  setPreviewingVoiceId(null);
+                  setShowSettingsMenu(false);
+                }}
+                className="flex w-full min-h-14 items-center justify-center gap-2.5 rounded-2xl bg-blue-600 px-6 py-3.5 text-lg font-black text-white shadow-xl hover:bg-blue-500 active:scale-98 transition-all"
+              >
+                <CheckCircle2 className="size-5" />
+                <span>Confirmar e Voltar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* JANELA PRINCIPAL DO MODAL */}
       <div className="relative flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-3xl bg-white text-slate-900 shadow-2xl border-4 border-blue-600">
         {/* Cabeçalho */}
         <header className="flex items-center justify-between border-b border-blue-500/60 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 px-4 py-3 sm:px-6 sm:py-4 text-white">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <div className="flex size-10 sm:size-12 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-white/20 text-2xl sm:text-3xl shadow-sm">
-              🤖
+            <div
+              className={`flex size-10 sm:size-12 shrink-0 items-center justify-center rounded-xl sm:rounded-2xl bg-gradient-to-br ${currentAvatar.gradient} text-2xl sm:text-3xl shadow-sm text-white`}
+              title={`Avatar: ${currentAvatar.name}`}
+            >
+              {currentAvatar.emoji}
             </div>
             <div className="min-w-0">
               <h2 id="ask-guido-title" className="text-lg sm:text-2xl font-black leading-tight tracking-tight text-white">
@@ -437,10 +825,14 @@ export function AskGuidoModal({
           <div className="flex items-center gap-1 sm:gap-2 shrink-0 ml-2">
             <button
               type="button"
-              onClick={() => setShowConfig(!showConfig)}
+              onClick={() => {
+                stopSpeaking();
+                setPreviewingVoiceId(null);
+                setShowSettingsMenu(true);
+              }}
               className="rounded-full p-2 text-white/80 hover:bg-white/10 hover:text-white transition-colors"
-              title="Configuração de voz e chaves"
-              aria-label="Configurar Voz e Chaves"
+              title="Personalizar voz e avatar"
+              aria-label="Personalizar voz e avatar"
             >
               <Settings className="size-5" />
             </button>
@@ -460,89 +852,6 @@ export function AskGuidoModal({
 
         {/* Conteúdo */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* Gaveta de Configuração */}
-          {showConfig && (
-            <div className="rounded-2xl bg-blue-50 p-4 border-2 border-blue-200 space-y-3 animate-in fade-in">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black uppercase text-blue-900 tracking-wide flex items-center gap-1.5">
-                  <Volume2 className="size-4 text-blue-600" />
-                  Configuração de Voz de Estúdio
-                </span>
-                <span className="text-[11px] font-bold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-md">
-                  ElevenLabs & IA
-                </span>
-              </div>
-
-              {/* Chave ElevenLabs */}
-              <div className="space-y-1">
-                <label htmlFor="eleven-key" className="text-xs font-bold text-slate-700">
-                  Chave ElevenLabs (Voz de Dublador de Cinema - Grátis até 10k chars):
-                </label>
-                <input
-                  id="eleven-key"
-                  type="password"
-                  value={elevenLabsApiKey}
-                  onChange={(e) => setElevenLabsApiKey(e.target.value)}
-                  placeholder="Cole sua chave sk_... da ElevenLabs"
-                  className="w-full rounded-xl border border-blue-300 bg-white p-2.5 text-xs font-mono"
-                />
-                <p className="text-[11px] text-slate-500 font-medium">
-                  Crie grátis em <span className="font-semibold text-blue-600">elevenlabs.io</span>. Deixe em branco para usar a voz rápida local.
-                </p>
-              </div>
-
-              {/* Seletor de voz nativa fallback */}
-              {availableVoices.length > 0 && (
-                <div className="space-y-1 pt-1 border-t border-blue-200">
-                  <label htmlFor="voice-select" className="text-xs font-bold text-slate-700">
-                    Voz alternativa do navegador:
-                  </label>
-                  <select
-                    id="voice-select"
-                    value={selectedVoiceName}
-                    onChange={(e) => {
-                      setSelectedVoiceName(e.target.value);
-                      speakWithBrowserSynthesis("Oi! Esta é uma demonstração da voz selecionada.");
-                    }}
-                    className="w-full rounded-xl border border-blue-300 bg-white p-2 text-xs font-bold text-slate-800"
-                  >
-                    {availableVoices.map((v) => (
-                      <option key={v.name} value={v.name}>
-                        {v.name.includes("Natural") || v.name.includes("Neural") || v.name.includes("Online")
-                          ? `🌟 ${v.name}`
-                          : v.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
-              {/* Chave Gemini */}
-              <div className="space-y-1 pt-1 border-t border-blue-200">
-                <label htmlFor="gemini-key" className="text-xs font-bold text-slate-700">
-                  Chave Gemini opcional:
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    id="gemini-key"
-                    type="password"
-                    value={geminiApiKey}
-                    onChange={(e) => setGeminiApiKey(e.target.value)}
-                    placeholder="Cole sua chave Gemini AI Studio..."
-                    className="flex-1 rounded-xl border border-blue-300 bg-white p-2 text-xs font-mono"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleSaveConfig}
-                    className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-700"
-                  >
-                    Salvar
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Estado inicial: Pergunta */}
           {!generatedGuide && !isLoading && (
             <div className="space-y-6 text-center py-6">
@@ -610,7 +919,7 @@ export function AskGuidoModal({
                     <span className="flex size-3 rounded-full bg-emerald-500 animate-ping" />
                     <span className="text-xs font-black uppercase text-blue-900 tracking-wider flex items-center gap-1.5">
                       <Heart className="size-4 text-rose-500 fill-rose-500" />
-                      {isSpeaking ? "Guido conversando com você" : "Explicação carinhosa do Guido"}
+                      {isSpeaking ? `${currentAvatar.name} conversando com você` : `Explicação carinhosa de ${currentAvatar.name}`}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
