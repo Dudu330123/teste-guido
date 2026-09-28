@@ -6,8 +6,6 @@ interface SiteHeaderProps {
 }
 
 export function SiteHeader({ showAdmin = false, activePage }: SiteHeaderProps = {}) {
-  // Todas as rotas usam o mesmo cabeçalho da home para manter orientação
-  // espacial. A autorização continua sendo feita nas rotas administrativas;
-  // páginas públicas não devem esperar uma consulta de permissão para abrir.
-  return <HomeToolbar showAdmin={showAdmin} activePage={activePage} />;
+  // Rotas internas exibem apenas a marca Guido, reservando o botão de áudio e de entrar para a página inicial
+  return <HomeToolbar showAdmin={showAdmin} activePage={activePage} isInternal />;
 }

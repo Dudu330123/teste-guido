@@ -266,6 +266,22 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
     const timer = window.setTimeout(() => setCanPreload(true), 600);
     return () => window.clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (task.slug !== "enviar-audio-whatsapp") return;
+
+    const scrollToBottom = () => {
+      const scrollingElement = document.scrollingElement ?? document.documentElement;
+      window.scrollTo({ top: scrollingElement.scrollHeight, behavior: "auto" });
+    };
+    const frame = window.requestAnimationFrame(scrollToBottom);
+    const timer = window.setTimeout(scrollToBottom, 350);
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+      window.clearTimeout(timer);
+    };
+  }, [task.slug]);
   const restart = () => {
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel();
@@ -476,6 +492,8 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
           audioRef.current = null;
           speakWithSynthesis();
         };
+        setIsSpeaking(true);
+        setSpeechMessage("Instrução sendo lida em voz alta.");
         void audio.play();
         return;
       } catch {

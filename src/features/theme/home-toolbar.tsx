@@ -45,6 +45,7 @@ interface HomeToolbarProps {
   guideLeft?: ReactNode;
   guideActions?: ReactNode;
   onOpenAskGuido?: () => void;
+  isInternal?: boolean;
 }
 
 function ThemeToggleButton({
@@ -77,13 +78,15 @@ function ThemeToggleButton({
 }
 
 export function HomeToolbar({
-  activePage,
+  activePage = "home",
   showAdmin = false,
   variant = "home",
   guideLeft,
   guideActions,
   onOpenAskGuido,
+  isInternal = false,
 }: HomeToolbarProps) {
+  const isHome = (activePage === "home" || !activePage) && !isInternal;
   const [helpOpen, setHelpOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [askGuidoOpen, setAskGuidoOpen] = useState(false);
@@ -241,65 +244,58 @@ export function HomeToolbar({
               Tarefas automáticas
             </Link>
           )}
-          <button
-            type="button"
-            onClick={() => {
-              setMobileMenuOpen(false);
-              if (onOpenAskGuido) {
-                onOpenAskGuido();
-              } else {
-                setAskGuidoOpen(true);
-              }
-            }}
-            className="home-nav-button home-nav-button--guido-mobile"
-          >
-            <Mic className="size-4.5 shrink-0 text-sky-400" aria-hidden="true" />
-            <span>Falar com o Guido</span>
-          </button>
         </nav>
 
-        {/* Lado direito: Botão Guido no Cabeçalho e Botão Entrar */}
-        <nav id="home-account-navigation" aria-label="Acesso à conta e assistente" className={`home-account-nav${mobileMenuOpen ? " is-open" : ""}`}>
-          {/* Botão Guido no Cabeçalho */}
+        {/* Lado direito: Botão Guido no Cabeçalho e Botão Entrar (somente na página inicial) */}
+        {(isHome || showAdmin) && (
+          <nav id="home-account-navigation" aria-label="Acesso à conta e assistente" className={`home-account-nav${mobileMenuOpen ? " is-open" : ""}`}>
+            {/* Botão Guido no Cabeçalho - somente na página inicial */}
+            {isHome && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  if (onOpenAskGuido) {
+                    onOpenAskGuido();
+                  } else {
+                    setAskGuidoOpen(true);
+                  }
+                }}
+                className="home-ask-button"
+                aria-label="Falar com o Guido por voz"
+                title="Falar com o Guido por voz"
+              >
+                <span className="home-ask-icon-badge" aria-hidden="true">
+                  <Mic className="size-3.5 text-white animate-pulse" />
+                </span>
+                <span className="home-ask-full-label">Falar com o Guido</span>
+                <span className="home-ask-short-label">Guido</span>
+              </button>
+            )}
+
+            {/* Botão Entrar (somente na home) ou Admin (quando showAdmin é true) */}
+            {(isHome || showAdmin) && (
+              <SessionNavigation loginLabel="Entrar" showAdmin={showAdmin} showUpload={false} />
+            )}
+          </nav>
+        )}
+
+        {/* Botão Hambúrguer Mobile: não exibe em páginas internas */}
+        {!isInternal && (
           <button
             type="button"
-            onClick={() => {
-              setMobileMenuOpen(false);
-              if (onOpenAskGuido) {
-                onOpenAskGuido();
-              } else {
-                setAskGuidoOpen(true);
-              }
-            }}
-            className="home-ask-button"
-            aria-label="Falar com o Guido por voz"
-            title="Falar com o Guido por voz"
+            ref={menuButtonRef}
+            className="home-mobile-menu-button"
+            aria-label={mobileMenuOpen ? "Fechar menu" : "Abrir menu"}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="home-main-navigation home-account-navigation"
+            onClick={() => setMobileMenuOpen((open) => !open)}
           >
-            <span className="home-ask-icon-badge" aria-hidden="true">
-              <Mic className="size-3.5 text-white animate-pulse" />
-            </span>
-            <span className="home-ask-full-label">Falar com o Guido</span>
-            <span className="home-ask-short-label">Guido</span>
+            <span />
+            <span />
+            <span />
           </button>
-
-          {/* Botão Entrar */}
-          <SessionNavigation loginLabel="Entrar" showAdmin={showAdmin} showUpload={false} />
-        </nav>
-
-        {/* Botão Hambúrguer Mobile */}
-        <button
-          type="button"
-          ref={menuButtonRef}
-          className="home-mobile-menu-button"
-          aria-label={mobileMenuOpen ? "Fechar menu" : "Abrir menu"}
-          aria-expanded={mobileMenuOpen}
-          aria-controls="home-main-navigation home-account-navigation"
-          onClick={() => setMobileMenuOpen((open) => !open)}
-        >
-          <span />
-          <span />
-          <span />
-        </button>
+        )}
       </header>
 
       {/* Botão de alternar tema claro/escuro */}

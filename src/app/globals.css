@@ -8820,8 +8820,48 @@ html[data-theme="dark"] .guide-help-modal-option p {
   }
 
   @media (max-width: 60rem) {
+    .guide-page .guide-evidence-viewport--natural {
+      padding: 0 !important;
+      background: #000 !important;
+    }
+
+    .guide-page .guide-evidence-viewport--natural > .relative {
+      width: 100% !important;
+      height: 100% !important;
+      aspect-ratio: auto !important;
+    }
+
+    .guide-page .guide-evidence-viewport--natural img {
+      object-fit: cover !important;
+      object-position: top center !important;
+    }
+
+    .guide-nav-left-col .guide-audio-button.is-speaking {
+      background: #dc2626 !important;
+      border-color: #ef4444 !important;
+      color: #ffffff !important;
+    }
+
+    .guide-nav-right-col .guide-next-button {
+      display: flex !important;
+      position: fixed !important;
+      top: auto !important;
+      right: 0.8rem !important;
+      bottom: 1.5rem !important;
+      left: auto !important;
+      width: 2.5rem !important;
+      height: 2.5rem !important;
+      min-height: 2.5rem !important;
+      padding: 0 !important;
+      transform: none !important;
+      border-radius: 50% !important;
+      background: rgba(15, 23, 42, 0.78) !important;
+      border: 2px solid rgba(255, 255, 255, 0.3) !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+    }
+
     .guide-next-arrow {
-      font-size: 1.3rem !important;
+      display: block !important;
       width: 1.3rem !important;
       height: 1.3rem !important;
     }

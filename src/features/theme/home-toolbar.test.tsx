@@ -95,4 +95,15 @@ describe("controles da página inicial", () => {
     expect(window.localStorage.getItem("guido-theme")).toBe("light");
     expect(screen.queryByText("Escolha o tema")).not.toBeInTheDocument();
   });
+
+  it("exibe o botão Guido e Entrar na página inicial, mas oculta nas páginas internas", () => {
+    const { unmount } = render(<HomeToolbar />);
+    expect(screen.getByRole("button", { name: "Falar com o Guido por voz" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Entrar" })).toBeInTheDocument();
+    unmount();
+
+    render(<HomeToolbar isInternal />);
+    expect(screen.queryByRole("button", { name: "Falar com o Guido por voz" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Entrar" })).not.toBeInTheDocument();
+  });
 });
