@@ -480,10 +480,11 @@ html[data-theme="light"] .home-voice-caption {
 .home-category-card {
   position: relative;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center;
   justify-content: space-between;
-  min-height: 125px;
-  padding: 16px 14px 12px;
+  min-height: 72px;
+  padding: 14px 16px;
   border-radius: 18px;
   background: rgba(4, 20, 52, 0.72);
   border: 1px solid rgba(40, 95, 185, 0.42);
@@ -522,8 +523,8 @@ html[data-theme="light"] .home-category-card:hover {
 
 .home-card-header {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
+  align-items: center;
+  gap: 14px;
 }
 
 .home-card-badge {
@@ -589,8 +590,10 @@ html[data-theme="light"] .home-card-subtitle {
 
 .home-card-footer {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
-  margin-top: 10px;
+  margin-top: 0;
+  flex-shrink: 0;
 }
 
 .home-card-arrow {

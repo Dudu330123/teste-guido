@@ -20,13 +20,17 @@ describe("navegação guiada por categorias da página inicial", () => {
     expect(screen.getByRole("heading", { name: /Escolha uma categoria/i })).toBeVisible();
     expect(screen.getByText("TECNOLOGIA NO SEU RITMO")).toBeVisible();
 
-    // Quatro cards principais com títulos e textos curtos exatos
-    expect(screen.getByRole("button", { name: /Bancos.*Pix, boleto e cartão/i })).toBeVisible();
-    expect(screen.getByRole("button", { name: /WhatsApp.*Mensagens e chamadas/i })).toBeVisible();
-    expect(screen.getByRole("button", { name: /Gov\.br.*Conta e serviços/i })).toBeVisible();
-    expect(screen.getByRole("button", { name: /Outros.*Gmail e mais apps/i })).toBeVisible();
+    // Quatro cards principais com títulos diretos
+    expect(screen.getByRole("button", { name: "Bancos" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "WhatsApp" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Gov.br" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Outros" })).toBeVisible();
 
-    // Não deve conter barra de pesquisa nem blocos poluídos
+    // Não deve conter subtítulos secundários nem barra de pesquisa
+    expect(screen.queryByText("Pix, boleto e cartão")).not.toBeInTheDocument();
+    expect(screen.queryByText("Mensagens e chamadas")).not.toBeInTheDocument();
+    expect(screen.queryByText("Conta e serviços")).not.toBeInTheDocument();
+    expect(screen.queryByText("Gmail e mais apps")).not.toBeInTheDocument();
     expect(screen.queryByRole("searchbox")).not.toBeInTheDocument();
     expect(screen.queryByText(/Não sei por onde começar/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/O que você quer aprender hoje\?/i)).not.toBeInTheDocument();

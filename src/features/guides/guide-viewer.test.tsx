@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { applications } from "@/data/applications";
@@ -38,22 +38,48 @@ describe("visualizador do guia", () => {
     expect(screen.getByRole("button", { name: "Alternar entre modo claro e escuro" })).toBeVisible();
     expect(screen.getByText("O que fazer agora")).toBeVisible();
     expect(screen.getByText("1")).toHaveClass("guide-step-number");
-    expect(screen.getByText("Preciso de ajuda")).toBeVisible();
+    expect(screen.getAllByRole("button", { name: "Ajuda" })[0]).toBeVisible();
     expect(screen.queryByText(/Você está no controle/)).not.toBeInTheDocument();
     expect(screen.getByText("Faltam 5 passos. Continue no seu ritmo.")).toBeVisible();
 
-    await user.click(screen.getByText("Preciso de ajuda"));
-    expect(screen.getByText("Você não precisa ter pressa.")).toBeVisible();
-    expect(screen.getByRole("heading", { name: "Como seguir este passo" })).toBeVisible();
-    expect(screen.getByText("Se algo estiver diferente, pare.")).toBeVisible();
-    expect(screen.getByRole("dialog", { name: "Preciso de ajuda" })).toBeVisible();
-    await user.click(screen.getByRole("button", { name: "Fechar ajuda" }));
-    expect(screen.queryByRole("dialog", { name: "Preciso de ajuda" })).not.toBeInTheDocument();
+    await user.click(screen.getAllByRole("button", { name: "Ajuda" })[0]);
+    const helpDialog = screen.getByRole("dialog", { name: "Ajuda neste passo" });
+    expect(helpDialog).toBeVisible();
+    expect(within(helpDialog).getByRole("heading", { name: "O que fazer agora" })).toBeVisible();
+    expect(helpDialog).toHaveTextContent(`Passo 1 de 6 — ${steps[0]!.title}`);
+    expect(within(helpDialog).getByText(steps[0]!.instruction)).toBeVisible();
+    expect(within(helpDialog).getByRole("button", { name: "Ouvir novamente" })).toBeVisible();
+    expect(within(helpDialog).getByRole("button", { name: "Ver imagem" })).toBeVisible();
+    expect(within(helpDialog).getByRole("button", { name: "Voltar um passo" })).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "Ver imagem" }));
+    expect(screen.queryByRole("dialog", { name: "Ajuda neste passo" })).not.toBeInTheDocument();
+
+    await user.click(screen.getAllByRole("button", { name: "Ajuda" })[0]);
+    await user.click(screen.getByRole("button", { name: "Ouvir novamente" }));
+    expect(screen.queryByRole("dialog", { name: "Ajuda neste passo" })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Próximo" }));
     expect(screen.getByText("Passo 2 de 6")).toBeVisible();
+    await user.click(screen.getAllByRole("button", { name: "Ajuda" })[0]);
+    await user.click(screen.getByRole("button", { name: "Voltar um passo" }));
+    expect(screen.getByText("Passo 1 de 6")).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Voltar" }));
     expect(screen.getByText("Passo 1 de 6")).toBeVisible();
+  });
+
+  it("mostra o aviso específico do passo dentro da ajuda", async () => {
+    const user = userEvent.setup();
+    const stepsWithWarning = steps.map((step, index) => index === 0
+      ? { ...step, warning: "Não toque em outra opção nesta etapa." }
+      : step);
+    render(<GuideViewer application={application} guide={guide} steps={stepsWithWarning} task={task} />);
+    await screen.findByText("Passo 1 de 6");
+
+    await user.click(screen.getAllByRole("button", { name: "Ajuda" })[0]);
+    const helpDialog = screen.getByRole("dialog", { name: "Ajuda neste passo" });
+    expect(within(helpDialog).getByText("Atenção neste passo")).toBeVisible();
+    expect(within(helpDialog).getByText("Não toque em outra opção nesta etapa.")).toBeVisible();
+    expect(screen.queryByText("Orientações rápidas para seguir esta etapa com segurança.")).not.toBeInTheDocument();
   });
 
   it("renderiza o aviso financeiro no último passo", async () => {

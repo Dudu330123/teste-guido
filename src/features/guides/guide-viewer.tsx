@@ -114,7 +114,25 @@ function GuidePageShell({ children, toolbar }: { children: ReactNode; toolbar: R
   );
 }
 
-function GuideHelpModal({ onClose }: { onClose: () => void }) {
+interface GuideHelpModalProps {
+  activeStep: GuideStep;
+  currentStep: number;
+  totalSteps: number;
+  onClose: () => void;
+  onRepeatInstruction: () => void;
+  onViewImage: () => void;
+  onPrevious: () => void;
+}
+
+function GuideHelpModal({
+  activeStep,
+  currentStep,
+  totalSteps,
+  onClose,
+  onRepeatInstruction,
+  onViewImage,
+  onPrevious,
+}: GuideHelpModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -155,39 +173,49 @@ function GuideHelpModal({ onClose }: { onClose: () => void }) {
       <section role="dialog" aria-modal="true" aria-labelledby="guide-help-modal-title" className="home-bank-modal guide-help-modal">
         <header>
           <div>
-            <h2 id="guide-help-modal-title">Preciso de ajuda</h2>
-            <p>Orientações rápidas para seguir esta etapa com segurança.</p>
+            <h2 id="guide-help-modal-title">Ajuda neste passo</h2>
+            <p>Passo {currentStep + 1} de {totalSteps} — {activeStep.title}</p>
           </div>
           <button ref={closeRef} type="button" onClick={onClose} aria-label="Fechar ajuda" className="home-modal-close">
             <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" /></svg>
           </button>
         </header>
         <div className="guide-help-modal-intro">
-          <h3>Como seguir este passo</h3>
-          <p>Você não precisa ter pressa.</p>
-          <p>Faça uma coisa de cada vez e avance somente quando estiver seguro.</p>
+          <h3>O que fazer agora</h3>
+          <p>{activeStep.instruction}</p>
         </div>
         <div className="guide-help-modal-list">
           <div className="guide-help-modal-option">
             <span className="guide-help-modal-number" data-number="1" aria-hidden="true" />
-            <div><strong>Leia com calma</strong><p>Confira o título e a explicação antes de tocar em qualquer opção.</p></div>
+            <div>
+              <strong>Procure na imagem</strong>
+              <p>{activeStep.touchTarget?.label ? `Encontre o destaque “${activeStep.touchTarget.label}” na tela.` : "Compare a imagem com a tela do seu celular antes de continuar."}</p>
+            </div>
           </div>
           <div className="guide-help-modal-option">
             <span className="guide-help-modal-number" data-number="2" aria-hidden="true" />
-            <div><strong>Ouça novamente</strong><p>Use “Ouvir instrução” para escutar este passo quantas vezes precisar.</p></div>
-          </div>
-          <div className="guide-help-modal-option">
-            <span className="guide-help-modal-number" data-number="3" aria-hidden="true" />
-            <div><strong>Volte quando quiser</strong><p>Use “Voltar” para rever o passo anterior sem perder o controle.</p></div>
-          </div>
-          <div className="guide-help-modal-option">
-            <span className="guide-help-modal-number" data-number="4" aria-hidden="true" />
-            <div><strong>Peça ajuda se precisar</strong><p>Se ainda tiver dúvida, pare e procure uma pessoa de confiança.</p></div>
+            <div>
+              <strong>Confira antes de avançar</strong>
+              <p>{activeStep.confirmationMessage ?? "Quando encontrar a tela certa, continue pelo botão Próximo."}</p>
+            </div>
           </div>
         </div>
-        <div className="guide-help-modal-safety notice-info">
-          <strong>Se algo estiver diferente, pare.</strong>
-          <p>Não compartilhe senha, código de segurança ou dados do boleto. O Guido não confirma pagamentos por você.</p>
+        {activeStep.warning && (
+          <div className="guide-help-modal-safety notice-danger">
+            <strong>Atenção neste passo</strong>
+            <p>{activeStep.warning}</p>
+          </div>
+        )}
+        <div className="guide-help-modal-actions" aria-label="Ações da ajuda">
+          <button type="button" className="secondary-action" onClick={() => { onRepeatInstruction(); onClose(); }}>
+            Ouvir novamente
+          </button>
+          <button type="button" className="secondary-action" onClick={onViewImage}>
+            Ver imagem
+          </button>
+          <button type="button" className="secondary-action" onClick={() => { onPrevious(); onClose(); }} disabled={currentStep === 0}>
+            Voltar um passo
+          </button>
         </div>
       </section>
     </div>, document.body,
@@ -540,6 +568,20 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
     setSpeechMessage("");
   };
 
+  const viewCurrentStepImage = () => {
+    setHelpOpen(false);
+    window.requestAnimationFrame(() => {
+      const visibleVisual = Array.from(document.querySelectorAll<HTMLElement>(".guide-reader-visual"))
+        .find((element) => {
+          const rect = element.getBoundingClientRect();
+          return rect.width > 0 && rect.height > 0;
+        });
+      if (visibleVisual && typeof visibleVisual.scrollIntoView === "function") {
+        visibleVisual.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    });
+  };
+
   const remainingSteps = steps.length - currentStep - 1;
   const hasUnpublishedNextStep = guide.guideStatus === "partial" || guide.guideStatus === "preparing";
   const progressMessage = preparing
@@ -638,7 +680,7 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
               <button
                 type="button"
                 className="secondary-action guide-help-button-mobile font-bold"
-                aria-label="Preciso de ajuda"
+                aria-label="Ajuda"
                 aria-haspopup="dialog"
                 onClick={() => setHelpOpen(true)}
               >
@@ -653,10 +695,10 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
             </div>
           </div>
 
-          <button type="button" className="guide-help-trigger mt-7" aria-label="Preciso de ajuda" aria-haspopup="dialog" onClick={() => setHelpOpen(true)}>
+          <button type="button" className="guide-help-trigger mt-7" aria-label="Ajuda" aria-haspopup="dialog" onClick={() => setHelpOpen(true)}>
             <span className="guide-help-trigger-label">
               <span className="guide-help-trigger-icon" aria-hidden="true">?</span>
-              <span><strong>Preciso de ajuda</strong><small>Orientações rápidas</small></span>
+              <span><strong>Ajuda</strong><small>Sobre este passo</small></span>
             </span>
             <span className="guide-help-trigger-arrow" aria-hidden="true">→</span>
           </button>
@@ -685,7 +727,17 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
           })}
         </div>
       )}
-      {helpOpen && <GuideHelpModal onClose={() => setHelpOpen(false)} />}
+      {helpOpen && (
+        <GuideHelpModal
+          activeStep={activeStep}
+          currentStep={currentStep}
+          totalSteps={steps.length}
+          onClose={() => setHelpOpen(false)}
+          onRepeatInstruction={toggleSpeak}
+          onViewImage={viewCurrentStepImage}
+          onPrevious={() => { setCurrentStep((value) => previousStep(value)); setSpeechMessage(""); }}
+        />
+      )}
     </GuidePageShell>
   );
 }

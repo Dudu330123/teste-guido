@@ -442,7 +442,7 @@ export function HomeSearch({ applications, tasks, onOpenVoice }: HomeSearchProps
               ref={(el) => { categoryButtonRefs.current.banks = el; }}
               onClick={() => chooseCategory("banks")}
               className="home-category-card group"
-              aria-label="Bancos: Pix, boleto e cartão"
+              aria-label="Bancos"
             >
               <div className="home-card-header">
                 <div className="home-card-badge home-card-badge--bank" aria-hidden="true">
@@ -457,7 +457,6 @@ export function HomeSearch({ applications, tasks, onOpenVoice }: HomeSearchProps
                 </div>
                 <div className="home-card-info">
                   <strong className="home-card-name">Bancos</strong>
-                  <span className="home-card-subtitle">Pix, boleto e cartão</span>
                 </div>
               </div>
               <div className="home-card-footer" aria-hidden="true">
@@ -475,7 +474,7 @@ export function HomeSearch({ applications, tasks, onOpenVoice }: HomeSearchProps
               ref={(el) => { categoryButtonRefs.current.whatsapp = el; }}
               onClick={() => chooseCategory("whatsapp")}
               className="home-category-card group"
-              aria-label="WhatsApp: Mensagens e chamadas"
+              aria-label="WhatsApp"
             >
               <div className="home-card-header">
                 <div className="home-card-badge home-card-badge--whatsapp" aria-hidden="true">
@@ -490,7 +489,6 @@ export function HomeSearch({ applications, tasks, onOpenVoice }: HomeSearchProps
                 </div>
                 <div className="home-card-info">
                   <strong className="home-card-name">WhatsApp</strong>
-                  <span className="home-card-subtitle">Mensagens e chamadas</span>
                 </div>
               </div>
               <div className="home-card-footer" aria-hidden="true">
@@ -508,7 +506,7 @@ export function HomeSearch({ applications, tasks, onOpenVoice }: HomeSearchProps
               ref={(el) => { categoryButtonRefs.current.government = el; }}
               onClick={() => chooseCategory("government")}
               className="home-category-card group"
-              aria-label="Gov.br: Conta e serviços"
+              aria-label="Gov.br"
             >
               <div className="home-card-header">
                 <div className="home-card-badge home-card-badge--gov" aria-hidden="true">
@@ -523,7 +521,6 @@ export function HomeSearch({ applications, tasks, onOpenVoice }: HomeSearchProps
                 </div>
                 <div className="home-card-info">
                   <strong className="home-card-name">Gov.br</strong>
-                  <span className="home-card-subtitle">Conta e serviços</span>
                 </div>
               </div>
               <div className="home-card-footer" aria-hidden="true">
@@ -541,7 +538,7 @@ export function HomeSearch({ applications, tasks, onOpenVoice }: HomeSearchProps
               ref={(el) => { categoryButtonRefs.current.others = el; }}
               onClick={() => chooseCategory("others")}
               className="home-category-card group"
-              aria-label="Outros: Gmail e mais apps"
+              aria-label="Outros"
             >
               <div className="home-card-header">
                 <div className="home-card-badge home-card-badge--others" aria-hidden="true">
@@ -554,7 +551,6 @@ export function HomeSearch({ applications, tasks, onOpenVoice }: HomeSearchProps
                 </div>
                 <div className="home-card-info">
                   <strong className="home-card-name">Outros</strong>
-                  <span className="home-card-subtitle">Gmail e mais apps</span>
                 </div>
               </div>
               <div className="home-card-footer" aria-hidden="true">
