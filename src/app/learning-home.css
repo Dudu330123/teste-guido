@@ -483,9 +483,9 @@ html[data-theme="light"] .home-voice-caption {
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  min-height: 72px;
-  padding: 14px 16px;
-  border-radius: 18px;
+  min-height: 84px;
+  padding: 16px 20px;
+  border-radius: 20px;
   background: rgba(4, 20, 52, 0.72);
   border: 1px solid rgba(40, 95, 185, 0.42);
   box-shadow: 0 10px 28px rgba(0, 7, 24, 0.45);
@@ -524,17 +524,17 @@ html[data-theme="light"] .home-category-card:hover {
 .home-card-header {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 
 .home-card-badge {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 52px;
+  height: 52px;
   flex-shrink: 0;
-  border-radius: 12px;
+  border-radius: 14px;
   background: #ffffff;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.18);
   overflow: hidden;
@@ -551,12 +551,12 @@ html[data-theme="light"] .home-category-card:hover {
 
 .home-card-badge--gov {
   background: #ffffff;
-  padding: 2px;
+  padding: 3px;
 }
 
 .home-card-badge--others {
   background: #ffffff;
-  padding: 6px;
+  padding: 7px;
 }
 
 .home-card-info {
@@ -566,10 +566,11 @@ html[data-theme="light"] .home-category-card:hover {
 }
 
 .home-card-name {
-  font-size: 1.15rem;
-  font-weight: 750;
+  font-size: clamp(1.4rem, 4.5vw, 1.7rem);
+  font-weight: 800;
   color: #ffffff;
   line-height: 1.2;
+  letter-spacing: -0.015em;
 }
 
 html[data-theme="light"] .home-card-name {
@@ -600,8 +601,8 @@ html[data-theme="light"] .home-card-subtitle {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   border-radius: 9999px;
   background: rgba(0, 90, 200, 0.25);
   border: 1px solid rgba(0, 140, 255, 0.35);

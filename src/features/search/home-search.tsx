@@ -446,7 +446,7 @@ export function HomeSearch({ applications, tasks, onOpenVoice }: HomeSearchProps
             >
               <div className="home-card-header">
                 <div className="home-card-badge home-card-badge--bank" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" className="size-6 text-[#1559c7] fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg viewBox="0 0 24 24" className="size-7 text-[#1559c7] fill-none stroke-current" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="m2 7 10-5 10 5v2H2z" />
                     <path d="M4 10v9" />
                     <path d="M8 10v9" />
@@ -461,7 +461,7 @@ export function HomeSearch({ applications, tasks, onOpenVoice }: HomeSearchProps
               </div>
               <div className="home-card-footer" aria-hidden="true">
                 <span className="home-card-arrow">
-                  <svg viewBox="0 0 24 24" className="size-4 fill-none stroke-current" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg viewBox="0 0 24 24" className="size-5 fill-none stroke-current" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
                 </span>
@@ -481,9 +481,9 @@ export function HomeSearch({ applications, tasks, onOpenVoice }: HomeSearchProps
                   <Image
                     src="/images/logos/whatsapp-home.png"
                     alt=""
-                    width={48}
-                    height={48}
-                    className="size-8 object-contain"
+                    width={56}
+                    height={56}
+                    className="size-9 object-contain"
                     aria-hidden="true"
                   />
                 </div>
@@ -493,7 +493,7 @@ export function HomeSearch({ applications, tasks, onOpenVoice }: HomeSearchProps
               </div>
               <div className="home-card-footer" aria-hidden="true">
                 <span className="home-card-arrow">
-                  <svg viewBox="0 0 24 24" className="size-4 fill-none stroke-current" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg viewBox="0 0 24 24" className="size-5 fill-none stroke-current" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
                 </span>
@@ -513,9 +513,9 @@ export function HomeSearch({ applications, tasks, onOpenVoice }: HomeSearchProps
                   <Image
                     src="/images/logos/gov-br-home.webp"
                     alt=""
-                    width={48}
-                    height={48}
-                    className="size-9 object-contain"
+                    width={56}
+                    height={56}
+                    className="size-10 object-contain"
                     aria-hidden="true"
                   />
                 </div>
@@ -525,7 +525,7 @@ export function HomeSearch({ applications, tasks, onOpenVoice }: HomeSearchProps
               </div>
               <div className="home-card-footer" aria-hidden="true">
                 <span className="home-card-arrow">
-                  <svg viewBox="0 0 24 24" className="size-4 fill-none stroke-current" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg viewBox="0 0 24 24" className="size-5 fill-none stroke-current" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
                 </span>
@@ -542,11 +542,11 @@ export function HomeSearch({ applications, tasks, onOpenVoice }: HomeSearchProps
             >
               <div className="home-card-header">
                 <div className="home-card-badge home-card-badge--others" aria-hidden="true">
-                  <div className="grid grid-cols-2 gap-1" aria-hidden="true">
-                    <span className="size-2.5 rounded-[3px] bg-[#0084ff]" />
-                    <span className="size-2.5 rounded-[3px] bg-[#0084ff]" />
-                    <span className="size-2.5 rounded-[3px] bg-[#0084ff]" />
-                    <span className="size-2.5 rounded-[3px] bg-[#0084ff]" />
+                  <div className="grid grid-cols-2 gap-1.5" aria-hidden="true">
+                    <span className="size-3 rounded-[3.5px] bg-[#0084ff]" />
+                    <span className="size-3 rounded-[3.5px] bg-[#0084ff]" />
+                    <span className="size-3 rounded-[3.5px] bg-[#0084ff]" />
+                    <span className="size-3 rounded-[3.5px] bg-[#0084ff]" />
                   </div>
                 </div>
                 <div className="home-card-info">
@@ -555,7 +555,7 @@ export function HomeSearch({ applications, tasks, onOpenVoice }: HomeSearchProps
               </div>
               <div className="home-card-footer" aria-hidden="true">
                 <span className="home-card-arrow">
-                  <svg viewBox="0 0 24 24" className="size-4 fill-none stroke-current" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <svg viewBox="0 0 24 24" className="size-5 fill-none stroke-current" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
                 </span>
