@@ -580,40 +580,48 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
             <ScreenPlaceholder step={activeStep} application={application} task={task} />
           </div>
 
-          <button
-            type="button"
-            onClick={toggleSpeak}
-            className={`secondary-action guide-audio-button mt-7 min-h-14 w-full px-5 py-3 text-xl font-bold ${isSpeaking ? "is-speaking" : ""}`}
-            aria-label={isSpeaking ? "Parar leitura da instrução" : "Ouvir instrução"}
-          >
-            {isSpeaking ? (
-              <svg className="guide-audio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
-                <rect x="6" y="6" width="12" height="12" rx="2" />
-              </svg>
-            ) : (
-              <svg className="guide-audio-icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 5 6 9H2v6h4l5 4V5Z" />
-                <path d="M15.5 8.5a5 5 0 0 1 0 7" />
-                <path d="M18.5 5.5a9 9 0 0 1 0 13" />
-              </svg>
-            )}
-            <span>{isSpeaking ? "Parar instrução" : "Ouvir instrução"}</span>
-          </button>
           <p className="sr-only" aria-live="polite">{speechMessage}</p>
 
-          <div className="mt-7 grid gap-5 sm:grid-cols-2">
-            <button
-              type="button"
-              disabled={currentStep === 0}
-              onClick={() => { setCurrentStep((value) => previousStep(value)); setSpeechMessage(""); }}
-              className="secondary-action min-h-14 px-5 py-3 text-xl font-bold disabled:cursor-not-allowed disabled:opacity-45"
-            >
-              Voltar
-            </button>
-            <button type="button" onClick={finishOrAdvance} className="primary-action min-h-14 px-5 py-3 text-xl font-bold">
-              <span>{currentStep === steps.length - 1 ? hasUnpublishedNextStep ? "Ver próxima etapa" : "Concluir demonstração" : "Próximo"}</span>
-              <span className="guide-next-arrow" aria-hidden="true">→</span>
-            </button>
+          <div className="guide-nav-controls">
+            <div className="guide-nav-left-col">
+              <button
+                type="button"
+                onClick={toggleSpeak}
+                className={`secondary-action guide-audio-button font-bold ${isSpeaking ? "is-speaking" : ""}`}
+                aria-label={isSpeaking ? "Parar leitura da instrução" : "Ouvir instrução"}
+              >
+                {isSpeaking ? (
+                  <svg className="guide-audio-icon size-5" aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="6" y="6" width="12" height="12" rx="2" />
+                  </svg>
+                ) : (
+                  <svg className="guide-audio-icon size-5" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M11 5 6 9H2v6h4l5 4V5Z" />
+                    <path d="M15.5 8.5a5 5 0 0 1 0 7" />
+                    <path d="M18.5 5.5a9 9 0 0 1 0 13" />
+                  </svg>
+                )}
+                <span>{isSpeaking ? "Parar instrução" : "Ouvir instrução"}</span>
+              </button>
+
+              <button
+                type="button"
+                disabled={currentStep === 0}
+                onClick={() => { setCurrentStep((value) => previousStep(value)); setSpeechMessage(""); }}
+                className="secondary-action guide-back-button font-bold disabled:cursor-not-allowed disabled:opacity-45"
+                aria-label="Voltar"
+              >
+                <span className="guide-prev-arrow" aria-hidden="true">←</span>
+                <span>Voltar</span>
+              </button>
+            </div>
+
+            <div className="guide-nav-right-col">
+              <button type="button" onClick={finishOrAdvance} className="primary-action guide-next-button font-bold">
+                <span>{currentStep === steps.length - 1 ? hasUnpublishedNextStep ? "Ver próxima etapa" : "Concluir demonstração" : "Próximo"}</span>
+                <span className="guide-next-arrow" aria-hidden="true">→</span>
+              </button>
+            </div>
           </div>
 
           <button type="button" className="guide-help-trigger mt-7" aria-label="Preciso de ajuda" aria-haspopup="dialog" onClick={() => setHelpOpen(true)}>

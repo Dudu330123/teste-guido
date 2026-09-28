@@ -43,12 +43,11 @@ interface AskGuidoModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectGuide?: (guide: GeneratedGuide) => void;
+  initialListening?: boolean;
 }
 
 /**
- * Pontuação para selecionar a voz mais humana, quente e não-robotizada disponível.
- * Prioriza vozes com "Natural", "Neural" e "Online" da Microsoft/Google/Apple,
- * penalizando severamente vozes antigas desktop (como Microsoft Maria SAPI).
+ * Pontuação para selecionar a voz mais humana disponível no sistema.
  */
 function rankVoice(v: SpeechSynthesisVoice): number {
   const name = v.name.toLowerCase();
@@ -59,32 +58,21 @@ function rankVoice(v: SpeechSynthesisVoice): number {
   let score = 0;
   if (lang.includes("br")) score += 50;
 
-  // Vozes neurais modernas (qualidade de estúdio, entonação humana)
   if (name.includes("natural")) score += 120;
   if (name.includes("neural")) score += 110;
   if (name.includes("online")) score += 100;
-
-  // Vozes consagradas de alta naturalidade
+  if (name.includes("google")) score += 85;
   if (name.includes("francisca")) score += 80;
   if (name.includes("antonio") || name.includes("antônio")) score += 75;
   if (name.includes("thalita")) score += 70;
-  if (name.includes("google")) score += 85;
   if (name.includes("luciana")) score += 60;
-  if (name.includes("letícia")) score += 60;
 
-  // Penalização drástica de vozes robóticas antigas
   if (name.includes("desktop")) score -= 150;
   if (name.includes("sapi")) score -= 150;
 
   return score;
 }
 
-/**
- * Formata o texto para a fala soar 100% natural e humana:
- * - Remove emojis (para a voz não ler "rosto sorridente")
- * - Expande termos populares para pronúncia correta ("zap" -> "WhatsApp", "app" -> "aplicativo")
- * - Insere pausas de respiração humana
- */
 function formatTextForNaturalSpeech(text: string): string {
   return text
     .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, "")
@@ -93,22 +81,30 @@ function formatTextForNaturalSpeech(text: string): string {
     .replace(/\bapp\b/gi, "aplicativo")
     .replace(/\bapps\b/gi, "aplicativos")
     .replace(/\bex:\b/gi, "por exemplo:")
-    .replace(/\. /g, ".  ")
-    .replace(/! /g, "!  ")
-    .replace(/\? /g, "?  ")
+    .replace(/\. /g, ". ")
+    .replace(/! /g, "! ")
+    .replace(/\? /g, "? ")
     .replace(/\s+/g, " ")
     .trim();
 }
 
-export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalProps) {
+export function AskGuidoModal({
+  isOpen,
+  onClose,
+  onSelectGuide,
+  initialListening = false,
+}: AskGuidoModalProps) {
   const [prompt, setPrompt] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [generatedGuide, setGeneratedGuide] = useState<GeneratedGuide | null>(null);
-  const [apiKey, setApiKey] = useState("");
+
+  const [geminiApiKey, setGeminiApiKey] = useState("");
+  const [elevenLabsApiKey, setElevenLabsApiKey] = useState("");
   const [showConfig, setShowConfig] = useState(false);
   const [speechStatus, setSpeechStatus] = useState("");
+  const [usingStudioVoice, setUsingStudioVoice] = useState(false);
 
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [selectedVoiceName, setSelectedVoiceName] = useState<string>("");
@@ -118,36 +114,50 @@ export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalP
   const promptInputRef = useRef<HTMLInputElement>(null);
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
 
-  // Carrega e monitora vozes neurais disponíveis no sistema
+  // Carrega configurações locais ao montar
   useEffect(() => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    if (typeof window === "undefined") return;
 
-    const loadVoices = () => {
-      const allVoices = window.speechSynthesis.getVoices();
-      const ptVoices = allVoices
-        .filter((v) => (v.lang || "").toLowerCase().startsWith("pt"))
-        .sort((a, b) => rankVoice(b) - rankVoice(a));
+    let frame: number;
+    try {
+      frame = window.requestAnimationFrame(() => {
+        setGeminiApiKey(window.localStorage.getItem("guido-gemini-key") || "");
+        setElevenLabsApiKey(window.localStorage.getItem("guido-elevenlabs-key") || "");
+      });
+    } catch {}
 
-      if (ptVoices.length > 0) {
-        setAvailableVoices(ptVoices);
-        setSelectedVoiceName((current) => {
-          if (current && ptVoices.some((v) => v.name === current)) return current;
-          return ptVoices[0]?.name || "";
-        });
-      }
-    };
+    if ("speechSynthesis" in window) {
+      const loadVoices = () => {
+        const allVoices = window.speechSynthesis.getVoices();
+        const ptVoices = allVoices
+          .filter((v) => (v.lang || "").toLowerCase().startsWith("pt"))
+          .sort((a, b) => rankVoice(b) - rankVoice(a));
 
-    loadVoices();
-    window.speechSynthesis.onvoiceschanged = loadVoices;
+        if (ptVoices.length > 0) {
+          setAvailableVoices(ptVoices);
+          setSelectedVoiceName((current) => {
+            if (current && ptVoices.some((v) => v.name === current)) return current;
+            return ptVoices[0]?.name || "";
+          });
+        }
+      };
+
+      loadVoices();
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+
+      return () => {
+        if (frame) window.cancelAnimationFrame(frame);
+        if ("speechSynthesis" in window) {
+          window.speechSynthesis.onvoiceschanged = null;
+        }
+      };
+    }
 
     return () => {
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.onvoiceschanged = null;
-      }
+      if (frame) window.cancelAnimationFrame(frame);
     };
   }, []);
 
-  // Interrompe qualquer áudio ou voz ativa
   const stopSpeaking = useCallback(() => {
     if (audioPlayerRef.current) {
       audioPlayerRef.current.pause();
@@ -160,7 +170,6 @@ export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalP
     setIsSpeaking(false);
   }, []);
 
-  // Execução via síntese nativa com voz neural e cadência humana
   const speakWithBrowserSynthesis = useCallback(
     (textToSpeak: string) => {
       if (typeof window === "undefined" || !("speechSynthesis" in window)) {
@@ -172,8 +181,8 @@ export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalP
       const clean = formatTextForNaturalSpeech(textToSpeak);
       const utterance = new SpeechSynthesisUtterance(clean);
       utterance.lang = "pt-BR";
-      utterance.rate = 0.92; // Cadência calma e afetuosa
-      utterance.pitch = 1.02; // Tom ligeiramente acolhedor
+      utterance.rate = 1.05; // Velocidade ágil e dinâmica (sem arrastar)
+      utterance.pitch = 1.0;
 
       const voices = window.speechSynthesis.getVoices();
       const voice =
@@ -194,7 +203,6 @@ export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalP
     [selectedVoiceName]
   );
 
-  // Reproduz áudio com prioridade na voz neural de estúdio do servidor
   const speakText = useCallback(
     async (textToSpeak: string) => {
       if (typeof window === "undefined") return;
@@ -205,22 +213,31 @@ export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalP
 
       setIsSpeaking(true);
 
-      // 1. TENTA PRIMEIRO A VOZ NEURAL HUMANA DA MICROSOFT VIA SERVIDOR (/api/ai/tts)
+      // 1. TENTA PRIMEIRO A VOZ ELEVENLABS (Qualidade de Dublador Profissional de Cinema)
       try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000);
+        const storedElevenKey =
+          elevenLabsApiKey.trim() ||
+          (typeof window !== "undefined"
+            ? window.localStorage.getItem("guido-elevenlabs-key")?.trim()
+            : "");
 
-        const res = await fetch(`/api/ai/tts?text=${encodeURIComponent(cleanText.slice(0, 450))}`, {
-          signal: controller.signal,
+        const res = await fetch("/api/ai/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: cleanText.slice(0, 600),
+            apiKey: storedElevenKey || undefined,
+          }),
         });
 
-        clearTimeout(timeoutId);
+        const contentType = res.headers.get("content-type") || "";
 
-        if (res.ok) {
+        if (res.ok && contentType.includes("audio")) {
           const blob = await res.blob();
           const audioUrl = URL.createObjectURL(blob);
           const audio = new Audio(audioUrl);
           audioPlayerRef.current = audio;
+          setUsingStudioVoice(true);
 
           audio.onended = () => {
             setIsSpeaking(false);
@@ -230,6 +247,7 @@ export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalP
 
           audio.onerror = () => {
             URL.revokeObjectURL(audioUrl);
+            setUsingStudioVoice(false);
             speakWithBrowserSynthesis(cleanText);
           };
 
@@ -237,90 +255,52 @@ export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalP
           return;
         }
       } catch {
-        // Fallback imediato se o áudio do servidor demorar ou falhar
+        // Fallback imediato sem delay
       }
 
-      // 2. FALLBACK: Sintetizador nativo do navegador usando a voz natural detectada
+      // 2. FALLBACK IMEDIATO: Síntese nativa com velocidade corrigida (1.05x)
+      setUsingStudioVoice(false);
       speakWithBrowserSynthesis(cleanText);
     },
-    [speakWithBrowserSynthesis, stopSpeaking]
+    [elevenLabsApiKey, speakWithBrowserSynthesis, stopSpeaking]
   );
 
-  useEffect(() => {
-    if (!isOpen) return;
+  const stopVoiceInput = useCallback(() => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+    setIsListening(false);
+  }, []);
 
-    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const frame = window.requestAnimationFrame(() => {
-      try {
-        setApiKey(window.localStorage.getItem("guido-gemini-key") || "");
-      } catch {}
-      dialogRef.current?.querySelector<HTMLElement>('button[aria-label="Fechar janela"]')?.focus();
-    });
+  const handleGenerate = useCallback(
+    async (queryText?: string) => {
+      const q = queryText || prompt;
+      if (!q.trim()) return;
 
-    const handleKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onClose();
-      }
-      if (event.key !== "Tab") return;
-      const items = Array.from(
-        dialogRef.current?.querySelectorAll<HTMLElement>("button:not([disabled]), input, a[href]") ?? []
-      );
-      const first = items[0],
-        last = items.at(-1);
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last?.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first?.focus();
-      }
-    };
-
-    document.addEventListener("keydown", handleKey);
-    return () => {
-      window.cancelAnimationFrame(frame);
-      document.removeEventListener("keydown", handleKey);
-      recognitionRef.current?.abort();
+      stopVoiceInput();
       stopSpeaking();
-      opener?.focus();
-    };
-  }, [isOpen, onClose, stopSpeaking]);
 
-  const handleSaveApiKey = () => {
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("guido-gemini-key", apiKey.trim());
-      setShowConfig(false);
-    }
-  };
+      setIsLoading(true);
+      setGeneratedGuide(null);
 
-  const handleGenerate = async (queryText?: string) => {
-    const q = queryText || prompt;
-    if (!q.trim()) return;
+      try {
+        const result = await generateGuideWithAi(q);
+        setGeneratedGuide(result);
 
-    stopVoiceInput();
-    stopSpeaking();
+        const textToSpeak =
+          result.spokenAnswer ||
+          `${result.title}. ${result.steps[0]?.instruction || ""}`;
+        void speakText(textToSpeak);
+      } catch (error) {
+        console.error("Erro ao gerar guia:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [prompt, speakText, stopSpeaking, stopVoiceInput]
+  );
 
-    setIsLoading(true);
-    setGeneratedGuide(null);
-
-    try {
-      const result = await generateGuideWithAi(q);
-      setGeneratedGuide(result);
-
-      // Dispara a fala com voz humana e carinhosa
-      const textToSpeak =
-        result.spokenAnswer ||
-        `${result.title}. ${result.steps[0]?.instruction || ""}`;
-      void speakText(textToSpeak);
-    } catch (error) {
-      console.error("Erro ao gerar guia:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const startVoiceInput = () => {
+  const startVoiceInput = useCallback(() => {
     if (typeof window === "undefined") return;
 
     stopSpeaking();
@@ -382,13 +362,55 @@ export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalP
       setIsListening(false);
       setSpeechStatus("Permissão de microfone necessária para falar com o Guido.");
     }
-  };
+  }, [handleGenerate, stopSpeaking]);
 
-  const stopVoiceInput = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const frame = window.requestAnimationFrame(() => {
+      dialogRef.current?.querySelector<HTMLElement>('button[aria-label="Fechar janela"]')?.focus();
+      if (initialListening) {
+        startVoiceInput();
+      }
+    });
+
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+      }
+      if (event.key !== "Tab") return;
+      const items = Array.from(
+        dialogRef.current?.querySelectorAll<HTMLElement>("button:not([disabled]), input, a[href]") ?? []
+      );
+      const first = items[0],
+        last = items.at(-1);
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    };
+
+    document.addEventListener("keydown", handleKey);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      document.removeEventListener("keydown", handleKey);
+      recognitionRef.current?.abort();
+      stopSpeaking();
+      opener?.focus();
+    };
+  }, [initialListening, isOpen, onClose, startVoiceInput, stopSpeaking]);
+
+  const handleSaveConfig = () => {
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem("guido-gemini-key", geminiApiKey.trim());
+      window.localStorage.setItem("guido-elevenlabs-key", elevenLabsApiKey.trim());
+      setShowConfig(false);
     }
-    setIsListening(false);
   };
 
   if (!isOpen) return null;
@@ -402,7 +424,7 @@ export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalP
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm animate-in fade-in duration-200"
     >
       <div className="relative flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-3xl bg-white text-slate-900 shadow-2xl border-4 border-blue-600">
-        {/* Cabeçalho do modal */}
+        {/* Cabeçalho */}
         <header className="flex items-center justify-between border-b border-blue-500 bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-4 text-white">
           <div className="flex items-center gap-3">
             <div className="flex size-12 items-center justify-center rounded-2xl bg-white/20 text-3xl shadow-sm">
@@ -412,8 +434,13 @@ export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalP
               <h2 id="ask-guido-title" className="text-2xl font-black leading-tight tracking-tight">
                 Pergunte ao Guido
               </h2>
-              <p className="text-xs font-semibold text-blue-100">
-                Seu companheiro com voz carinhosa para ensinar o celular
+              <p className="text-xs font-semibold text-blue-100 flex items-center gap-1.5">
+                <span>Voz humana e inteligência artificial</span>
+                {usingStudioVoice && (
+                  <span className="rounded-md bg-emerald-500/30 px-1.5 py-0.5 text-[10px] font-bold text-emerald-100 border border-emerald-400/40">
+                    Estúdio ElevenLabs
+                  </span>
+                )}
               </p>
             </div>
           </div>
@@ -421,9 +448,9 @@ export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalP
             <button
               type="button"
               onClick={() => setShowConfig(!showConfig)}
-              className="rounded-full p-2 text-white/80 hover:bg-white/10 hover:text-white"
-              title="Configuração de voz e IA"
-              aria-label="Configurar Voz e IA"
+              className="rounded-full p-2 text-white/80 hover:bg-white/10 hover:text-white transition-colors"
+              title="Configuração de voz e chaves"
+              aria-label="Configurar Voz e Chaves"
             >
               <Settings className="size-5" />
             </button>
@@ -433,7 +460,7 @@ export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalP
                 stopSpeaking();
                 onClose();
               }}
-              className="rounded-full p-2 text-white/80 hover:bg-white/10 hover:text-white"
+              className="rounded-full p-2 text-white/80 hover:bg-white/10 hover:text-white transition-colors"
               aria-label="Fechar janela"
             >
               <X className="size-6" />
@@ -441,33 +468,53 @@ export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalP
           </div>
         </header>
 
-        {/* Conteúdo do modal */}
+        {/* Conteúdo */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* Painel opcional de voz e configuração */}
+          {/* Gaveta de Configuração */}
           {showConfig && (
             <div className="rounded-2xl bg-blue-50 p-4 border-2 border-blue-200 space-y-3 animate-in fade-in">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-black uppercase text-blue-900 tracking-wide">
-                  Voz do Guido
+                <span className="text-xs font-black uppercase text-blue-900 tracking-wide flex items-center gap-1.5">
+                  <Volume2 className="size-4 text-blue-600" />
+                  Configuração de Voz de Estúdio
                 </span>
-                <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
-                  Voz Humanizada Ativa
+                <span className="text-[11px] font-bold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-md">
+                  ElevenLabs & IA
                 </span>
               </div>
 
+              {/* Chave ElevenLabs */}
+              <div className="space-y-1">
+                <label htmlFor="eleven-key" className="text-xs font-bold text-slate-700">
+                  Chave ElevenLabs (Voz de Dublador de Cinema - Grátis até 10k chars):
+                </label>
+                <input
+                  id="eleven-key"
+                  type="password"
+                  value={elevenLabsApiKey}
+                  onChange={(e) => setElevenLabsApiKey(e.target.value)}
+                  placeholder="Cole sua chave sk_... da ElevenLabs"
+                  className="w-full rounded-xl border border-blue-300 bg-white p-2.5 text-xs font-mono"
+                />
+                <p className="text-[11px] text-slate-500 font-medium">
+                  Crie grátis em <span className="font-semibold text-blue-600">elevenlabs.io</span>. Deixe em branco para usar a voz rápida local.
+                </p>
+              </div>
+
+              {/* Seletor de voz nativa fallback */}
               {availableVoices.length > 0 && (
-                <div className="space-y-1">
+                <div className="space-y-1 pt-1 border-t border-blue-200">
                   <label htmlFor="voice-select" className="text-xs font-bold text-slate-700">
-                    Selecione a voz de sua preferência:
+                    Voz alternativa do navegador:
                   </label>
                   <select
                     id="voice-select"
                     value={selectedVoiceName}
                     onChange={(e) => {
                       setSelectedVoiceName(e.target.value);
-                      speakWithBrowserSynthesis("Oi! Fique bem tranquilo, esta é uma demonstração da minha voz.");
+                      speakWithBrowserSynthesis("Oi! Esta é uma demonstração da voz selecionada.");
                     }}
-                    className="w-full rounded-xl border border-blue-300 bg-white p-2.5 text-xs font-bold text-slate-800"
+                    className="w-full rounded-xl border border-blue-300 bg-white p-2 text-xs font-bold text-slate-800"
                   >
                     {availableVoices.map((v) => (
                       <option key={v.name} value={v.name}>
@@ -480,21 +527,23 @@ export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalP
                 </div>
               )}
 
-              <div className="pt-2 border-t border-blue-200">
-                <p className="text-xs font-bold text-slate-600 mb-1">
-                  Chave Gemini opcional (o Guido já responde gratuitamente):
-                </p>
+              {/* Chave Gemini */}
+              <div className="space-y-1 pt-1 border-t border-blue-200">
+                <label htmlFor="gemini-key" className="text-xs font-bold text-slate-700">
+                  Chave Gemini opcional:
+                </label>
                 <div className="flex gap-2">
                   <input
+                    id="gemini-key"
                     type="password"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    placeholder="Cole sua chave Gemini aqui..."
-                    className="flex-1 rounded-xl border border-blue-300 bg-white px-3 py-2 text-xs font-mono"
+                    value={geminiApiKey}
+                    onChange={(e) => setGeminiApiKey(e.target.value)}
+                    placeholder="Cole sua chave Gemini AI Studio..."
+                    className="flex-1 rounded-xl border border-blue-300 bg-white p-2 text-xs font-mono"
                   />
                   <button
                     type="button"
-                    onClick={handleSaveApiKey}
+                    onClick={handleSaveConfig}
                     className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white hover:bg-blue-700"
                   >
                     Salvar
@@ -504,7 +553,7 @@ export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalP
             </div>
           )}
 
-          {/* Estado inicial: Pergunta por voz ou texto */}
+          {/* Estado inicial: Pergunta */}
           {!generatedGuide && !isLoading && (
             <div className="space-y-6 text-center">
               <div>
@@ -516,7 +565,7 @@ export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalP
                 </p>
               </div>
 
-              {/* Botão gigante de voz estilo ChatGPT/Gemini */}
+              {/* Botão de voz grande */}
               <div className="flex flex-col items-center justify-center py-2">
                 <button
                   type="button"
@@ -537,7 +586,9 @@ export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalP
 
                 <div className="mt-4 space-y-1">
                   <p className="text-base font-black text-slate-800">
-                    {isListening ? "🔴 Estou ouvindo com atenção... Toque para escutar a resposta!" : "Toque no microfone para falar"}
+                    {isListening
+                      ? "🔴 Estou ouvindo com atenção... Toque para escutar a resposta!"
+                      : "Toque no microfone para falar"}
                   </p>
                   {speechStatus && (
                     <p className="text-sm font-bold text-blue-700 animate-pulse">{speechStatus}</p>
@@ -545,7 +596,7 @@ export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalP
                 </div>
               </div>
 
-              {/* Campo de texto alternativo com botão de envio */}
+              {/* Campo de texto alternativo */}
               <div className="space-y-2 text-left pt-2 border-t border-slate-100">
                 <label
                   htmlFor="guido-prompt-input"
@@ -578,7 +629,7 @@ export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalP
                 </div>
               </div>
 
-              {/* Sugestões rápidas de perguntas */}
+              {/* Sugestões rápidas */}
               <div className="space-y-2 text-left">
                 <p className="text-xs font-bold text-slate-500">Sugestões rápidas:</p>
                 <div className="flex flex-wrap gap-2">
@@ -620,10 +671,10 @@ export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalP
             </div>
           )}
 
-          {/* Guia Gerado com Sucesso */}
+          {/* Resposta do Guia */}
           {generatedGuide && !isLoading && (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom duration-300">
-              {/* Card de Controle de Voz da Resposta */}
+              {/* Card de Controle de Voz */}
               <div className="rounded-3xl bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 p-5 border-2 border-blue-200 shadow-sm space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
@@ -680,7 +731,7 @@ export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalP
                 )}
               </div>
 
-              {/* Título do Guia Gerado */}
+              {/* Título do Guia */}
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-xl font-black text-slate-900">
@@ -697,7 +748,7 @@ export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalP
                 )}
               </div>
 
-              {/* Lista dos passos gerados */}
+              {/* Passos gerados */}
               <div className="space-y-3.5">
                 {generatedGuide.steps.map((st) => (
                   <div
@@ -729,7 +780,7 @@ export function AskGuidoModal({ isOpen, onClose, onSelectGuide }: AskGuidoModalP
                 ))}
               </div>
 
-              {/* Botão de ação para iniciar o guia ou simulador */}
+              {/* Botão de ação */}
               <button
                 type="button"
                 onClick={() => {

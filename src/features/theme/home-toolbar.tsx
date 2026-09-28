@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Sparkles } from "lucide-react";
 import { SessionNavigation } from "@/features/auth/session-navigation";
 import { useAccessibility } from "@/features/accessibility/accessibility-context";
 import { AskGuidoModal } from "@/features/ai/ask-guido-modal";
@@ -43,9 +44,18 @@ interface HomeToolbarProps {
   variant?: "home" | "guide";
   guideLeft?: ReactNode;
   guideActions?: ReactNode;
+  onOpenAskGuido?: () => void;
 }
 
-function ThemeToggleButton({ onClick, className = "home-icon-button" }: { onClick: () => void; className?: string }) {
+function ThemeToggleButton({
+  onClick,
+  className = "home-icon-button",
+  showLabel = false,
+}: {
+  onClick: () => void;
+  className?: string;
+  showLabel?: boolean;
+}) {
   return (
     <button
       type="button"
@@ -61,6 +71,7 @@ function ThemeToggleButton({ onClick, className = "home-icon-button" }: { onClic
       <svg aria-hidden="true" viewBox="0 0 24 24" className="home-theme-moon size-5 fill-none" stroke="currentColor" strokeWidth="2">
         <path d="M20.5 14.6A8.5 8.5 0 0 1 9.4 3.5 8.5 8.5 0 1 0 20.5 14.6Z" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
+      {showLabel && <span className="home-theme-bottom-text">Modo claro / escuro</span>}
     </button>
   );
 }
@@ -71,6 +82,7 @@ export function HomeToolbar({
   variant = "home",
   guideLeft,
   guideActions,
+  onOpenAskGuido,
 }: HomeToolbarProps) {
   const [helpOpen, setHelpOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -140,7 +152,7 @@ export function HomeToolbar({
           <button
             type="button"
             onClick={cycleFontSize}
-            className="guide-theme-toggle flex items-center justify-center font-black text-sm"
+            className="guide-theme-toggle guide-theme-toggle--font flex items-center justify-center font-black text-sm"
             aria-label="Ajustar tamanho da letra"
             title="Ajustar tamanho da letra"
           >
@@ -149,7 +161,7 @@ export function HomeToolbar({
           <button
             type="button"
             onClick={toggleContrast}
-            className="guide-theme-toggle flex items-center justify-center font-black text-sm"
+            className="guide-theme-toggle guide-theme-toggle--contrast flex items-center justify-center font-black text-sm"
             aria-label="Alternar alto contraste"
             title="Alternar alto contraste"
           >
@@ -231,44 +243,24 @@ export function HomeToolbar({
           )}
         </nav>
 
-        {/* Lado direito: controles compactos e discretos */}
-        <nav id="home-account-navigation" aria-label="Acesso à conta e aparência" className={`home-account-nav${mobileMenuOpen ? " is-open" : ""}`}>
-          {/* Controle de tamanho do texto */}
-          <button
-            type="button"
-            onClick={cycleFontSize}
-            className="home-icon-button"
-            aria-label="Ajustar tamanho da fonte"
-            title={`Tamanho do texto: ${fontSize === "normal" ? "normal" : fontSize === "large" ? "grande" : "muito grande"}`}
-          >
-            <span className="font-bold text-base leading-none">A</span>
-          </button>
-
-          {/* Controle de alto contraste */}
-          <button
-            type="button"
-            onClick={toggleContrast}
-            className="home-icon-button"
-            aria-label="Alternar alto contraste"
-            title="Alternar alto contraste"
-          >
-            <span className="text-base leading-none" aria-hidden="true">◐</span>
-          </button>
-
-          {/* Controle claro/escuro */}
-          <ThemeToggleButton onClick={toggleTheme} className="home-icon-button" />
-
-          {/* Botão Pergunte ao Guido */}
+        {/* Lado direito: Botão Pergunte ao Guido substituindo a área amarela */}
+        <nav id="home-account-navigation" aria-label="Acesso à conta e assistente" className={`home-account-nav${mobileMenuOpen ? " is-open" : ""}`}>
+          {/* Botão Pergunte ao Guido em destaque */}
           <button
             type="button"
             onClick={() => {
               setMobileMenuOpen(false);
-              setAskGuidoOpen(true);
+              if (onOpenAskGuido) {
+                onOpenAskGuido();
+              } else {
+                setAskGuidoOpen(true);
+              }
             }}
             className="home-ask-button"
             aria-label="Pergunte ao Guido"
           >
-            Pergunte ao Guido
+            <Sparkles className="size-4 shrink-0 text-sky-400" aria-hidden="true" />
+            <span>Pergunte ao Guido</span>
           </button>
 
           {/* Botão Entrar */}
@@ -290,6 +282,11 @@ export function HomeToolbar({
           <span />
         </button>
       </header>
+
+      {/* Botão de alternar tema claro/escuro movido para baixo */}
+      <div className="home-bottom-theme-dock">
+        <ThemeToggleButton onClick={toggleTheme} className="home-theme-bottom-btn" showLabel />
+      </div>
 
       {helpOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-5" role="presentation">
@@ -321,7 +318,7 @@ export function HomeToolbar({
         </div>
       )}
 
-      {askGuidoOpen && (
+      {!onOpenAskGuido && askGuidoOpen && (
         <AskGuidoModal isOpen={askGuidoOpen} onClose={() => setAskGuidoOpen(false)} />
       )}
     </>

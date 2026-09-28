@@ -4,14 +4,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { Mic } from "lucide-react";
 import { ApplicationLogo } from "@/features/applications/application-logo";
 import type { Application, Task } from "@/types/content";
 import { OtherAppsModal } from "./other-apps-modal";
 import type { OtherApp } from "@/data/other-apps";
+import { AskGuidoModal } from "@/features/ai/ask-guido-modal";
 
 interface HomeSearchProps {
   applications: Application[];
   tasks: Task[];
+  onOpenVoice?: () => void;
 }
 
 export type GuidedCategory = "banks" | "whatsapp" | "government" | "others";
@@ -301,13 +304,22 @@ function TaskModal({ applicationName, tasks: modalTasks, onClose }: TaskModalPro
   );
 }
 
-export function HomeSearch({ applications, tasks }: HomeSearchProps) {
+export function HomeSearch({ applications, tasks, onOpenVoice }: HomeSearchProps) {
   const [selectedCategory, setSelectedCategory] = useState<GuidedCategory | null>(null);
   const [selectedBank, setSelectedBank] = useState<Application | null>(null);
   const [selectedOtherApp, setSelectedOtherApp] = useState<OtherApp | null>(null);
   const [bankModalOpen, setBankModalOpen] = useState(false);
   const [otherAppsModalOpen, setOtherAppsModalOpen] = useState(false);
   const [taskModalOpen, setTaskModalOpen] = useState(false);
+  const [standaloneVoiceOpen, setStandaloneVoiceOpen] = useState(false);
+
+  const handleVoiceClick = () => {
+    if (onOpenVoice) {
+      onOpenVoice();
+    } else {
+      setStandaloneVoiceOpen(true);
+    }
+  };
 
   const categoryButtonRefs = useRef<Record<GuidedCategory, HTMLButtonElement | null>>({
     banks: null,
@@ -401,11 +413,28 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
         {/* Conteúdo Principal à Esquerda */}
         <div className="home-hero-left">
           <p className="home-eyebrow">TECNOLOGIA NO SEU RITMO</p>
-          <h1 id="home-category-title" className="home-hero-title">
-            <span>Escolha uma</span>{" "}
-            <br />
-            <span className="home-title-highlight">categoria</span>
-          </h1>
+          <div className="home-hero-title-row">
+            <h1 id="home-category-title" className="home-hero-title">
+              <span>Escolha uma</span>{" "}
+              <br />
+              <span className="home-title-highlight">categoria</span>
+            </h1>
+
+            {/* Ícone de voz que ao clicar pede para falar */}
+            <button
+              type="button"
+              onClick={handleVoiceClick}
+              className="home-voice-button"
+              aria-label="Falar com o Guido por voz - Toque para falar"
+              title="Toque para falar com o Guido"
+            >
+              <div className="home-voice-button-inner">
+                <span className="home-voice-wave" aria-hidden="true" />
+                <Mic className="size-7 text-white" aria-hidden="true" />
+              </div>
+              <span className="home-voice-caption">Pedir por voz</span>
+            </button>
+          </div>
 
           {/* 4 Cards de Categorias */}
           <div className="home-categories-grid" role="region" aria-label="Categorias principais">
@@ -580,6 +609,14 @@ export function HomeSearch({ applications, tasks }: HomeSearchProps) {
           applicationName={activeTaskModalTitle}
           tasks={activeTaskModalTasks}
           onClose={closeTaskModal}
+        />
+      )}
+
+      {!onOpenVoice && standaloneVoiceOpen && (
+        <AskGuidoModal
+          isOpen={standaloneVoiceOpen}
+          initialListening={true}
+          onClose={() => setStandaloneVoiceOpen(false)}
         />
       )}
     </section>

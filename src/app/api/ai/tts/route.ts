@@ -1,161 +1,30 @@
 import { NextResponse } from "next/server";
-import crypto from "crypto";
 
-const TRUSTED_CLIENT_TOKEN = "6A5AA1D4EA654070808940C5734A7B55";
-
-/**
- * Gera o token Sec-MS-GEC exigido pelo serviço de voz neural da Microsoft
- */
-function getSecMsGec(): string {
-  const ticks = (Date.now() + 11644473600000) * 10000;
-  const roundedTicks = ticks - (ticks % 3000000000);
-  const str = `${roundedTicks}${TRUSTED_CLIENT_TOKEN}`;
-  return crypto.createHash("sha256").update(str, "ascii").digest("hex").toUpperCase();
-}
-
-function generateConnectionId(): string {
-  return crypto.randomBytes(16).toString("hex");
-}
+// Voz padrão acolhedora do ElevenLabs (Antoni: voz masculina calorosa e paciente, ideal para o Guido)
+// Outras opções famosas: "21m00Tcm4TlvDq8ikWAM" (Rachel), "EXAVITQu4vr4xnSDxMaL" (Bella)
+const DEFAULT_VOICE_ID = "ErXwobaYiN019PkySvjV";
 
 function cleanTextForSpeech(text: string): string {
   return text
-    // Remove emojis (para a voz não soletrar descrições de imagens)
+    // Remove emojis para não gerar descrições esquisitas na voz
     .replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, "")
-    // Remove markdown
+    // Remove formatação de código ou markdown
     .replace(/[*_#`~>[\]()]/g, "")
-    // Ajusta abreviações para dicção natural
+    // Ajusta abreviações populares brasileiras para pronúncia natural
     .replace(/\bzap\b/gi, "WhatsApp")
     .replace(/\bapp\b/gi, "aplicativo")
     .replace(/\bapps\b/gi, "aplicativos")
     .replace(/\bex:\b/gi, "por exemplo:")
-    // Normaliza espaços
     .replace(/\s+/g, " ")
     .trim();
-}
-
-/**
- * Cria o SSML com pausas de respiração humana e estilo caloroso/expressivo
- */
-function getHumanizedSSML(
-  text: string,
-  voice = "pt-BR-FranciscaNeural",
-  rate = "-8%",
-  pitch = "+2Hz"
-): string {
-  const sanitized = cleanTextForSpeech(text)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;");
-
-  // Inserção de micropausas humanas de respiração
-  const withBreathing = sanitized
-    .replace(/\. /g, '. <break time="450ms"/> ')
-    .replace(/! /g, '! <break time="480ms"/> ')
-    .replace(/\? /g, '? <break time="500ms"/> ')
-    .replace(/, /g, ', <break time="180ms"/> ')
-    .replace(/; /g, '; <break time="250ms"/> ');
-
-  return `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="pt-BR">
-    <voice name="${voice}">
-      <mstts:express-as style="cheerful" styledegree="1.2">
-        <prosody rate="${rate}" pitch="${pitch}">
-          ${withBreathing}
-        </prosody>
-      </mstts:express-as>
-    </voice>
-  </speak>`;
-}
-
-async function synthesizeNeuralAudio(
-  text: string,
-  voice = "pt-BR-FranciscaNeural"
-): Promise<Buffer> {
-  return new Promise((resolve, reject) => {
-    const connectionId = generateConnectionId();
-    const gec = getSecMsGec();
-    const wsUrl = `wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=${TRUSTED_CLIENT_TOKEN}&Sec-MS-GEC=${gec}&Sec-MS-GEC-Version=1-130.0.2849.68&ConnectionId=${connectionId}`;
-
-    const ws = new WebSocket(wsUrl);
-    const audioChunks: Buffer[] = [];
-    let isFinished = false;
-
-    const timer = setTimeout(() => {
-      if (!isFinished) {
-        isFinished = true;
-        try {
-          ws.close();
-        } catch {}
-        if (audioChunks.length > 0) {
-          resolve(Buffer.concat(audioChunks));
-        } else {
-          reject(new Error("Timeout synthesizing neural speech"));
-        }
-      }
-    }, 12000);
-
-    ws.onopen = () => {
-      const configMsg =
-        `Content-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n` +
-        `{"context":{"synthesis":{"audio":{"metadataoptions":{"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"false"},"outputFormat":"audio-24khz-48kbitrate-mono-mp3"}}}}`;
-      ws.send(configMsg);
-
-      const requestId = generateConnectionId();
-      const ssml = getHumanizedSSML(text, voice);
-      const ssmlMsg = `X-RequestId:${requestId}\r\nContent-Type:application/ssml+xml\r\nPath:ssml\r\n\r\n${ssml}`;
-      ws.send(ssmlMsg);
-    };
-
-    ws.onmessage = async (event) => {
-      if (typeof event.data === "string") {
-        if (event.data.includes("Path:turn.end")) {
-          isFinished = true;
-          clearTimeout(timer);
-          try {
-            ws.close();
-          } catch {}
-          resolve(Buffer.concat(audioChunks));
-        }
-      } else if (event.data instanceof Blob) {
-        const arrayBuf = await event.data.arrayBuffer();
-        const buf = Buffer.from(arrayBuf);
-        const delimiter = Buffer.from("\r\n\r\n");
-        const idx = buf.indexOf(delimiter);
-        if (idx !== -1) {
-          const audioData = buf.subarray(idx + 4);
-          audioChunks.push(audioData);
-        }
-      }
-    };
-
-    ws.onerror = (err) => {
-      if (!isFinished) {
-        isFinished = true;
-        clearTimeout(timer);
-        reject(err);
-      }
-    };
-
-    ws.onclose = () => {
-      if (!isFinished) {
-        isFinished = true;
-        clearTimeout(timer);
-        if (audioChunks.length > 0) {
-          resolve(Buffer.concat(audioChunks));
-        } else {
-          reject(new Error("Connection closed without audio"));
-        }
-      }
-    };
-  });
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => null);
     const text = body?.text;
-    const voice = body?.voice || "pt-BR-FranciscaNeural";
+    const clientKey = body?.apiKey;
+    const voiceId = body?.voiceId || process.env.ELEVENLABS_VOICE_ID || DEFAULT_VOICE_ID;
 
     if (!text || typeof text !== "string" || !text.trim()) {
       return NextResponse.json(
@@ -164,21 +33,83 @@ export async function POST(request: Request) {
       );
     }
 
-    const audioBuffer = await synthesizeNeuralAudio(text, voice);
+    const apiKey = clientKey || process.env.ELEVENLABS_API_KEY;
 
-    return new NextResponse(new Uint8Array(audioBuffer), {
+    if (!apiKey) {
+      // Sem chave configurada, retorna aviso imediato para fallback nativo veloz
+      return NextResponse.json(
+        {
+          fallback: true,
+          reason: "no_elevenlabs_key",
+          message: "Chave da ElevenLabs não configurada. Use o sintetizador local ou adicione ELEVENLABS_API_KEY.",
+        },
+        { status: 200 }
+      );
+    }
+
+    const cleanedText = cleanTextForSpeech(text).slice(0, 800);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 7000); // 7s timeout
+
+    const elevenLabsUrl = `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}`;
+
+    const response = await fetch(elevenLabsUrl, {
+      method: "POST",
+      headers: {
+        "xi-api-key": apiKey.trim(),
+        "Content-Type": "application/json",
+        Accept: "audio/mpeg",
+      },
+      body: JSON.stringify({
+        text: cleanedText,
+        model_id: "eleven_multilingual_v2",
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.8,
+          style: 0.35,
+          use_speaker_boost: true,
+        },
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.warn("Erro ao chamar ElevenLabs TTS:", response.status, errText);
+      return NextResponse.json(
+        {
+          fallback: true,
+          reason: "elevenlabs_error",
+          status: response.status,
+          detail: errText,
+        },
+        { status: 200 }
+      );
+    }
+
+    const audioArrayBuffer = await response.arrayBuffer();
+
+    return new NextResponse(audioArrayBuffer, {
       status: 200,
       headers: {
         "Content-Type": "audio/mpeg",
         "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
-        "Content-Length": audioBuffer.length.toString(),
+        "Content-Length": audioArrayBuffer.byteLength.toString(),
       },
     });
   } catch (err) {
-    console.error("Erro na síntese neural humanizada de voz:", err);
+    const isAbort = err instanceof Error && err.name === "AbortError";
+    console.warn("Falha no endpoint de áudio ElevenLabs:", isAbort ? "Timeout" : err);
+
     return NextResponse.json(
-      { error: "Falha ao gerar áudio neural." },
-      { status: 500 }
+      {
+        fallback: true,
+        reason: isAbort ? "timeout" : "unexpected_error",
+      },
+      { status: 200 }
     );
   }
 }
@@ -186,7 +117,8 @@ export async function POST(request: Request) {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const text = searchParams.get("text");
-  const voice = searchParams.get("voice") || "pt-BR-FranciscaNeural";
+  const apiKeyParam = searchParams.get("apiKey");
+  const voiceId = searchParams.get("voiceId") || process.env.ELEVENLABS_VOICE_ID || DEFAULT_VOICE_ID;
 
   if (!text || !text.trim()) {
     return NextResponse.json(
@@ -195,22 +127,69 @@ export async function GET(request: Request) {
     );
   }
 
-  try {
-    const audioBuffer = await synthesizeNeuralAudio(text, voice);
+  const apiKey = apiKeyParam || process.env.ELEVENLABS_API_KEY;
 
-    return new NextResponse(new Uint8Array(audioBuffer), {
+  if (!apiKey) {
+    return NextResponse.json(
+      {
+        fallback: true,
+        reason: "no_elevenlabs_key",
+      },
+      { status: 200 }
+    );
+  }
+
+  try {
+    const cleanedText = cleanTextForSpeech(text).slice(0, 800);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 7000);
+
+    const elevenLabsUrl = `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}`;
+
+    const response = await fetch(elevenLabsUrl, {
+      method: "POST",
+      headers: {
+        "xi-api-key": apiKey.trim(),
+        "Content-Type": "application/json",
+        Accept: "audio/mpeg",
+      },
+      body: JSON.stringify({
+        text: cleanedText,
+        model_id: "eleven_multilingual_v2",
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.8,
+          style: 0.35,
+          use_speaker_boost: true,
+        },
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { fallback: true, reason: "elevenlabs_error", status: response.status },
+        { status: 200 }
+      );
+    }
+
+    const audioArrayBuffer = await response.arrayBuffer();
+
+    return new NextResponse(audioArrayBuffer, {
       status: 200,
       headers: {
         "Content-Type": "audio/mpeg",
         "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
-        "Content-Length": audioBuffer.length.toString(),
+        "Content-Length": audioArrayBuffer.byteLength.toString(),
       },
     });
-  } catch (err) {
-    console.error("Erro na síntese neural humanizada de voz (GET):", err);
+  } catch {
     return NextResponse.json(
-      { error: "Falha ao gerar áudio neural." },
-      { status: 500 }
+      { fallback: true, reason: "unexpected_error" },
+      { status: 200 }
     );
   }
 }
