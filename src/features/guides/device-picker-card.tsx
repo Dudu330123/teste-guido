@@ -63,7 +63,7 @@ export function DevicePickerCard({
   onContinue,
   continueDisabled = false,
   title = "Qual é o seu celular?",
-  subtitle = "Escolha o tipo do seu aparelho.",
+  subtitle,
   headingId = "device-picker-heading",
   inputIdPrefix = "device-picker",
   inputName = "device-picker",
@@ -97,9 +97,11 @@ export function DevicePickerCard({
       <h1 className="device-picker-title" id={headingId}>
         {title}
       </h1>
-      <p className="device-picker-subtitle">
-        {subtitle}
-      </p>
+      {subtitle ? (
+        <p className="device-picker-subtitle">
+          {subtitle}
+        </p>
+      ) : null}
 
       {/* ── Opções ────────────────────────────────────────────────── */}
       <div
