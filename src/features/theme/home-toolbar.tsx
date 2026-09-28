@@ -258,9 +258,9 @@ export function HomeToolbar({
           </button>
         </nav>
 
-        {/* Lado direito: Botão Falar com o Guido no Desktop e Botão Entrar */}
+        {/* Lado direito: Botão Guido no Cabeçalho e Botão Entrar */}
         <nav id="home-account-navigation" aria-label="Acesso à conta e assistente" className={`home-account-nav${mobileMenuOpen ? " is-open" : ""}`}>
-          {/* Botão Guido em destaque no Desktop */}
+          {/* Botão Guido no Cabeçalho */}
           <button
             type="button"
             onClick={() => {
@@ -275,8 +275,11 @@ export function HomeToolbar({
             aria-label="Falar com o Guido por voz"
             title="Falar com o Guido por voz"
           >
-            <Mic className="size-4 shrink-0 text-sky-300 animate-pulse" aria-hidden="true" />
-            <span>Falar com o Guido</span>
+            <span className="home-ask-icon-badge" aria-hidden="true">
+              <Mic className="size-3.5 text-white animate-pulse" />
+            </span>
+            <span className="home-ask-full-label">Falar com o Guido</span>
+            <span className="home-ask-short-label">Guido</span>
           </button>
 
           {/* Botão Entrar */}
@@ -302,32 +305,6 @@ export function HomeToolbar({
       {/* Botão de alternar tema claro/escuro */}
       <div className="home-bottom-theme-dock">
         <ThemeToggleButton onClick={toggleTheme} className="home-theme-bottom-btn" showLabel />
-      </div>
-
-      {/* Botão Flutuante de Voz do Guido (FAB Acessível no Rodapé) */}
-      <div className="home-bottom-guido-dock">
-        <button
-          type="button"
-          onClick={() => {
-            if (onOpenAskGuido) {
-              onOpenAskGuido();
-            } else {
-              setAskGuidoOpen(true);
-            }
-          }}
-          className="home-guido-fab-btn"
-          aria-label="Falar com o Guido por voz"
-          title="Falar com o Guido por voz"
-        >
-          <span className="home-guido-fab-icon-wrap" aria-hidden="true">
-            <Mic className="size-6 text-white" />
-            <span className="home-guido-fab-pulse" />
-          </span>
-          <span className="home-guido-fab-content">
-            <span className="home-guido-fab-title">Falar com o Guido</span>
-            <span className="home-guido-fab-subtitle">Ajuda por voz</span>
-          </span>
-        </button>
       </div>
 
       {helpOpen && (
