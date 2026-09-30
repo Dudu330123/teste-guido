@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
   Mic,
   MicOff,
@@ -173,11 +174,14 @@ function rankVoice(v: SpeechSynthesisVoice): number {
   if (name.includes("natural")) score += 120;
   if (name.includes("neural")) score += 110;
   if (name.includes("online")) score += 100;
+  if (name.includes("enhanced")) score += 120;
+  if (name.includes("premium")) score += 120;
   if (name.includes("google")) score += 85;
   if (name.includes("francisca")) score += 80;
   if (name.includes("antonio") || name.includes("antônio")) score += 75;
   if (name.includes("thalita")) score += 70;
   if (name.includes("luciana")) score += 60;
+  if (name.includes("felipe")) score += 60;
 
   if (name.includes("desktop")) score -= 150;
   if (name.includes("sapi")) score -= 150;
@@ -589,15 +593,17 @@ export function AskGuidoModal({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm animate-in fade-in duration-200"
     >
       {/* MENU DE TELA CHEIA: PERSONALIZAR VOZ E AVATAR */}
-      {showSettingsMenu && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Personalizar Voz e Avatar"
-          className="fixed inset-0 z-[60] flex flex-col bg-slate-900 text-white overflow-y-auto animate-in fade-in duration-200"
-        >
-          {/* Cabeçalho do Menu de Configurações */}
-          <div className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-800 bg-slate-900/95 px-4 py-4 backdrop-blur-md sm:px-6">
+      {showSettingsMenu &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Personalizar Voz e Avatar"
+            className="fixed inset-0 z-[100] flex flex-col bg-slate-900 text-white min-h-[100dvh] w-full overflow-y-auto animate-in fade-in duration-200"
+          >
+            {/* Cabeçalho do Menu de Configurações */}
+            <div className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-800 bg-slate-900/95 px-4 py-4 pt-[max(1rem,env(safe-area-inset-top))] backdrop-blur-md sm:px-6">
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -786,8 +792,7 @@ export function AskGuidoModal({
               </div>
             </section>
 
-            {/* BOTÃO DE CONFIRMAR E VOLTAR */}
-            <div className="pt-2">
+            <div className="pt-2 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
               <button
                 type="button"
                 onClick={() => {
@@ -802,7 +807,8 @@ export function AskGuidoModal({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* JANELA PRINCIPAL DO MODAL */}
