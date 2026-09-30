@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { AskGuidoModal, VOICE_PROFILES, AVATAR_OPTIONS } from "./ask-guido-modal";
+import { AskGuidoModal, AVATAR_OPTIONS } from "./ask-guido-modal";
 
 describe("AskGuidoModal - Personalização de Voz e Avatar", () => {
   beforeEach(() => {

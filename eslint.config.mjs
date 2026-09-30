@@ -5,6 +5,17 @@ import nextTypeScript from "eslint-config-next/typescript";
 export default defineConfig([
   ...nextCoreWebVitals,
   ...nextTypeScript,
+  {
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+        },
+      ],
+    },
+  },
   // Netlify e CMake geram código de terceiros localmente. Esses artefatos não
   // pertencem ao projeto e não devem mascarar problemas no código-fonte Guido.
   globalIgnores([
@@ -13,5 +24,6 @@ export default defineConfig([
     "backend/build*/**",
     "coverage/**",
     "next-env.d.ts",
+    "scripts/**",
   ]),
 ]);

@@ -54,27 +54,30 @@ export async function POST(request: Request) {
 
     const elevenLabsUrl = `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}`;
 
-    const response = await fetch(elevenLabsUrl, {
-      method: "POST",
-      headers: {
-        "xi-api-key": apiKey.trim(),
-        "Content-Type": "application/json",
-        Accept: "audio/mpeg",
-      },
-      body: JSON.stringify({
-        text: cleanedText,
-        model_id: "eleven_multilingual_v2",
-        voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.8,
-          style: 0.35,
-          use_speaker_boost: true,
+    let response: Response;
+    try {
+      response = await fetch(elevenLabsUrl, {
+        method: "POST",
+        headers: {
+          "xi-api-key": apiKey.trim(),
+          "Content-Type": "application/json",
+          Accept: "audio/mpeg",
         },
-      }),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
+        body: JSON.stringify({
+          text: cleanedText,
+          model_id: "eleven_multilingual_v2",
+          voice_settings: {
+            stability: 0.5,
+            similarity_boost: 0.8,
+            style: 0.35,
+            use_speaker_boost: true,
+          },
+        }),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!response.ok) {
       const errText = await response.text();

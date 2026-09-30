@@ -269,11 +269,30 @@ export function AskGuidoModal({
   const [generatedGuide, setGeneratedGuide] = useState<GeneratedGuide | null>(null);
 
   const [speechStatus, setSpeechStatus] = useState("");
-  const [usingStudioVoice, setUsingStudioVoice] = useState(false);
 
   // Seleção de voz e avatar
-  const [selectedVoiceId, setSelectedVoiceId] = useState<"guido" | "helena" | "lucas">("guido");
-  const [selectedAvatarId, setSelectedAvatarId] = useState<string>("robo-guido");
+  const [selectedVoiceId, setSelectedVoiceId] = useState<"guido" | "helena" | "lucas">(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const savedVoice = window.localStorage.getItem("guido-voice-id");
+        if (savedVoice === "guido" || savedVoice === "helena" || savedVoice === "lucas") {
+          return savedVoice;
+        }
+      } catch {}
+    }
+    return "guido";
+  });
+  const [selectedAvatarId, setSelectedAvatarId] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const savedAvatar = window.localStorage.getItem("guido-avatar-id");
+        if (savedAvatar && AVATAR_OPTIONS.some((a) => a.id === savedAvatar)) {
+          return savedAvatar;
+        }
+      } catch {}
+    }
+    return "robo-guido";
+  });
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [previewingVoiceId, setPreviewingVoiceId] = useState<string | null>(null);
 
@@ -285,22 +304,6 @@ export function AskGuidoModal({
     VOICE_PROFILES.find((v) => v.id === selectedVoiceId) || VOICE_PROFILES[0];
   const currentAvatar =
     AVATAR_OPTIONS.find((a) => a.id === selectedAvatarId) || AVATAR_OPTIONS[0];
-
-  // Carrega preferências de voz e avatar salvas ao montar
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    try {
-      const savedVoice = window.localStorage.getItem("guido-voice-id");
-      if (savedVoice === "guido" || savedVoice === "helena" || savedVoice === "lucas") {
-        setSelectedVoiceId(savedVoice);
-      }
-      const savedAvatar = window.localStorage.getItem("guido-avatar-id");
-      if (savedAvatar && AVATAR_OPTIONS.some((a) => a.id === savedAvatar)) {
-        setSelectedAvatarId(savedAvatar);
-      }
-    } catch {}
-  }, []);
 
   const stopSpeaking = useCallback(() => {
     if (audioPlayerRef.current) {
@@ -394,7 +397,6 @@ export function AskGuidoModal({
           const audioUrl = URL.createObjectURL(blob);
           const audio = new Audio(audioUrl);
           audioPlayerRef.current = audio;
-          setUsingStudioVoice(true);
 
           audio.onended = () => {
             setIsSpeaking(false);
@@ -405,7 +407,6 @@ export function AskGuidoModal({
 
           audio.onerror = () => {
             URL.revokeObjectURL(audioUrl);
-            setUsingStudioVoice(false);
             speakWithBrowserSynthesis(cleanText, profile, onEndCallback);
           };
 
@@ -417,7 +418,6 @@ export function AskGuidoModal({
       }
 
       // 2. FALLBACK IMEDIATO: Síntese nativa fluida com voz, pitch e rate ajustados
-      setUsingStudioVoice(false);
       speakWithBrowserSynthesis(cleanText, profile, onEndCallback);
     },
     [currentVoiceProfile, speakWithBrowserSynthesis, stopSpeaking]
@@ -812,7 +812,7 @@ export function AskGuidoModal({
       )}
 
       {/* JANELA PRINCIPAL DO MODAL */}
-      <div className="relative flex max-h-[92vh] w-full max-w-xl flex-col overflow-hidden rounded-3xl bg-white text-slate-900 shadow-2xl border-4 border-blue-600">
+      <div className="relative flex max-h-[92dvh] w-full max-w-xl flex-col overflow-hidden rounded-3xl bg-white text-slate-900 shadow-2xl border-4 border-blue-600">
         {/* Cabeçalho */}
         <header className="flex items-center justify-between border-b border-blue-500/60 bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-700 px-4 py-3 sm:px-6 sm:py-4 text-white">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">

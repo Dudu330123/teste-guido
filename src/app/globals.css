@@ -162,6 +162,14 @@ html[data-theme="dark"] body {
   }
 }
 
+@media (hover: none) and (pointer: coarse) {
+  body,
+  .internal-page,
+  .task-setup-shell {
+    background-attachment: scroll !important;
+  }
+}
+
 button,
 input,
 select {

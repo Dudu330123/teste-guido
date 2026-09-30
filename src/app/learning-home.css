@@ -318,6 +318,20 @@ html[data-theme="light"] .home-theme-bottom-btn {
     justify-content: center;
     border-radius: 9999px;
   }
+  .home-bank-modal-backdrop {
+    padding: 0.5rem;
+  }
+  .home-bank-modal {
+    padding: 1.15rem 1rem;
+    max-height: calc(100dvh - 1.5rem);
+    border-radius: 1.25rem;
+  }
+  .home-bank-modal header {
+    margin-bottom: 0.85rem;
+  }
+  .home-bank-modal h2 {
+    font-size: 1.25rem;
+  }
 }
 
 /* Botão do menu mobile (hambúrguer) */
@@ -1070,7 +1084,7 @@ html[data-theme="light"] .home-task-expand-button:hover {
   .home-ask-button,
   .guido-home .home-ask-button {
     display: inline-flex !important;
-    min-height: 2.35rem;
+    min-height: 2.75rem;
     padding: 0.25rem 0.75rem 0.25rem 0.45rem;
     font-size: 0.85rem;
     gap: 0.4rem;

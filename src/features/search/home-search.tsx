@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { createElement, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   Mic,
@@ -86,13 +86,12 @@ function getTaskIcon(task: Task) {
 
 function TaskCard({ task, modal = false }: { task: Task; modal?: boolean }) {
   const isPreparing = task.availability === "preparing" || task.status !== "published";
-  const TaskIcon = getTaskIcon(task);
 
   return (
     <Link href={taskHref(task)} className={`home-task-card${modal ? " home-task-modal-card" : ""}`}>
       <div className="home-task-card-content">
         <span className="home-task-card-icon" aria-hidden="true">
-          <TaskIcon className="size-6 sm:size-7 stroke-[2.2]" />
+          {createElement(getTaskIcon(task), { className: "size-6 sm:size-7 stroke-[2.2]" })}
         </span>
         <div className="home-task-card-text">
           <strong className="home-task-card-title">{task.title}</strong>
@@ -270,7 +269,7 @@ interface TaskModalProps {
   onClose: () => void;
 }
 
-function TaskModal({ applicationName, tasks: modalTasks, onClose }: TaskModalProps) {
+function TaskModal({ applicationName: _applicationName, tasks: modalTasks, onClose }: TaskModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const isBackdropClickRef = useRef(false);

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useMemo, useSyncExternalStore } from "react";
 
 export type DeviceType = "celular" | "televisao";
 
@@ -15,47 +15,63 @@ const DeviceContext = createContext<DeviceContextType | undefined>(undefined);
 
 const STORAGE_KEY = "guido-device-preference";
 
+const listeners = new Set<() => void>();
+
+function subscribe(callback: () => void) {
+  if (typeof window === "undefined") return () => {};
+  listeners.add(callback);
+  window.addEventListener("storage", callback);
+  return () => {
+    listeners.delete(callback);
+    window.removeEventListener("storage", callback);
+  };
+}
+
+function notify() {
+  listeners.forEach((listener) => listener());
+}
+
+function getClientSnapshot(): DeviceType {
+  if (typeof window === "undefined") return "celular";
+  try {
+    const saved = window.localStorage.getItem(STORAGE_KEY);
+    if (saved === "celular" || saved === "televisao") return saved;
+  } catch {}
+  return "celular";
+}
+
+function getServerSnapshot(): DeviceType {
+  return "celular";
+}
+
 export function DeviceProvider({ children }: { children: React.ReactNode }) {
-  const [device, setDevice] = useState<DeviceType | null>("celular");
-  const [isReady, setIsReady] = useState(true);
+  const device = useSyncExternalStore(subscribe, getClientSnapshot, getServerSnapshot);
 
-  useEffect(() => {
-    try {
-      const saved = window.localStorage.getItem(STORAGE_KEY) as DeviceType | null;
-      if (saved === "celular" || saved === "televisao") {
-        setDevice(saved);
-      }
-    } catch {
-      // Ignora erro se localStorage não estiver disponível
-    }
-  }, []);
-
-  const selectDevice = (newDevice: DeviceType) => {
-    setDevice(newDevice);
+  const selectDevice = useCallback((newDevice: DeviceType) => {
     try {
       window.localStorage.setItem(STORAGE_KEY, newDevice);
     } catch {}
-  };
+    notify();
+  }, []);
 
-  const resetDevice = () => {
-    setDevice(null);
+  const resetDevice = useCallback(() => {
     try {
       window.localStorage.removeItem(STORAGE_KEY);
     } catch {}
-  };
+    notify();
+  }, []);
 
-  return (
-    <DeviceContext.Provider
-      value={{
-        device,
-        isReady,
-        selectDevice,
-        resetDevice,
-      }}
-    >
-      {children}
-    </DeviceContext.Provider>
+  const value = useMemo(
+    () => ({
+      device,
+      isReady: true,
+      selectDevice,
+      resetDevice,
+    }),
+    [device, selectDevice, resetDevice],
   );
+
+  return <DeviceContext.Provider value={value}>{children}</DeviceContext.Provider>;
 }
 
 export function useDevice() {

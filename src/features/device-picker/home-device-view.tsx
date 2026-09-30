@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import { useDevice } from "@/features/device-picker/device-context";
-import { DeviceSelectorScreen } from "@/features/device-picker/device-selector-screen";
 import { HomeToolbar } from "@/features/theme/home-toolbar";
 import { HomeSearch } from "@/features/search/home-search";
 import { HomeTvSearch } from "@/features/search/home-tv-search";

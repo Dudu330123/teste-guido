@@ -54,9 +54,7 @@ export function TaskGuideSetup({
   taskId,
   taskSlug,
   taskTitle,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   description: _description,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   safetyWarning: _safetyWarning,
   application,
   applicationOptions = [],

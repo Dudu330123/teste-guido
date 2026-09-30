@@ -286,6 +286,11 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
         if (window.speechSynthesis.onvoiceschanged === updateVoices) {
           window.speechSynthesis.onvoiceschanged = null;
         }
+        window.speechSynthesis.cancel();
+      }
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
       }
     };
   }, []);
