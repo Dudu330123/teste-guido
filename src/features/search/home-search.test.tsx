@@ -53,16 +53,48 @@ describe("navegação guiada por categorias da página inicial", () => {
     expect(screen.getByRole("button", { name: "Fechar lista de tarefas" })).toHaveFocus();
   });
 
-  it("abre diretamente o menu de tarefas reais de WhatsApp", async () => {
+  it("abre diretamente o menu de tarefas reais de WhatsApp com textos curtos e subtítulo explicativo", async () => {
     const user = userEvent.setup();
     render(<HomeSearch applications={applications} tasks={tasks} />);
     await user.click(screen.getByRole("button", { name: /WhatsApp/ }));
     expect(screen.getByRole("dialog", { name: "Escolha uma tarefa" })).toBeVisible();
+    expect(screen.getByText("Escolha o que você quer aprender")).toBeVisible();
+    expect(screen.getByRole("link", { name: /Enviar mensagem/ })).toHaveAttribute("href", "/tarefas/enviar-mensagem-texto-whatsapp");
     expect(screen.getByRole("link", { name: /Enviar um áudio/ })).toHaveAttribute("href", "/tarefas/enviar-audio-whatsapp");
+    expect(screen.getByRole("link", { name: /Ouvir um áudio/ })).toHaveAttribute("href", "/tarefas/ouvir-audio-whatsapp");
     expect(screen.queryByRole("button", { name: /Ver todas as tarefas/ })).not.toBeInTheDocument();
     expect(screen.queryByText(/passos simples/i)).not.toBeInTheDocument();
+
+    // Testa o botão "Ver mais tarefas" no grupo Mensagens e Áudios
+    const expandButtons = screen.getAllByRole("button", { name: /Ver mais tarefas/i });
+    expect(expandButtons.length).toBeGreaterThan(0);
+    expect(screen.queryByRole("link", { name: /Fixar uma conversa/ })).not.toBeInTheDocument();
+
+    // Ao clicar em Ver mais tarefas, a quarta tarefa aparece
+    await user.click(expandButtons[0]);
+    expect(screen.getByRole("link", { name: /Fixar uma conversa/ })).toHaveAttribute("href", "/tarefas/fixar-conversa-whatsapp");
+    expect(screen.getByRole("button", { name: /Mostrar menos/i })).toBeVisible();
+
     await user.keyboard("{Escape}");
     await waitFor(() => expect(screen.getByRole("heading", { name: /Escolha uma categoria/i })).toBeVisible());
+  });
+
+  it("fecha o modal ao clicar na área escura externa (backdrop)", async () => {
+    const user = userEvent.setup();
+    render(<HomeSearch applications={applications} tasks={tasks} />);
+    await user.click(screen.getByRole("button", { name: /WhatsApp/ }));
+    const dialog = screen.getByRole("dialog", { name: "Escolha uma tarefa" });
+    expect(dialog).toBeVisible();
+
+    // Clicar dentro do modal não fecha
+    await user.click(dialog);
+    expect(dialog).toBeVisible();
+
+    // Clicar no backdrop externo fecha o modal
+    const backdrop = document.querySelector(".home-bank-modal-backdrop") as HTMLElement;
+    expect(backdrop).toBeInTheDocument();
+    await user.click(backdrop);
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Escolha uma tarefa" })).not.toBeInTheDocument());
   });
 
   it("abre o menu de bancos, fecha com Escape e devolve o foco", async () => {

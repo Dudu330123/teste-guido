@@ -15,7 +15,7 @@ export const whatsappTasks: Task[] = [
   {
     id: "task-enviar-mensagem-texto-whatsapp",
     applicationId: "app-whatsapp",
-    title: "Enviar mensagem escrita de texto",
+    title: "Enviar mensagem",
     slug: "enviar-mensagem-texto-whatsapp",
     description: "Aprenda a abrir a conversa, digitar no teclado e enviar uma mensagem.",
     difficulty: "easy",
@@ -29,7 +29,7 @@ export const whatsappTasks: Task[] = [
   {
     id: "task-enviar-audio-whatsapp",
     applicationId: "app-whatsapp",
-    title: "Enviar um áudio (mensagem de voz)",
+    title: "Enviar um áudio",
     slug: "enviar-audio-whatsapp",
     description: "Aprenda a segurar o microfone para falar e enviar seu áudio com calma.",
     difficulty: "easy",
@@ -43,7 +43,7 @@ export const whatsappTasks: Task[] = [
   {
     id: "task-ouvir-audio-whatsapp",
     applicationId: "app-whatsapp",
-    title: "Ouvir áudio recebido",
+    title: "Ouvir um áudio",
     slug: "ouvir-audio-whatsapp",
     description: "Aprenda a dar o play e ouvir o áudio bem baixinho encostando o celular no ouvido.",
     difficulty: "easy",
@@ -57,7 +57,7 @@ export const whatsappTasks: Task[] = [
   {
     id: "task-fixar-conversa-whatsapp",
     applicationId: "app-whatsapp",
-    title: "Fixar conversa importante no topo",
+    title: "Fixar uma conversa",
     slug: "fixar-conversa-whatsapp",
     description: "Deixe as conversas dos seus filhos ou netos sempre no início da lista para achar fácil.",
     difficulty: "easy",
@@ -73,7 +73,7 @@ export const whatsappTasks: Task[] = [
   {
     id: "task-fazer-chamada-whatsapp",
     applicationId: "app-whatsapp",
-    title: "Fazer ligação de voz gratuita",
+    title: "Fazer uma ligação",
     slug: "fazer-chamada-whatsapp",
     description: "Aprenda a telefonar de graça pelo WhatsApp usando a internet do celular.",
     difficulty: "easy",
@@ -87,7 +87,7 @@ export const whatsappTasks: Task[] = [
   {
     id: "task-fazer-chamada-video-whatsapp",
     applicationId: "app-whatsapp",
-    title: "Fazer chamada de vídeo (ver a pessoa)",
+    title: "Chamada de vídeo",
     slug: "fazer-chamada-video-whatsapp",
     description: "Converse vendo o rosto da pessoa pela câmera do celular.",
     difficulty: "easy",
@@ -103,7 +103,7 @@ export const whatsappTasks: Task[] = [
   {
     id: "task-enviar-foto-whatsapp",
     applicationId: "app-whatsapp",
-    title: "Enviar foto ou vídeo da galeria",
+    title: "Enviar foto ou vídeo",
     slug: "enviar-foto-whatsapp",
     description: "Compartilhe fotos de família, recibos ou lembranças da sua galeria.",
     difficulty: "easy",
@@ -117,7 +117,7 @@ export const whatsappTasks: Task[] = [
   {
     id: "task-tirar-foto-na-hora-whatsapp",
     applicationId: "app-whatsapp",
-    title: "Tirar foto na hora e enviar",
+    title: "Tirar foto na hora",
     slug: "tirar-foto-na-hora-whatsapp",
     description: "Abra a câmera direto na conversa, tire a foto e mande no mesmo instante.",
     difficulty: "easy",
@@ -131,7 +131,7 @@ export const whatsappTasks: Task[] = [
   {
     id: "task-apagar-mensagem-whatsapp",
     applicationId: "app-whatsapp",
-    title: "Apagar mensagem enviada por engano",
+    title: "Apagar mensagem",
     slug: "apagar-mensagem-whatsapp",
     description: "Como excluir uma mensagem ou foto enviada para a conversa errada.",
     difficulty: "easy",
@@ -145,7 +145,7 @@ export const whatsappTasks: Task[] = [
   {
     id: "task-compartilhar-localizacao-whatsapp",
     applicationId: "app-whatsapp",
-    title: "Enviar localização para a família",
+    title: "Enviar localização",
     slug: "compartilhar-localizacao-whatsapp",
     description: "Mostre no mapa onde você está para seus filhos ou netos acompanharem sua chegada.",
     difficulty: "medium",
@@ -161,7 +161,7 @@ export const whatsappTasks: Task[] = [
   {
     id: "task-adicionar-contato-whatsapp",
     applicationId: "app-whatsapp",
-    title: "Adicionar novo contato na agenda",
+    title: "Adicionar contato",
     slug: "adicionar-contato-whatsapp",
     description: "Cadastre o número de telefone de um amigo ou médico para poder mandar mensagens.",
     difficulty: "easy",
@@ -175,7 +175,7 @@ export const whatsappTasks: Task[] = [
   {
     id: "task-silenciar-grupo-whatsapp",
     applicationId: "app-whatsapp",
-    title: "Silenciar grupo com muitas mensagens",
+    title: "Silenciar grupo",
     slug: "silenciar-grupo-whatsapp",
     description: "Faça o celular parar de apitar o tempo todo com mensagens de grupos barulhentos.",
     difficulty: "easy",
@@ -189,7 +189,7 @@ export const whatsappTasks: Task[] = [
   {
     id: "task-bloquear-contato-whatsapp",
     applicationId: "app-whatsapp",
-    title: "Bloquear número ou contato indesejado",
+    title: "Bloquear contato",
     slug: "bloquear-contato-whatsapp",
     description: "Impeça que pessoas desconhecidas ou chatas mandem mensagens ou liguem para você.",
     difficulty: "easy",
@@ -203,7 +203,7 @@ export const whatsappTasks: Task[] = [
   {
     id: "task-identificar-golpe-whatsapp",
     applicationId: "app-whatsapp",
-    title: "Identificar golpe do Pix ou falso parente",
+    title: "Identificar golpes",
     slug: "identificar-golpe-whatsapp",
     description: "Saiba o que fazer ao receber mensagem de número novo pedindo dinheiro urgente.",
     difficulty: "easy",
@@ -217,7 +217,7 @@ export const whatsappTasks: Task[] = [
   {
     id: "task-aumentar-letra-whatsapp",
     applicationId: "app-whatsapp",
-    title: "Aumentar o tamanho da letra das conversas",
+    title: "Aumentar letra",
     slug: "aumentar-letra-whatsapp",
     description: "Deixe as letras do WhatsApp bem grandes para ler sem forçar a vista.",
     difficulty: "easy",

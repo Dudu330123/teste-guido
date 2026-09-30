@@ -4,7 +4,34 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Mic } from "lucide-react";
+import {
+  Mic,
+  ArrowRight,
+  ChevronDown,
+  MessageSquareText,
+  Volume2,
+  Pin,
+  Phone,
+  Video,
+  Image as ImageIcon,
+  Camera,
+  Trash2,
+  MapPin,
+  UserPlus,
+  BellOff,
+  UserX,
+  ShieldAlert,
+  Type,
+  ArrowRightLeft,
+  Barcode,
+  CreditCard,
+  ReceiptText,
+  PiggyBank,
+  LogIn,
+  UserCheck,
+  FileText,
+  Sparkles,
+} from "lucide-react";
 import { ApplicationLogo } from "@/features/applications/application-logo";
 import type { Application, Task } from "@/types/content";
 import { OtherAppsModal } from "./other-apps-modal";
@@ -27,18 +54,55 @@ function taskHref(task: Task) {
   return `/tarefas/${task.slug}`;
 }
 
+function getTaskIcon(task: Task) {
+  const slug = task.slug.toLowerCase();
+  const title = task.title.toLowerCase();
+
+  if (slug.includes("enviar-mensagem") || title.includes("mensagem") || slug.includes("email") || title.includes("e-mail")) return MessageSquareText;
+  if (slug.includes("ouvir-audio") || title.includes("ouvir")) return Volume2;
+  if (slug.includes("enviar-audio") || slug.includes("gravar") || title.includes("áudio") || title.includes("audio")) return Mic;
+  if (slug.includes("fixar") || title.includes("fixar")) return Pin;
+  if (slug.includes("video") || title.includes("vídeo") || slug.includes("youtube")) return Video;
+  if (slug.includes("chamada") || slug.includes("ligacao") || slug.includes("ligação") || title.includes("ligação") || title.includes("ligar")) return Phone;
+  if (slug.includes("tirar-foto") || slug.includes("camera") || title.includes("câmera")) return Camera;
+  if (slug.includes("foto") || slug.includes("galeria") || slug.includes("imagem")) return ImageIcon;
+  if (slug.includes("apagar") || slug.includes("lixeira") || slug.includes("excluir")) return Trash2;
+  if (slug.includes("localizacao") || slug.includes("localização") || title.includes("localização") || slug.includes("maps") || slug.includes("uber")) return MapPin;
+  if (slug.includes("contato") || slug.includes("agenda") || title.includes("contato")) return UserPlus;
+  if (slug.includes("silenciar") || title.includes("silenciar")) return BellOff;
+  if (slug.includes("bloquear-contato") || slug.includes("bloquear-numero")) return UserX;
+  if (slug.includes("bloquear-cartao") || slug.includes("cartao") || slug.includes("cartão") || title.includes("cartão")) return CreditCard;
+  if (slug.includes("golpe") || slug.includes("seguranca") || title.includes("golpe")) return ShieldAlert;
+  if (slug.includes("letra") || slug.includes("fonte") || title.includes("letra")) return Type;
+  if (slug.includes("pix") || title.includes("pix")) return ArrowRightLeft;
+  if (slug.includes("boleto") || title.includes("boleto") || slug.includes("pagar-conta")) return Barcode;
+  if (slug.includes("extrato") || title.includes("extrato") || slug.includes("saldo") || title.includes("saldo") || slug.includes("comprovante") || title.includes("comprovante")) return ReceiptText;
+  if (slug.includes("guardar") || slug.includes("poupar") || title.includes("guardar")) return PiggyBank;
+  if (slug.includes("entrar") || slug.includes("login") || title.includes("entrar")) return LogIn;
+  if (slug.includes("prova-de-vida") || title.includes("prova de vida")) return UserCheck;
+  if (slug.includes("carteira") || slug.includes("beneficio") || slug.includes("documento")) return FileText;
+  return Sparkles;
+}
+
 function TaskCard({ task, modal = false }: { task: Task; modal?: boolean }) {
   const isPreparing = task.availability === "preparing" || task.status !== "published";
+  const TaskIcon = getTaskIcon(task);
+
   return (
     <Link href={taskHref(task)} className={`home-task-card${modal ? " home-task-modal-card" : ""}`}>
-      <span className="flex flex-col gap-0.5">
-        <strong>{task.title}</strong>
-        {isPreparing ? (
-          <small className="block text-base font-normal">Em preparação</small>
-        ) : null}
-      </span>
-      <span aria-hidden="true" className="home-card-arrow">
-        →
+      <div className="home-task-card-content">
+        <span className="home-task-card-icon" aria-hidden="true">
+          <TaskIcon className="size-6 sm:size-7 stroke-[2.2]" />
+        </span>
+        <div className="home-task-card-text">
+          <strong className="home-task-card-title">{task.title}</strong>
+          {isPreparing ? (
+            <small className="home-task-card-badge">Em preparação</small>
+          ) : null}
+        </div>
+      </div>
+      <span aria-hidden="true" className="home-card-arrow home-task-card-arrow">
+        <ArrowRight className="size-6 sm:size-7 stroke-[2.5]" />
       </span>
     </Link>
   );
@@ -49,21 +113,43 @@ function TaskGroup({
   tasks: groupTasks,
   modal = false,
   showHeading = true,
+  hasCategories = false,
 }: {
   label: string;
   tasks: Task[];
   modal?: boolean;
   showHeading?: boolean;
+  hasCategories?: boolean;
 }) {
+  const [expanded, setExpanded] = useState(false);
   if (groupTasks.length === 0) return null;
+
+  // Mostra no máximo 3 opções por grupo para manter a tela limpa e espaçosa para idosos
+  const shouldLimit = modal && hasCategories && groupTasks.length > 3;
+  const visibleTasks = shouldLimit && !expanded ? groupTasks.slice(0, 3) : groupTasks;
+
   return (
     <section className={`home-task-group${modal ? " home-task-modal-group" : ""}`} aria-label={showHeading ? label : undefined}>
       {showHeading && <h3>{label}</h3>}
       <div className="home-task-grid">
-        {groupTasks.map((task) => (
+        {visibleTasks.map((task) => (
           <TaskCard key={task.id} task={task} modal={modal} />
         ))}
       </div>
+      {shouldLimit && (
+        <button
+          type="button"
+          onClick={() => setExpanded((prev) => !prev)}
+          className="home-task-expand-button"
+          aria-expanded={expanded}
+        >
+          <span>{expanded ? "Mostrar menos" : `Ver mais tarefas (${groupTasks.length - 3})`}</span>
+          <ChevronDown
+            className={`size-5 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+            aria-hidden="true"
+          />
+        </button>
+      )}
     </section>
   );
 }
@@ -77,6 +163,7 @@ interface BankModalProps {
 function BankModal({ banks, onClose, onSelect }: BankModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const isBackdropClickRef = useRef(false);
 
   useEffect(() => {
     const modal = modalRef.current;
@@ -135,7 +222,16 @@ function BankModal({ banks, onClose, onSelect }: BankModalProps) {
       className="home-bank-modal-backdrop"
       role="presentation"
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
+        isBackdropClickRef.current = event.target === event.currentTarget;
+      }}
+      onTouchStart={(event) => {
+        isBackdropClickRef.current = event.target === event.currentTarget;
+      }}
+      onClick={(event) => {
+        if (isBackdropClickRef.current && event.target === event.currentTarget) {
+          onClose();
+        }
+        isBackdropClickRef.current = false;
       }}
     >
       <section role="dialog" aria-modal="true" aria-labelledby="bank-modal-title" className="home-bank-modal">
@@ -177,6 +273,7 @@ interface TaskModalProps {
 function TaskModal({ applicationName, tasks: modalTasks, onClose }: TaskModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const isBackdropClickRef = useRef(false);
   const hasCategoryGroups = useMemo(
     () => modalTasks.some((task) => Boolean(task.categoryGroup)),
     [modalTasks],
@@ -263,13 +360,23 @@ function TaskModal({ applicationName, tasks: modalTasks, onClose }: TaskModalPro
       className="home-bank-modal-backdrop"
       role="presentation"
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
+        isBackdropClickRef.current = event.target === event.currentTarget;
+      }}
+      onTouchStart={(event) => {
+        isBackdropClickRef.current = event.target === event.currentTarget;
+      }}
+      onClick={(event) => {
+        if (isBackdropClickRef.current && event.target === event.currentTarget) {
+          onClose();
+        }
+        isBackdropClickRef.current = false;
       }}
     >
       <section role="dialog" aria-modal="true" aria-labelledby="task-modal-title" className="home-bank-modal home-task-modal">
-        <header>
+        <header className="home-task-modal-header">
           <div>
             <h2 id="task-modal-title">Escolha uma tarefa</h2>
+            <p className="home-modal-subtitle">Escolha o que você quer aprender</p>
           </div>
           <button ref={closeRef} type="button" onClick={onClose} aria-label="Fechar lista de tarefas" className="home-modal-close">
             <svg aria-hidden="true" viewBox="0 0 24 24">
@@ -286,6 +393,7 @@ function TaskModal({ applicationName, tasks: modalTasks, onClose }: TaskModalPro
                 tasks={section.tasks}
                 modal
                 showHeading={section.showHeading}
+                hasCategories={hasCategoryGroups}
               />
             ))
           ) : (
