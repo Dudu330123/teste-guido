@@ -35,10 +35,6 @@ function TaskCard({ task, modal = false }: { task: Task; modal?: boolean }) {
         <strong>{task.title}</strong>
         {isPreparing ? (
           <small className="block text-base font-normal">Em preparação</small>
-        ) : task.stepCount ? (
-          <small className="block text-sm font-semibold text-emerald-800 dark:text-emerald-300">
-            {task.stepCount} passos simples
-          </small>
         ) : null}
       </span>
       <span aria-hidden="true" className="home-card-arrow">

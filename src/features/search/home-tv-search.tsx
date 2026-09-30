@@ -76,10 +76,7 @@ export function HomeTvSearch() {
                     </div>
                   </div>
 
-                  <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
-                    <span className="text-xs font-bold text-slate-500">
-                      {task.stepsCount} passos simples
-                    </span>
+                  <div className="mt-4 flex items-center justify-end border-t border-slate-100 pt-3">
                     <span className="rounded-xl bg-indigo-600 px-3 py-1 text-xs font-black text-white">
                       Ver guia →
                     </span>

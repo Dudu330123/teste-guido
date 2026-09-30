@@ -60,6 +60,7 @@ describe("navegação guiada por categorias da página inicial", () => {
     expect(screen.getByRole("dialog", { name: "Escolha uma tarefa" })).toBeVisible();
     expect(screen.getByRole("link", { name: /Enviar um áudio/ })).toHaveAttribute("href", "/tarefas/enviar-audio-whatsapp");
     expect(screen.queryByRole("button", { name: /Ver todas as tarefas/ })).not.toBeInTheDocument();
+    expect(screen.queryByText(/passos simples/i)).not.toBeInTheDocument();
     await user.keyboard("{Escape}");
     await waitFor(() => expect(screen.getByRole("heading", { name: /Escolha uma categoria/i })).toBeVisible());
   });
