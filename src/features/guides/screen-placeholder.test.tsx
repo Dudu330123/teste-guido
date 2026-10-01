@@ -32,7 +32,7 @@ describe("ilustração do passo", () => {
 
     expect(screen.getByRole("img", { name: publishedStep.imageAlt })).toBeVisible();
     expect(container.querySelector(".guide-evidence-viewport")).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: publishedStep.imageAlt })).toHaveClass("object-contain");
+    expect(screen.getByRole("img", { name: publishedStep.imageAlt })).toHaveClass("object-cover");
   });
 });
 

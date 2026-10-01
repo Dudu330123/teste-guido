@@ -104,4 +104,33 @@ export const otherApps: OtherApp[] = [
     ),
     tasks: otherAppsTasks.filter((t) => t.applicationId === "app-instagram"),
   },
+  {
+    id: "app-facebook",
+    name: "Facebook",
+    slug: "facebook",
+    description: "Amigos, família e comunidades.",
+    icon: (
+      <div className="flex size-12 items-center justify-center rounded-2xl bg-[#1877F2] shadow-md text-white">
+        <span className="mt-1 text-3xl font-black leading-none">f</span>
+      </div>
+    ),
+    tasks: otherAppsTasks.filter((t) => t.applicationId === "app-facebook"),
+  },
+  {
+    id: "app-play-store",
+    name: "Play Store",
+    slug: "play-store",
+    description: "Aplicativos, jogos e atualizações.",
+    icon: (
+      <div className="flex size-12 items-center justify-center rounded-2xl bg-white shadow-md border border-slate-200/60 p-1.5 dark:bg-white dark:border-transparent">
+        <svg viewBox="0 0 48 48" className="size-8">
+          <path fill="#34A853" d="M6.6 4.2 28.2 24 6.6 43.8C5.6 42.8 5 41.4 5 39.8V8.2c0-1.6.6-3 1.6-4z" />
+          <path fill="#4285F4" d="m6.6 4.2 25.2 14.5L28.2 24 6.6 4.2z" />
+          <path fill="#FBBC04" d="M6.6 43.8 31.8 29.3 28.2 24 6.6 43.8z" />
+          <path fill="#EA4335" d="m31.8 18.7 8.2 4.7c1.5.9 1.5 3 0 3.8l-8.2 4.7-3.6-7.9 3.6-5.3z" />
+        </svg>
+      </div>
+    ),
+    tasks: otherAppsTasks.filter((t) => t.applicationId === "app-play-store"),
+  },
 ];

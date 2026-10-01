@@ -1,4 +1,5 @@
 import { govBrScripts } from "@/data/gov-br-guides";
+import { getLocalGuideImages } from "@/data/local-guide-images";
 import { otherAppsScripts } from "@/data/other-apps-guides";
 import { whatsappScripts } from "@/data/whatsapp-guides";
 import type { GuideStep, OperatingSystem } from "@/types/content";
@@ -124,12 +125,13 @@ const scripts: Record<string, EditorialStep[]> = {
 
 /** Gera IDs editoriais estáveis; eles vinculam o print ao mesmo passo em novos deploys. */
 export function getAdminScriptSteps(slug: string, operatingSystem: OperatingSystem): GuideStep[] {
+  const localImages = getLocalGuideImages(slug);
   return (scripts[slug] ?? []).map((step, index) => ({
     ...step,
     id: `editorial-${slug}-${operatingSystem}-${index + 1}`,
     guideId: `editorial-${slug}-${operatingSystem}`,
     order: index + 1,
-    imagePath: "",
+    imagePath: localImages[index + 1] ?? "",
     audioPath: `/audio/guias/${slug}/step-${index + 1}.mp3`,
   }));
 }

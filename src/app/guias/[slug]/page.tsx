@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { getAdminScriptSteps } from "@/data/admin-guide-scripts";
+import { getLocalGuideImages } from "@/data/local-guide-images";
 import { applications, financialApplications } from "@/data/applications";
 import { getGuide, getStepsForGuide, tasks } from "@/data/guides";
 import { GuideViewer } from "@/features/guides/guide-viewer";
@@ -35,8 +36,10 @@ export default async function DynamicGuidePage({ params, searchParams }: Dynamic
     currentOs,
   );
   const enrichSteps = (steps: GuideStep[]) => {
+    const localImages = getLocalGuideImages(imageGuideSlug);
     return applyPublicGuideImages(steps, publicImages).map((step) => ({
       ...step,
+      imagePath: step.imagePath || localImages[step.order] || "",
       touchTarget: step.touchTarget ?? getGuideTouchTarget(slug, step.order, currentOs),
     }));
   };

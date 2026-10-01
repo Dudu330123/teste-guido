@@ -12,7 +12,8 @@
     "public": "bash scripts/public",
     "test": "vitest run",
     "test:watch": "vitest",
-    "capturar": "node scripts/capturar-guia.js"
+    "capturar": "node scripts/capturar-guia.js",
+    "importar-imagens": "node scripts/import-guide-images.mjs"
   },
   "engines": {
     "node": "22.x"

@@ -76,6 +76,30 @@ export const externalApplications: Application[] = [
     createdAt: baseDate,
     updatedAt: baseDate,
   },
+  {
+    id: "app-facebook",
+    name: "Facebook",
+    slug: "facebook",
+    description: "Amigos, família e comunidades.",
+    category: "Outros aplicativos",
+    logoPath: null,
+    searchTerms: ["facebook", "face", "fb", "amigos", "publicações", "grupos"],
+    status: "available",
+    createdAt: baseDate,
+    updatedAt: baseDate,
+  },
+  {
+    id: "app-play-store",
+    name: "Play Store",
+    slug: "play-store",
+    description: "Aplicativos, jogos e atualizações.",
+    category: "Outros aplicativos",
+    logoPath: null,
+    searchTerms: ["play store", "playstore", "baixar aplicativo", "instalar app", "jogos"],
+    status: "available",
+    createdAt: baseDate,
+    updatedAt: baseDate,
+  },
 ];
 
 export const otherAppsTasks: Task[] = [
@@ -1268,6 +1292,402 @@ export const otherAppsTasks: Task[] = [
     difficulty: "medium",
     safetyWarning: "Suas mensagens continuam salvas, apenas o celular para de apitar.",
     searchTerms: ["desativar notificacoes", "parar apito instagram", "silenciar avisos"],
+    availability: "available",
+    status: "published",
+    stepCount: 4,
+  },
+  // ══════════════════════════════════════════════════════════════════
+  // ── FACEBOOK (15 tarefas) ─────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════
+  {
+    id: "task-entrar-facebook",
+    applicationId: "app-facebook",
+    title: "Entrar no Facebook",
+    slug: "entrar-facebook",
+    description: "Abra o aplicativo e acesse sua conta com segurança.",
+    difficulty: "easy",
+    safetyWarning: "Digite sua senha somente no aplicativo ou site oficial do Facebook.",
+    searchTerms: ["entrar facebook", "login facebook", "abrir facebook", "acessar facebook"],
+    availability: "available",
+    status: "published",
+    stepCount: 4,
+  },
+  {
+    id: "task-pesquisar-amigo-facebook",
+    applicationId: "app-facebook",
+    title: "Pesquisar um amigo ou familiar",
+    slug: "pesquisar-amigo-facebook",
+    description: "Encontre pessoas conhecidas pelo nome ou pela foto do perfil.",
+    difficulty: "easy",
+    safetyWarning: "Confira a foto, cidade e amigos em comum antes de escolher um perfil.",
+    searchTerms: ["buscar amigo facebook", "pesquisar pessoa", "achar familiar", "procurar perfil"],
+    availability: "available",
+    status: "published",
+    stepCount: 3,
+  },
+  {
+    id: "task-adicionar-amigo-facebook",
+    applicationId: "app-facebook",
+    title: "Adicionar uma pessoa como amigo",
+    slug: "adicionar-amigo-facebook",
+    description: "Envie uma solicitação de amizade para alguém conhecido.",
+    difficulty: "easy",
+    safetyWarning: "Envie solicitações somente para pessoas que você conhece.",
+    searchTerms: ["adicionar amigo", "solicitacao amizade", "seguir pessoa facebook"],
+    availability: "available",
+    status: "published",
+    stepCount: 3,
+  },
+  {
+    id: "task-publicar-texto-facebook",
+    applicationId: "app-facebook",
+    title: "Publicar uma mensagem no perfil",
+    slug: "publicar-texto-facebook",
+    description: "Escreva uma mensagem para compartilhar com seus amigos.",
+    difficulty: "easy",
+    safetyWarning: "Lembre-se de que a publicação poderá ser vista pelas pessoas permitidas nas suas configurações.",
+    searchTerms: ["postar texto", "publicar mensagem", "escrever no facebook", "status facebook"],
+    availability: "available",
+    status: "published",
+    stepCount: 4,
+  },
+  {
+    id: "task-publicar-foto-facebook",
+    applicationId: "app-facebook",
+    title: "Publicar uma foto",
+    slug: "publicar-foto-facebook",
+    description: "Escolha uma foto da galeria e publique para seus amigos.",
+    difficulty: "easy",
+    safetyWarning: "Confira a foto e o público selecionado antes de publicar.",
+    searchTerms: ["postar foto", "publicar foto", "foto facebook", "mandar foto no facebook"],
+    availability: "available",
+    status: "published",
+    stepCount: 4,
+  },
+  {
+    id: "task-curtir-publicacao-facebook",
+    applicationId: "app-facebook",
+    title: "Curtir uma publicação",
+    slug: "curtir-publicacao-facebook",
+    description: "Reaja a uma foto, vídeo ou mensagem publicada por alguém.",
+    difficulty: "easy",
+    safetyWarning: "Confira o conteúdo antes de tocar no botão de reação.",
+    searchTerms: ["curtir facebook", "reagir publicacao", "like facebook", "coracao facebook"],
+    availability: "available",
+    status: "published",
+    stepCount: 3,
+  },
+  {
+    id: "task-comentar-publicacao-facebook",
+    applicationId: "app-facebook",
+    title: "Comentar em uma publicação",
+    slug: "comentar-publicacao-facebook",
+    description: "Escreva um comentário em uma foto ou publicação.",
+    difficulty: "easy",
+    safetyWarning: "Comentários em publicações podem ser vistos por outras pessoas.",
+    searchTerms: ["comentar facebook", "escrever comentario", "responder post"],
+    availability: "available",
+    status: "published",
+    stepCount: 3,
+  },
+  {
+    id: "task-compartilhar-publicacao-facebook",
+    applicationId: "app-facebook",
+    title: "Compartilhar uma publicação",
+    slug: "compartilhar-publicacao-facebook",
+    description: "Envie uma publicação para amigos ou compartilhe no seu perfil.",
+    difficulty: "easy",
+    safetyWarning: "Confira o destino e o público antes de compartilhar.",
+    searchTerms: ["compartilhar post", "mandar publicacao", "enviar facebook", "compartilhar com amigos"],
+    availability: "available",
+    status: "published",
+    stepCount: 4,
+  },
+  {
+    id: "task-assistir-stories-facebook",
+    applicationId: "app-facebook",
+    title: "Assistir aos Stories",
+    slug: "assistir-stories-facebook",
+    description: "Veja fotos e vídeos curtos publicados por amigos e páginas.",
+    difficulty: "easy",
+    safetyWarning: "Stories podem desaparecer depois de 24 horas.",
+    searchTerms: ["stories facebook", "ver historias", "bolinhas facebook", "assistir story"],
+    availability: "available",
+    status: "published",
+    stepCount: 3,
+  },
+  {
+    id: "task-enviar-mensagem-facebook",
+    applicationId: "app-facebook",
+    title: "Enviar mensagem pelo Messenger",
+    slug: "enviar-mensagem-facebook",
+    description: "Converse em particular com amigos pelo Facebook Messenger.",
+    difficulty: "easy",
+    safetyWarning: "Não envie senhas, códigos ou dados bancários em mensagens.",
+    searchTerms: ["mensagem facebook", "messenger", "conversar facebook", "chat facebook"],
+    availability: "available",
+    status: "published",
+    stepCount: 4,
+  },
+  {
+    id: "task-fazer-chamada-video-facebook",
+    applicationId: "app-facebook",
+    title: "Fazer chamada de vídeo",
+    slug: "fazer-chamada-video-facebook",
+    description: "Converse por vídeo com uma pessoa pelo Messenger.",
+    difficulty: "easy",
+    safetyWarning: "Use a chamada somente com pessoas conhecidas e mantenha a câmera em local seguro.",
+    searchTerms: ["videochamada facebook", "ligar messenger", "chamada de video"],
+    availability: "available",
+    status: "published",
+    stepCount: 4,
+  },
+  {
+    id: "task-criar-album-facebook",
+    applicationId: "app-facebook",
+    title: "Criar um álbum de fotos",
+    slug: "criar-album-facebook",
+    description: "Organize fotos de uma viagem ou encontro em um álbum.",
+    difficulty: "medium",
+    safetyWarning: "Escolha com cuidado quem poderá ver o álbum.",
+    searchTerms: ["criar album facebook", "album de fotos", "organizar fotos facebook"],
+    availability: "available",
+    status: "published",
+    stepCount: 4,
+  },
+  {
+    id: "task-salvar-publicacao-facebook",
+    applicationId: "app-facebook",
+    title: "Salvar uma publicação para ver depois",
+    slug: "salvar-publicacao-facebook",
+    description: "Guarde receitas, notícias ou dicas em uma área particular.",
+    difficulty: "easy",
+    safetyWarning: "Salvar uma publicação não faz uma cópia dela e não avisa o autor.",
+    searchTerms: ["salvar post facebook", "guardar publicacao", "ver depois facebook"],
+    availability: "available",
+    status: "published",
+    stepCount: 3,
+  },
+  {
+    id: "task-ajustar-privacidade-facebook",
+    applicationId: "app-facebook",
+    title: "Ajustar a privacidade do perfil",
+    slug: "ajustar-privacidade-facebook",
+    description: "Escolha quem pode ver suas publicações e encontrar seu perfil.",
+    difficulty: "medium",
+    safetyWarning: "Revise o público antes de publicar informações pessoais ou fotos da família.",
+    searchTerms: ["privacidade facebook", "fechar perfil", "quem pode ver facebook", "seguranca facebook"],
+    availability: "available",
+    status: "published",
+    stepCount: 4,
+  },
+  {
+    id: "task-bloquear-denunciar-facebook",
+    applicationId: "app-facebook",
+    title: "Bloquear ou denunciar um perfil",
+    slug: "bloquear-denunciar-facebook",
+    description: "Impeça contato de perfis suspeitos e denuncie conteúdos abusivos.",
+    difficulty: "easy",
+    safetyWarning: "Não responda a perfis que pedem dinheiro, códigos ou dados pessoais.",
+    searchTerms: ["bloquear facebook", "denunciar perfil", "perfil falso", "golpe facebook"],
+    availability: "available",
+    status: "published",
+    stepCount: 4,
+  },
+  // ══════════════════════════════════════════════════════════════════
+  // ── PLAY STORE (15 tarefas) ───────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════
+  {
+    id: "task-abrir-play-store",
+    applicationId: "app-play-store",
+    title: "Abrir a Play Store",
+    slug: "abrir-play-store",
+    description: "Encontre a loja oficial de aplicativos do celular Android.",
+    difficulty: "easy",
+    safetyWarning: "Use a Play Store oficial e mantenha o nome do aplicativo visível antes de tocar.",
+    searchTerms: ["abrir play store", "loja de aplicativos", "play store android"],
+    availability: "available",
+    status: "published",
+    stepCount: 3,
+  },
+  {
+    id: "task-pesquisar-aplicativo-play-store",
+    applicationId: "app-play-store",
+    title: "Pesquisar um aplicativo",
+    slug: "pesquisar-aplicativo-play-store",
+    description: "Procure um aplicativo pelo nome dentro da loja oficial.",
+    difficulty: "easy",
+    safetyWarning: "Confira o nome do desenvolvedor e a quantidade de downloads antes de instalar.",
+    searchTerms: ["pesquisar aplicativo", "buscar app", "procurar programa play store"],
+    availability: "available",
+    status: "published",
+    stepCount: 4,
+  },
+  {
+    id: "task-instalar-aplicativo-gratis-play-store",
+    applicationId: "app-play-store",
+    title: "Instalar aplicativo gratuito",
+    slug: "instalar-aplicativo-gratis-play-store",
+    description: "Baixe um aplicativo gratuito no celular Android.",
+    difficulty: "easy",
+    safetyWarning: "Verifique se o botão diz 'Instalar' e não apresenta uma compra inesperada.",
+    searchTerms: ["instalar app", "baixar aplicativo gratis", "download play store"],
+    availability: "available",
+    status: "published",
+    stepCount: 4,
+  },
+  {
+    id: "task-atualizar-aplicativo-play-store",
+    applicationId: "app-play-store",
+    title: "Atualizar um aplicativo",
+    slug: "atualizar-aplicativo-play-store",
+    description: "Instale a versão mais recente de um aplicativo já instalado.",
+    difficulty: "easy",
+    safetyWarning: "Faça atualizações de preferência conectado ao Wi-Fi.",
+    searchTerms: ["atualizar aplicativo", "nova versao app", "update play store"],
+    availability: "available",
+    status: "published",
+    stepCount: 3,
+  },
+  {
+    id: "task-atualizar-todos-play-store",
+    applicationId: "app-play-store",
+    title: "Atualizar todos os aplicativos",
+    slug: "atualizar-todos-play-store",
+    description: "Veja os aplicativos com atualização pendente e atualize vários de uma vez.",
+    difficulty: "easy",
+    safetyWarning: "Atualizar muitos aplicativos pode consumir dados móveis e bateria.",
+    searchTerms: ["atualizar todos apps", "atualizacao pendente", "meus aplicativos play store"],
+    availability: "available",
+    status: "published",
+    stepCount: 3,
+  },
+  {
+    id: "task-desinstalar-aplicativo-play-store",
+    applicationId: "app-play-store",
+    title: "Desinstalar um aplicativo",
+    slug: "desinstalar-aplicativo-play-store",
+    description: "Remova um aplicativo que não usa mais para liberar espaço.",
+    difficulty: "easy",
+    safetyWarning: "Confira o nome do aplicativo antes de confirmar a desinstalação.",
+    searchTerms: ["desinstalar app", "apagar aplicativo", "remover programa android"],
+    availability: "available",
+    status: "published",
+    stepCount: 4,
+  },
+  {
+    id: "task-ver-aplicativos-instalados-play-store",
+    applicationId: "app-play-store",
+    title: "Ver aplicativos instalados",
+    slug: "ver-aplicativos-instalados-play-store",
+    description: "Consulte a lista de aplicativos instalados e as atualizações disponíveis.",
+    difficulty: "easy",
+    safetyWarning: "A lista pode mostrar aplicativos instalados por outros usuários do aparelho.",
+    searchTerms: ["meus aplicativos", "apps instalados", "gerenciar aplicativos play store"],
+    availability: "available",
+    status: "published",
+    stepCount: 3,
+  },
+  {
+    id: "task-ativar-atualizacao-automatica-play-store",
+    applicationId: "app-play-store",
+    title: "Ativar atualização automática",
+    slug: "ativar-atualizacao-automatica-play-store",
+    description: "Configure a Play Store para atualizar aplicativos automaticamente.",
+    difficulty: "medium",
+    safetyWarning: "Prefira a opção de atualizar somente pelo Wi-Fi para economizar dados móveis.",
+    searchTerms: ["atualizacao automatica", "atualizar sozinho", "wifi play store"],
+    availability: "available",
+    status: "published",
+    stepCount: 4,
+  },
+  {
+    id: "task-baixar-jogo-play-store",
+    applicationId: "app-play-store",
+    title: "Baixar um jogo gratuito",
+    slug: "baixar-jogo-play-store",
+    description: "Encontre e instale um jogo gratuito no Android.",
+    difficulty: "easy",
+    safetyWarning: "Leia se o jogo contém anúncios ou compras antes de instalar.",
+    searchTerms: ["baixar jogo", "jogo gratis", "instalar jogo android"],
+    availability: "available",
+    status: "published",
+    stepCount: 4,
+  },
+  {
+    id: "task-conferir-avaliacoes-play-store",
+    applicationId: "app-play-store",
+    title: "Conferir nota e avaliações",
+    slug: "conferir-avaliacoes-play-store",
+    description: "Leia as avaliações de outras pessoas antes de instalar um aplicativo.",
+    difficulty: "easy",
+    safetyWarning: "Não confie somente na nota; leia comentários recentes e veja o desenvolvedor.",
+    searchTerms: ["avaliacao aplicativo", "nota app", "comentarios play store"],
+    availability: "available",
+    status: "published",
+    stepCount: 3,
+  },
+  {
+    id: "task-ler-seguranca-aplicativo-play-store",
+    applicationId: "app-play-store",
+    title: "Ler informações de segurança do aplicativo",
+    slug: "ler-seguranca-aplicativo-play-store",
+    description: "Confira dados, permissões e informações do aplicativo antes do download.",
+    difficulty: "medium",
+    safetyWarning: "Desconfie de aplicativos que pedem permissões sem relação com sua função.",
+    searchTerms: ["seguranca app", "permissoes aplicativo", "dados coletados play store"],
+    availability: "available",
+    status: "published",
+    stepCount: 3,
+  },
+  {
+    id: "task-ativar-controle-parental-play-store",
+    applicationId: "app-play-store",
+    title: "Ativar controle parental",
+    slug: "ativar-controle-parental-play-store",
+    description: "Restrinja aplicativos, jogos e filmes por faixa etária.",
+    difficulty: "medium",
+    safetyWarning: "Crie um PIN que somente o responsável conheça.",
+    searchTerms: ["controle parental", "bloquear jogos", "restricao idade play store"],
+    availability: "available",
+    status: "published",
+    stepCount: 4,
+  },
+  {
+    id: "task-ver-espaco-aplicativo-play-store",
+    applicationId: "app-play-store",
+    title: "Ver o tamanho de um aplicativo",
+    slug: "ver-espaco-aplicativo-play-store",
+    description: "Confira quanto espaço um aplicativo ocupa antes de instalá-lo.",
+    difficulty: "easy",
+    safetyWarning: "Mantenha espaço livre para o Android funcionar bem.",
+    searchTerms: ["tamanho aplicativo", "espaco app", "quanto pesa aplicativo"],
+    availability: "available",
+    status: "published",
+    stepCount: 3,
+  },
+  {
+    id: "task-compartilhar-link-aplicativo-play-store",
+    applicationId: "app-play-store",
+    title: "Compartilhar o link de um aplicativo",
+    slug: "compartilhar-link-aplicativo-play-store",
+    description: "Envie para alguém o link oficial de um aplicativo da Play Store.",
+    difficulty: "easy",
+    safetyWarning: "Compartilhe o link da Play Store, não arquivos APK recebidos de desconhecidos.",
+    searchTerms: ["compartilhar app", "enviar link play store", "mandar aplicativo"],
+    availability: "available",
+    status: "published",
+    stepCount: 3,
+  },
+  {
+    id: "task-denunciar-aplicativo-play-store",
+    applicationId: "app-play-store",
+    title: "Denunciar aplicativo inadequado",
+    slug: "denunciar-aplicativo-play-store",
+    description: "Informe à Play Store quando um aplicativo parecer falso, perigoso ou inadequado.",
+    difficulty: "medium",
+    safetyWarning: "Não instale um aplicativo suspeito apenas para conseguir denunciá-lo.",
+    searchTerms: ["denunciar app", "aplicativo falso", "app perigoso", "reclamar play store"],
     availability: "available",
     status: "published",
     stepCount: 4,
@@ -3110,6 +3530,633 @@ export const otherAppsScripts: Record<string, EditorialStep[]> = {
       title: "Descanse sem apitos",
       instruction: "O celular não fará nenhum barulho nem mostrará avisos enquanto o descanso estiver ativado.",
       imageAlt: "Tela de notificações pausadas em silêncio.",
+    },
+  ],
+
+  // ══════════════════════════════════════════════════════════════════
+  // ── FACEBOOK (15 roteiros) ────────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════
+  "entrar-facebook": [
+    {
+      title: "Abra o aplicativo oficial",
+      instruction: "Toque no ícone azul do Facebook para abrir o aplicativo.",
+      imageAlt: "Tela inicial do celular com o aplicativo Facebook destacado.",
+    },
+    {
+      title: "Digite seu telefone ou e-mail",
+      instruction: "Na tela de entrada, digite o telefone ou endereço de e-mail ligado à sua conta.",
+      imageAlt: "Tela de login do Facebook com campo de identificação.",
+    },
+    {
+      title: "Digite sua senha",
+      instruction: "Digite a senha somente no aplicativo oficial e toque em 'Entrar'.",
+      imageAlt: "Tela de senha do Facebook com o campo protegido.",
+      warning: "Nunca informe sua senha em links recebidos por mensagem.",
+    },
+    {
+      title: "Confirme a segurança, se aparecer",
+      instruction: "Se o Facebook pedir um código ou confirmação de identidade, siga a tela oficial para concluir o acesso.",
+      imageAlt: "Tela de confirmação de segurança do Facebook.",
+    },
+  ],
+
+  "pesquisar-amigo-facebook": [
+    {
+      title: "Toque na lupa",
+      instruction: "Na tela inicial do Facebook, toque no ícone de lupa para pesquisar.",
+      imageAlt: "Barra superior do Facebook com a lupa destacada.",
+    },
+    {
+      title: "Digite o nome da pessoa",
+      instruction: "Digite o nome completo do amigo ou familiar na barra de pesquisa.",
+      imageAlt: "Campo de pesquisa do Facebook com um nome digitado.",
+    },
+    {
+      title: "Confira e abra o perfil correto",
+      instruction: "Compare foto, cidade e amigos em comum antes de tocar no perfil encontrado.",
+      imageAlt: "Resultados de pesquisa com perfis e fotos de identificação.",
+    },
+  ],
+
+  "adicionar-amigo-facebook": [
+    {
+      title: "Abra o perfil da pessoa",
+      instruction: "Pesquise e entre no perfil do amigo ou familiar que você conhece.",
+      imageAlt: "Perfil do Facebook aberto.",
+    },
+    {
+      title: "Toque em 'Adicionar aos amigos'",
+      instruction: "Toque no botão 'Adicionar aos amigos' abaixo do nome da pessoa.",
+      imageAlt: "Botão Adicionar aos amigos destacado no perfil.",
+    },
+    {
+      title: "Confira a solicitação enviada",
+      instruction: "O botão mudará para 'Solicitação enviada'. Aguarde a pessoa aceitar.",
+      imageAlt: "Perfil mostrando a solicitação de amizade enviada.",
+    },
+  ],
+
+  "publicar-texto-facebook": [
+    {
+      title: "Toque em 'No que você está pensando?'",
+      instruction: "Na tela inicial, toque na caixa com a pergunta 'No que você está pensando?'.",
+      imageAlt: "Tela inicial do Facebook com a caixa de nova publicação destacada.",
+    },
+    {
+      title: "Escreva sua mensagem",
+      instruction: "Digite com calma o texto que deseja compartilhar.",
+      imageAlt: "Tela de criação de publicação com texto digitado.",
+    },
+    {
+      title: "Confira o público",
+      instruction: "Toque na opção de público, como 'Amigos', e escolha quem poderá ver a publicação.",
+      imageAlt: "Seletor de público da publicação.",
+    },
+    {
+      title: "Toque em 'Publicar'",
+      instruction: "Confira o texto e toque no botão 'Publicar'.",
+      imageAlt: "Botão Publicar destacado na tela de criação.",
+    },
+  ],
+
+  "publicar-foto-facebook": [
+    {
+      title: "Abra uma nova publicação",
+      instruction: "Na tela inicial, toque em 'Foto/vídeo' ou na caixa 'No que você está pensando?'.",
+      imageAlt: "Opção Foto ou vídeo destacada na tela inicial.",
+    },
+    {
+      title: "Escolha a foto da galeria",
+      instruction: "Toque na foto que deseja publicar e depois em 'Avançar', se aparecer.",
+      imageAlt: "Galeria do celular com uma foto selecionada.",
+    },
+    {
+      title: "Escreva uma legenda",
+      instruction: "Se quiser, escreva uma mensagem contando sobre a foto.",
+      imageAlt: "Campo de legenda preenchido na publicação.",
+    },
+    {
+      title: "Confira o público e publique",
+      instruction: "Escolha quem poderá ver a foto e toque em 'Publicar'.",
+      imageAlt: "Prévia da foto com público e botão Publicar.",
+    },
+  ],
+
+  "curtir-publicacao-facebook": [
+    {
+      title: "Encontre a publicação",
+      instruction: "Role o feed até encontrar a foto, vídeo ou mensagem que deseja reagir.",
+      imageAlt: "Feed do Facebook com uma publicação em destaque.",
+    },
+    {
+      title: "Toque em 'Curtir'",
+      instruction: "Toque no botão com o desenho de polegar abaixo da publicação.",
+      imageAlt: "Botão Curtir destacado abaixo de uma publicação.",
+    },
+    {
+      title: "Escolha outra reação, se quiser",
+      instruction: "Pressione o botão Curtir para escolher uma reação diferente, como coração ou risada.",
+      imageAlt: "Menu de reações do Facebook.",
+    },
+  ],
+
+  "comentar-publicacao-facebook": [
+    {
+      title: "Toque em 'Comentar'",
+      instruction: "Abaixo da publicação, toque no botão com desenho de balão de conversa.",
+      imageAlt: "Botão Comentar destacado abaixo da publicação.",
+    },
+    {
+      title: "Digite o comentário",
+      instruction: "Toque no campo de comentário e escreva sua mensagem.",
+      imageAlt: "Campo de comentário do Facebook com teclado aberto.",
+    },
+    {
+      title: "Envie o comentário",
+      instruction: "Toque na seta ou no botão de envio do teclado para publicar o comentário.",
+      imageAlt: "Comentário publicado abaixo da foto.",
+    },
+  ],
+
+  "compartilhar-publicacao-facebook": [
+    {
+      title: "Abra o menu da publicação",
+      instruction: "Encontre a publicação e toque em 'Compartilhar'.",
+      imageAlt: "Botão Compartilhar destacado abaixo de uma publicação.",
+    },
+    {
+      title: "Escolha onde compartilhar",
+      instruction: "Escolha 'Compartilhar agora', 'Compartilhar no seu perfil' ou enviar para alguém.",
+      imageAlt: "Menu de opções de compartilhamento do Facebook.",
+    },
+    {
+      title: "Escreva uma mensagem, se desejar",
+      instruction: "Adicione um comentário próprio antes da publicação compartilhada, se quiser.",
+      imageAlt: "Tela de compartilhamento com campo de comentário.",
+    },
+    {
+      title: "Confirme o compartilhamento",
+      instruction: "Confira o público e toque em 'Publicar' ou 'Enviar'.",
+      imageAlt: "Tela de confirmação do compartilhamento.",
+    },
+  ],
+
+  "assistir-stories-facebook": [
+    {
+      title: "Veja os círculos no topo",
+      instruction: "Na tela inicial, observe os círculos com fotos dos amigos na área de Stories.",
+      imageAlt: "Fila de Stories no topo do Facebook.",
+    },
+    {
+      title: "Toque em um Story",
+      instruction: "Toque no círculo de um amigo para abrir a foto ou vídeo.",
+      imageAlt: "Story do Facebook aberto em tela cheia.",
+    },
+    {
+      title: "Avance ou saia",
+      instruction: "Toque no lado direito para avançar, no lado esquerdo para voltar ou deslize para baixo para sair.",
+      imageAlt: "Story avançando para a próxima publicação.",
+    },
+  ],
+
+  "enviar-mensagem-facebook": [
+    {
+      title: "Abra o Messenger",
+      instruction: "No Facebook, toque no ícone de mensagens ou abra o aplicativo Messenger.",
+      imageAlt: "Ícone de mensagens do Facebook destacado.",
+    },
+    {
+      title: "Escolha a conversa",
+      instruction: "Toque no nome do amigo ou use a pesquisa para encontrar a pessoa.",
+      imageAlt: "Lista de conversas do Messenger.",
+    },
+    {
+      title: "Digite a mensagem",
+      instruction: "Toque no campo de texto, escreva a mensagem e confira o destinatário.",
+      imageAlt: "Conversa do Messenger com campo de texto preenchido.",
+    },
+    {
+      title: "Toque em enviar",
+      instruction: "Toque na seta ou no botão de envio para mandar a mensagem.",
+      imageAlt: "Botão de envio do Messenger em destaque.",
+    },
+  ],
+
+  "fazer-chamada-video-facebook": [
+    {
+      title: "Abra a conversa",
+      instruction: "No Messenger, entre na conversa da pessoa que você deseja chamar.",
+      imageAlt: "Conversa do Messenger aberta.",
+    },
+    {
+      title: "Toque na filmadora",
+      instruction: "No topo da conversa, toque no ícone de câmera ou filmadora.",
+      imageAlt: "Ícone de chamada de vídeo no topo do Messenger.",
+    },
+    {
+      title: "Permita câmera e microfone",
+      instruction: "Se o celular perguntar, permita o uso da câmera e do microfone durante a chamada.",
+      imageAlt: "Solicitação de permissões para câmera e microfone.",
+    },
+    {
+      title: "Encerre a chamada",
+      instruction: "Quando terminar, toque no botão vermelho para desligar.",
+      imageAlt: "Chamada de vídeo com botão vermelho de encerramento.",
+    },
+  ],
+
+  "criar-album-facebook": [
+    {
+      title: "Abra seu perfil",
+      instruction: "Toque na sua foto de perfil e procure a área de fotos.",
+      imageAlt: "Perfil do Facebook com a área Fotos destacada.",
+    },
+    {
+      title: "Escolha criar álbum",
+      instruction: "Toque em 'Álbuns' e depois em 'Criar álbum'.",
+      imageAlt: "Área de fotos com a opção Criar álbum.",
+    },
+    {
+      title: "Dê um nome e adicione fotos",
+      instruction: "Digite o nome do álbum e selecione as fotos da galeria.",
+      imageAlt: "Tela de criação de álbum com nome e fotos selecionadas.",
+    },
+    {
+      title: "Escolha o público e salve",
+      instruction: "Escolha quem poderá ver o álbum e toque em 'Publicar' ou 'Salvar'.",
+      imageAlt: "Álbum criado com seletor de público.",
+    },
+  ],
+
+  "salvar-publicacao-facebook": [
+    {
+      title: "Abra o menu da publicação",
+      instruction: "Na publicação que deseja guardar, toque nos três pontinhos.",
+      imageAlt: "Menu de uma publicação do Facebook.",
+    },
+    {
+      title: "Toque em 'Salvar publicação'",
+      instruction: "Escolha 'Salvar publicação' ou uma opção com nome parecido.",
+      imageAlt: "Opção Salvar publicação destacada.",
+    },
+    {
+      title: "Encontre seus itens salvos",
+      instruction: "No menu do perfil, abra 'Itens salvos' para rever a publicação.",
+      imageAlt: "Área Itens salvos do Facebook.",
+    },
+  ],
+
+  "ajustar-privacidade-facebook": [
+    {
+      title: "Abra o menu do perfil",
+      instruction: "Toque na sua foto, nas três barrinhas ou na engrenagem de configurações.",
+      imageAlt: "Menu do Facebook com configurações destacado.",
+    },
+    {
+      title: "Entre em Configurações e privacidade",
+      instruction: "Toque em 'Configurações e privacidade' e depois em 'Configurações'.",
+      imageAlt: "Menu de Configurações e privacidade do Facebook.",
+    },
+    {
+      title: "Abra a verificação de privacidade",
+      instruction: "Procure 'Verificação de privacidade' ou 'Público das publicações'.",
+      imageAlt: "Área de privacidade com opções de público.",
+    },
+    {
+      title: "Escolha quem pode ver",
+      instruction: "Selecione Amigos ou outra opção desejada e revise antes de sair.",
+      imageAlt: "Seletor de público das publicações do Facebook.",
+    },
+  ],
+
+  "bloquear-denunciar-facebook": [
+    {
+      title: "Abra o perfil suspeito",
+      instruction: "Entre no perfil ou na publicação que deseja bloquear ou denunciar.",
+      imageAlt: "Perfil suspeito do Facebook aberto.",
+    },
+    {
+      title: "Toque nos três pontinhos",
+      instruction: "No perfil ou na publicação, toque nos três pontinhos para abrir as opções.",
+      imageAlt: "Menu de opções do Facebook com três pontinhos.",
+    },
+    {
+      title: "Escolha bloquear ou denunciar",
+      instruction: "Toque em 'Bloquear' ou 'Encontrar suporte ou denunciar' e escolha o motivo.",
+      imageAlt: "Opções Bloquear e Denunciar destacadas.",
+    },
+    {
+      title: "Confirme a ação",
+      instruction: "Leia a confirmação e toque em 'Bloquear' ou 'Enviar denúncia' somente se estiver correto.",
+      imageAlt: "Tela de confirmação de bloqueio ou denúncia.",
+    },
+  ],
+
+  // ══════════════════════════════════════════════════════════════════
+  // ── PLAY STORE (15 roteiros) ──────────────────────────────────────
+  // ══════════════════════════════════════════════════════════════════
+  "abrir-play-store": [
+    {
+      title: "Encontre a Play Store",
+      instruction: "Procure o ícone de um triângulo colorido chamado 'Play Store' e toque nele.",
+      imageAlt: "Tela inicial do Android com o ícone da Play Store destacado.",
+    },
+    {
+      title: "Confira a loja oficial",
+      instruction: "Veja se a tela mostra o nome Play Store e a conta Google correta no canto superior.",
+      imageAlt: "Tela inicial da Play Store com a conta Google visível.",
+    },
+    {
+      title: "Veja a tela inicial",
+      instruction: "Na tela inicial, você encontrará aplicativos, jogos e a barra de pesquisa.",
+      imageAlt: "Página inicial da Play Store com categorias e barra de pesquisa.",
+    },
+  ],
+
+  "pesquisar-aplicativo-play-store": [
+    {
+      title: "Toque na barra de pesquisa",
+      instruction: "No topo da Play Store, toque em 'Pesquisar apps e jogos'.",
+      imageAlt: "Barra de pesquisa da Play Store destacada.",
+    },
+    {
+      title: "Digite o nome do aplicativo",
+      instruction: "Escreva o nome do aplicativo que deseja encontrar.",
+      imageAlt: "Barra de pesquisa com nome de aplicativo digitado.",
+    },
+    {
+      title: "Veja os resultados",
+      instruction: "Leia os nomes e os ícones dos resultados para localizar o aplicativo correto.",
+      imageAlt: "Lista de resultados da Play Store.",
+    },
+    {
+      title: "Abra o aplicativo correto",
+      instruction: "Confira o desenvolvedor e toque no resultado correspondente.",
+      imageAlt: "Página de detalhes de um aplicativo na Play Store.",
+    },
+  ],
+
+  "instalar-aplicativo-gratis-play-store": [
+    {
+      title: "Abra a página do aplicativo",
+      instruction: "Pesquise o aplicativo e toque no resultado correto.",
+      imageAlt: "Página do aplicativo com nome e ícone visíveis.",
+    },
+    {
+      title: "Confira se é gratuito",
+      instruction: "Veja se o botão mostra 'Instalar' e se não aparece um preço ou uma cobrança.",
+      imageAlt: "Página de aplicativo gratuito com botão Instalar.",
+    },
+    {
+      title: "Toque em 'Instalar'",
+      instruction: "Toque no botão 'Instalar' e aguarde o download terminar.",
+      imageAlt: "Download do aplicativo em andamento na Play Store.",
+    },
+    {
+      title: "Abra o aplicativo",
+      instruction: "Quando aparecer o botão 'Abrir', toque nele ou procure o novo ícone na tela do celular.",
+      imageAlt: "Aplicativo instalado com botão Abrir.",
+    },
+  ],
+
+  "atualizar-aplicativo-play-store": [
+    {
+      title: "Abra a página do aplicativo",
+      instruction: "Pesquise o aplicativo na Play Store e toque no resultado correto.",
+      imageAlt: "Página do aplicativo na Play Store.",
+    },
+    {
+      title: "Toque em 'Atualizar'",
+      instruction: "Se aparecer o botão 'Atualizar', toque nele e aguarde o download.",
+      imageAlt: "Botão Atualizar destacado na Play Store.",
+    },
+    {
+      title: "Confira a versão atualizada",
+      instruction: "Quando aparecer 'Abrir', o aplicativo estará atualizado.",
+      imageAlt: "Aplicativo atualizado com botão Abrir.",
+    },
+  ],
+
+  "atualizar-todos-play-store": [
+    {
+      title: "Abra o menu da conta",
+      instruction: "Na Play Store, toque na sua foto ou inicial no canto superior direito.",
+      imageAlt: "Foto de perfil da conta Google na Play Store.",
+    },
+    {
+      title: "Entre em 'Gerenciar apps e dispositivo'",
+      instruction: "Toque em 'Gerenciar apps e dispositivo' e procure as atualizações disponíveis.",
+      imageAlt: "Menu da Play Store com Gerenciar apps e dispositivo destacado.",
+    },
+    {
+      title: "Toque em 'Atualizar tudo'",
+      instruction: "Se estiver conectado ao Wi-Fi ou desejar usar seus dados, toque em 'Atualizar tudo'.",
+      imageAlt: "Lista de atualizações com botão Atualizar tudo.",
+    },
+  ],
+
+  "desinstalar-aplicativo-play-store": [
+    {
+      title: "Abra o menu da conta",
+      instruction: "Toque na sua foto ou inicial no canto superior direito da Play Store.",
+      imageAlt: "Menu da conta Google na Play Store.",
+    },
+    {
+      title: "Abra 'Gerenciar apps e dispositivo'",
+      instruction: "Toque em 'Gerenciar apps e dispositivo' e depois em 'Gerenciar'.",
+      imageAlt: "Área de gerenciamento de aplicativos instalada.",
+    },
+    {
+      title: "Escolha o aplicativo",
+      instruction: "Toque no aplicativo que deseja remover e confira o nome e o ícone.",
+      imageAlt: "Lista de aplicativos instalados com um app selecionado.",
+    },
+    {
+      title: "Toque em desinstalar",
+      instruction: "Toque no ícone de lixeira ou em 'Desinstalar' e confirme somente se estiver correto.",
+      imageAlt: "Confirmação de desinstalação do aplicativo.",
+    },
+  ],
+
+  "ver-aplicativos-instalados-play-store": [
+    {
+      title: "Abra o menu da conta",
+      instruction: "Na Play Store, toque na sua foto ou inicial.",
+      imageAlt: "Perfil da conta Google destacado na Play Store.",
+    },
+    {
+      title: "Toque em 'Gerenciar apps e dispositivo'",
+      instruction: "Abra a área que mostra o espaço e os aplicativos instalados.",
+      imageAlt: "Menu Gerenciar apps e dispositivo.",
+    },
+    {
+      title: "Abra a aba 'Gerenciar'",
+      instruction: "Confira a lista de aplicativos instalados e toque em um deles para ver detalhes.",
+      imageAlt: "Lista de aplicativos instalados na Play Store.",
+    },
+  ],
+
+  "ativar-atualizacao-automatica-play-store": [
+    {
+      title: "Abra as configurações da Play Store",
+      instruction: "Toque na sua foto, abra 'Configurações' e entre em 'Preferências de rede'.",
+      imageAlt: "Configurações da Play Store com Preferências de rede.",
+    },
+    {
+      title: "Toque em atualização automática",
+      instruction: "Escolha 'Atualizar apps automaticamente'.",
+      imageAlt: "Opção de atualização automática na Play Store.",
+    },
+    {
+      title: "Escolha a rede",
+      instruction: "Marque 'Somente por Wi-Fi' para economizar seu pacote de internet.",
+      imageAlt: "Opções de rede para atualização automática.",
+    },
+    {
+      title: "Confirme a preferência",
+      instruction: "Toque em 'Concluído' ou feche a tela. A Play Store usará essa preferência nas próximas atualizações.",
+      imageAlt: "Preferência de atualização automática salva.",
+    },
+  ],
+
+  "baixar-jogo-play-store": [
+    {
+      title: "Pesquise o jogo",
+      instruction: "Toque na barra de pesquisa e digite o nome do jogo desejado.",
+      imageAlt: "Pesquisa de jogo na Play Store.",
+    },
+    {
+      title: "Confira preço e informações",
+      instruction: "Veja se o jogo é gratuito e leia se existem anúncios ou compras dentro do aplicativo.",
+      imageAlt: "Página de jogo com informações de preço e compras.",
+    },
+    {
+      title: "Toque em 'Instalar'",
+      instruction: "Se estiver tudo certo, toque em 'Instalar' e aguarde o download.",
+      imageAlt: "Instalação de jogo em andamento.",
+    },
+    {
+      title: "Abra o jogo",
+      instruction: "Quando aparecer 'Abrir', toque no botão para iniciar o jogo.",
+      imageAlt: "Jogo instalado com botão Abrir.",
+    },
+  ],
+
+  "conferir-avaliacoes-play-store": [
+    {
+      title: "Abra a página do aplicativo",
+      instruction: "Pesquise o app e toque no resultado para abrir os detalhes.",
+      imageAlt: "Página de detalhes de um aplicativo.",
+    },
+    {
+      title: "Veja a nota em estrelas",
+      instruction: "Observe a nota média e a quantidade de avaliações recebidas.",
+      imageAlt: "Nota média e estrelas do aplicativo.",
+    },
+    {
+      title: "Leia avaliações recentes",
+      instruction: "Role até as avaliações e leia comentários recentes antes de decidir instalar.",
+      imageAlt: "Comentários de usuários na página do aplicativo.",
+    },
+  ],
+
+  "ler-seguranca-aplicativo-play-store": [
+    {
+      title: "Abra a seção de informações",
+      instruction: "Na página do app, role a tela e procure 'Segurança dos dados' ou 'Sobre este app'.",
+      imageAlt: "Seção de segurança dos dados na Play Store.",
+    },
+    {
+      title: "Confira os dados coletados",
+      instruction: "Leia quais tipos de dados o aplicativo pode coletar ou compartilhar.",
+      imageAlt: "Informações demonstrativas sobre dados coletados.",
+    },
+    {
+      title: "Confira o desenvolvedor e as permissões",
+      instruction: "Verifique o nome do desenvolvedor e desconfie se o app pedir permissões sem relação com sua função.",
+      imageAlt: "Nome do desenvolvedor e informações de permissões.",
+    },
+  ],
+
+  "ativar-controle-parental-play-store": [
+    {
+      title: "Abra as configurações",
+      instruction: "Na Play Store, toque na sua foto e depois em 'Configurações'.",
+      imageAlt: "Configurações da Play Store abertas.",
+    },
+    {
+      title: "Entre em 'Família'",
+      instruction: "Toque em 'Família' e depois em 'Controle dos pais'.",
+      imageAlt: "Área Família com Controle dos pais destacado.",
+    },
+    {
+      title: "Ative o controle e crie um PIN",
+      instruction: "Ative a chave e crie um PIN que somente o responsável conheça.",
+      imageAlt: "Tela de criação de PIN do controle parental.",
+    },
+    {
+      title: "Escolha as classificações",
+      instruction: "Selecione a faixa etária permitida para aplicativos, jogos ou filmes.",
+      imageAlt: "Classificações de idade do controle parental.",
+    },
+  ],
+
+  "ver-espaco-aplicativo-play-store": [
+    {
+      title: "Pesquise o aplicativo",
+      instruction: "Na Play Store, pesquise o nome do aplicativo e abra a página correta.",
+      imageAlt: "Aplicativo aberto na página da Play Store.",
+    },
+    {
+      title: "Veja o tamanho do download",
+      instruction: "Role a página e procure o tamanho aproximado do aplicativo ou do download.",
+      imageAlt: "Informação de tamanho do aplicativo na Play Store.",
+    },
+    {
+      title: "Confira o espaço do celular",
+      instruction: "Se o aparelho estiver cheio, libere espaço antes de instalar um aplicativo grande.",
+      imageAlt: "Aviso demonstrativo sobre espaço insuficiente.",
+    },
+  ],
+
+  "compartilhar-link-aplicativo-play-store": [
+    {
+      title: "Abra a página do aplicativo",
+      instruction: "Pesquise o aplicativo na Play Store e abra o resultado correto.",
+      imageAlt: "Página do aplicativo na Play Store.",
+    },
+    {
+      title: "Toque nos três pontinhos",
+      instruction: "No canto superior direito, toque nos três pontinhos e escolha 'Compartilhar'.",
+      imageAlt: "Menu da página do aplicativo com a opção Compartilhar.",
+    },
+    {
+      title: "Escolha o aplicativo de envio",
+      instruction: "Escolha WhatsApp ou outro aplicativo e envie o link para a pessoa certa.",
+      imageAlt: "Tela de compartilhamento do link da Play Store.",
+    },
+  ],
+
+  "denunciar-aplicativo-play-store": [
+    {
+      title: "Abra a página do aplicativo",
+      instruction: "Pesquise o aplicativo suspeito, mas não o instale para fazer a denúncia.",
+      imageAlt: "Página de aplicativo suspeito na Play Store.",
+    },
+    {
+      title: "Abra o menu de opções",
+      instruction: "Toque nos três pontinhos no canto superior direito da página.",
+      imageAlt: "Menu de opções da página do aplicativo.",
+    },
+    {
+      title: "Escolha denunciar",
+      instruction: "Toque em 'Sinalizar como inadequado' ou em uma opção semelhante e escolha o motivo.",
+      imageAlt: "Formulário de denúncia de aplicativo.",
+    },
+    {
+      title: "Envie a denúncia",
+      instruction: "Confira o motivo e toque em 'Enviar'.",
+      imageAlt: "Confirmação de envio da denúncia.",
     },
   ],
 };

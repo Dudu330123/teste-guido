@@ -715,7 +715,7 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
         <div className="sr-only" aria-hidden="true" style={{ display: "none" }}>
           {steps.map((guideStep, idx) => {
             if (idx === currentStep) return null;
-            if (!guideStep.imagePath || (!guideStep.imagePath.startsWith("https://") && !guideStep.imagePath.startsWith("/api/storage"))) {
+            if (!guideStep.imagePath || (!guideStep.imagePath.startsWith("https://") && !guideStep.imagePath.startsWith("/api/storage") && !guideStep.imagePath.startsWith("/images/"))) {
               return null;
             }
             return (

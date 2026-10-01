@@ -48,7 +48,7 @@ export function ScreenPlaceholder({ step, application, task }: ScreenPlaceholder
               alt={step.imageAlt || step.title}
               fill
               sizes="(max-width: 1024px) 92vw, 31rem"
-              className="object-contain object-top"
+              className="object-cover object-center"
               priority
             />
 

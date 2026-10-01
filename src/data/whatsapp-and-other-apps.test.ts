@@ -35,9 +35,9 @@ describe("WhatsApp Catálogo e Roteiros Didáticos", () => {
   });
 });
 
-describe("Outros Aplicativos (Gmail, YouTube, Fotos, Uber, Maps, Instagram)", () => {
-  it("contém exatamente 90 tarefas distribuídas igualmente (15 por app) entre os 6 aplicativos externos", () => {
-    expect(otherAppsTasks).toHaveLength(90);
+describe("Outros Aplicativos (Gmail, YouTube, Fotos, Uber, Maps, Instagram, Facebook, Play Store)", () => {
+  it("contém exatamente 120 tarefas distribuídas igualmente (15 por app) entre os 8 aplicativos externos", () => {
+    expect(otherAppsTasks).toHaveLength(120);
     otherAppsTasks.forEach((task) => {
       expect(task.availability).toBe("available");
       expect(task.status).toBe("published");
@@ -51,15 +51,15 @@ describe("Outros Aplicativos (Gmail, YouTube, Fotos, Uber, Maps, Instagram)", ()
     });
   });
 
-  it("os 6 aplicativos externos estão devidamente cadastrados em applications", () => {
+  it("os 8 aplicativos externos estão devidamente cadastrados em applications", () => {
     externalApplications.forEach((app) => {
       expect(applications.some((a) => a.id === app.id)).toBe(true);
       expect(app.category).toBe("Outros aplicativos");
     });
   });
 
-  it("otherApps em other-apps.tsx possui exatamente 15 tarefas para cada um dos 6 apps", () => {
-    expect(otherApps).toHaveLength(6);
+  it("otherApps em other-apps.tsx possui exatamente 15 tarefas para cada um dos 8 apps", () => {
+    expect(otherApps).toHaveLength(8);
     otherApps.forEach((app) => {
       expect(app.tasks).toHaveLength(15);
       app.tasks.forEach((task) => {
