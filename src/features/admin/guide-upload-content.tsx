@@ -2,7 +2,6 @@ import { actions } from "@/data/actions";
 import { getAdminScriptSteps } from "@/data/admin-guide-scripts";
 import { financialApplications, isBankCategory } from "@/data/applications";
 import { getGuide, getStepsForGuide, tasks } from "@/data/guides";
-import { getCatalogFromSupabase, getUploadGuidesFromSupabase } from "@/lib/catalog";
 import { GuideAdmin, type AdminGuideOption } from "./guide-admin";
 
 interface GuideUploadContentProps {
@@ -22,10 +21,6 @@ export async function GuideUploadContent({
   eyebrow,
   title,
 }: GuideUploadContentProps) {
-  const [remoteGuides, remoteCatalog] = await Promise.all([
-    getUploadGuidesFromSupabase(),
-    getCatalogFromSupabase(),
-  ]);
   const androidGuide = getGuide("android")!;
   const iosGuide = getGuide("ios")!;
   const financialApplicationIds = new Set(financialApplications.map(({ id }) => id));
@@ -68,13 +63,9 @@ export async function GuideUploadContent({
         stepsByOperatingSystem: editorialSteps(task.slug),
       })),
   ];
-  const guidesBySlug = new Map(localGuideOptions.map((guide) => [guide.slug, guide]));
-  remoteGuides?.forEach((guide) => guidesBySlug.set(guide.slug, guide));
-  const guideOptions = [...guidesBySlug.values()].sort((first, second) =>
+  const guideOptions = [...localGuideOptions].sort((first, second) =>
     first.title.localeCompare(second.title, "pt-BR"));
-  const remoteBankApplications = remoteCatalog?.applications.filter((application) =>
-    isBankCategory(application.category) && application.slug !== "banco-demonstracao");
-  const bankApplications = remoteBankApplications?.length ? remoteBankApplications : financialApplications;
+  const bankApplications = financialApplications.filter(({ category }) => isBankCategory(category));
 
   return (
     <div className="internal-page-content internal-page-content--compact upload-page-content">

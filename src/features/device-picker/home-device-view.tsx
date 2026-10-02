@@ -5,7 +5,8 @@ import { useDevice } from "@/features/device-picker/device-context";
 import { HomeToolbar } from "@/features/theme/home-toolbar";
 import { HomeSearch } from "@/features/search/home-search";
 import { HomeTvSearch } from "@/features/search/home-tv-search";
-import { AskGuidoModal } from "@/features/ai/ask-guido-modal";
+import { GuidoVoiceModal } from "@/features/ai/guido-voice-modal";
+import { GuideRequestModal } from "@/features/ai/guide-request-modal";
 import type { Application, Task } from "@/types/content";
 
 interface HomeDeviceViewProps {
@@ -15,17 +16,16 @@ interface HomeDeviceViewProps {
 
 export function HomeDeviceView({ applications, tasks }: HomeDeviceViewProps) {
   const { device } = useDevice();
-  const [askGuidoState, setAskGuidoState] = useState<{ open: boolean; voice: boolean }>({
-    open: false,
-    voice: false,
-  });
+  const [guidoModal, setGuidoModal] = useState<"voice" | "request" | null>(null);
+  const [guideRequestDraft, setGuideRequestDraft] = useState("");
 
   return (
     <>
       <HomeToolbar
         showAdmin={false}
         activePage="home"
-        onOpenAskGuido={() => setAskGuidoState({ open: true, voice: false })}
+        onOpenVoiceAssistant={() => setGuidoModal("voice")}
+        onOpenGuideRequest={() => setGuidoModal("request")}
       />
       <div className="guido-home-content mx-auto w-full">
         {device === "televisao" ? (
@@ -34,15 +34,25 @@ export function HomeDeviceView({ applications, tasks }: HomeDeviceViewProps) {
           <HomeSearch
             applications={applications}
             tasks={tasks}
-            onOpenVoice={() => setAskGuidoState({ open: true, voice: true })}
+            onOpenVoice={() => setGuidoModal("voice")}
           />
         )}
       </div>
-      {askGuidoState.open && (
-        <AskGuidoModal
-          isOpen={askGuidoState.open}
-          initialListening={askGuidoState.voice}
-          onClose={() => setAskGuidoState({ open: false, voice: false })}
+      {guidoModal === "voice" && (
+        <GuidoVoiceModal
+          isOpen
+          onClose={() => setGuidoModal(null)}
+          onUseText={(text) => {
+            setGuideRequestDraft(text);
+            setGuidoModal("request");
+          }}
+        />
+      )}
+      {guidoModal === "request" && (
+        <GuideRequestModal
+          isOpen
+          initialPrompt={guideRequestDraft}
+          onClose={() => setGuidoModal(null)}
         />
       )}
     </>

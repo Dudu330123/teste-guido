@@ -207,16 +207,10 @@ export async function generateGuideWithAi(userPrompt: string): Promise<Generated
 
   // 1. Tenta chamar a API do servidor do Next.js (protegida e gratuita com Gemini 1.5 Flash)
   try {
-    let clientApiKey: string | undefined;
-    if (typeof window !== "undefined") {
-      const stored = window.localStorage.getItem("guido-gemini-key")?.trim();
-      if (stored) clientApiKey = stored;
-    }
-
     const response = await fetch("/api/ai/ask", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ prompt: userPrompt, apiKey: clientApiKey }),
+      body: JSON.stringify({ prompt: userPrompt }),
     });
 
     if (response.ok) {

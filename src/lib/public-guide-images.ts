@@ -1,12 +1,5 @@
-import { z } from "zod";
 import type { GuideStep, OperatingSystem } from "@/types/content";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
-
-const publicImageRowsSchema = z.array(z.object({
-  step_order: z.number().int().positive(),
-  storage_bucket: z.literal("guide-public"),
-  storage_key: z.string().min(1),
-}));
+import { getLocalGuideImages } from "@/data/local-guide-images";
 
 /** Substitui somente a tela do passo correspondente; instruções não vêm do upload. */
 export function applyPublicGuideImages(steps: GuideStep[], imageByStep: ReadonlyMap<number, string>) {
@@ -40,64 +33,18 @@ export function publicGuideImageScopes(applicationSlug: string | null) {
   return applicationSlug ? [null, applicationSlug] as const : [null] as const;
 }
 
-async function loadPublicGuideImages(
-  guideSlug: string,
-  applicationSlug: string | null,
-  operatingSystem: OperatingSystem,
-) {
-  const supabase = await getSupabaseServerClient();
-  if (!supabase) return new Map<number, string>();
-  let imageQuery = supabase
-    .from("guide_public_images")
-    .select("step_order, storage_bucket, storage_key")
-    .eq("guide_slug", guideSlug)
-    .eq("operating_system", operatingSystem);
-  imageQuery = applicationSlug
-    ? imageQuery.eq("application_slug", applicationSlug)
-    : imageQuery.is("application_slug", null);
-  const { data, error } = await imageQuery.order("step_order", { ascending: true });
-  const parsed = publicImageRowsSchema.safeParse(data);
-  if (error || !parsed.success) return new Map<number, string>();
-
-  return new Map(parsed.data.map((row) => [
-    row.step_order,
-    supabase.storage.from(row.storage_bucket).getPublicUrl(row.storage_key).data.publicUrl,
-  ]));
-}
-
-async function loadScopedPublicGuideImages(
-  guideSlug: string,
-  applicationSlug: string | null,
-  operatingSystem: OperatingSystem,
-) {
-  const imagesByScope = await Promise.all(
-    publicGuideImageScopes(applicationSlug).map((scope) =>
-      loadPublicGuideImages(guideSlug, scope, operatingSystem)),
-  );
-  return imagesByScope.reduce(
-    (merged, current) => mergePublicGuideImages(current, merged),
-    new Map<number, string>(),
-  );
-}
-
-/** Lê as imagens que colaboradores, inclusive visitantes sem login, tornaram públicas. */
+/**
+ * As imagens do MVP são assets versionados no próprio site.
+ * A associação fica no manifesto gerado por `npm run importar-imagens`;
+ * nenhum visitante consegue publicar ou substituir uma tela em produção.
+ */
 export async function getPublicGuideImages(
   guideSlug: string,
-  applicationSlug: string | null,
-  operatingSystem: OperatingSystem,
+  _applicationSlug: string | null,
+  _operatingSystem: OperatingSystem,
 ) {
-  const selectedSystemImages = loadScopedPublicGuideImages(
-    guideSlug,
-    applicationSlug,
-    operatingSystem,
+  const localImages = getLocalGuideImages(guideSlug);
+  return new Map(
+    Object.entries(localImages).map(([order, imagePath]) => [Number(order), imagePath]),
   );
-  if (!shouldUseAndroidImageFallback(operatingSystem)) {
-    return selectedSystemImages;
-  }
-
-  const [specificImages, androidImages] = await Promise.all([
-    selectedSystemImages,
-    loadScopedPublicGuideImages(guideSlug, applicationSlug, "android"),
-  ]);
-  return mergePublicGuideImages(specificImages, androidImages);
 }

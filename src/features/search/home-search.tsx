@@ -36,7 +36,9 @@ import { ApplicationLogo } from "@/features/applications/application-logo";
 import type { Application, Task } from "@/types/content";
 import { OtherAppsModal } from "./other-apps-modal";
 import type { OtherApp } from "@/data/other-apps";
-import { AskGuidoModal } from "@/features/ai/ask-guido-modal";
+import { GuidoVoiceModal } from "@/features/ai/guido-voice-modal";
+import { GuideRequestModal } from "@/features/ai/guide-request-modal";
+import { GuidoMascot } from "@/features/theme/guido-mascot";
 
 interface HomeSearchProps {
   applications: Application[];
@@ -413,14 +415,8 @@ export function HomeSearch({ applications, tasks, onOpenVoice }: HomeSearchProps
   const [otherAppsModalOpen, setOtherAppsModalOpen] = useState(false);
   const [taskModalOpen, setTaskModalOpen] = useState(false);
   const [standaloneVoiceOpen, setStandaloneVoiceOpen] = useState(false);
-
-  const handleVoiceClick = () => {
-    if (onOpenVoice) {
-      onOpenVoice();
-    } else {
-      setStandaloneVoiceOpen(true);
-    }
-  };
+  const [standaloneGuideOpen, setStandaloneGuideOpen] = useState(false);
+  const [standaloneGuideDraft, setStandaloneGuideDraft] = useState("");
 
   const categoryButtonRefs = useRef<Record<GuidedCategory, HTMLButtonElement | null>>({
     banks: null,
@@ -521,20 +517,6 @@ export function HomeSearch({ applications, tasks, onOpenVoice }: HomeSearchProps
               <span className="home-title-highlight">categoria</span>
             </h1>
 
-            {/* Ícone de voz que ao clicar pede para falar */}
-            <button
-              type="button"
-              onClick={handleVoiceClick}
-              className="home-voice-button"
-              aria-label="Falar com o Guido por voz - Toque para falar"
-              title="Toque para falar com o Guido"
-            >
-              <div className="home-voice-button-inner">
-                <span className="home-voice-wave" aria-hidden="true" />
-                <Mic className="size-7 text-white" aria-hidden="true" />
-              </div>
-              <span className="home-voice-caption">Pedir por voz</span>
-            </button>
           </div>
 
           {/* 4 Cards de Categorias */}
@@ -668,24 +650,12 @@ export function HomeSearch({ applications, tasks, onOpenVoice }: HomeSearchProps
         </div>
 
         {/* Mascote Guido à Direita */}
-        <aside className="home-hero-right" aria-label="Mascote Guido lendo um livro">
+        <aside className="home-hero-right" aria-label="Mascote Guido">
           <div className="home-mascot-scene">
-            <Image
-              src="/images/home/mascote-guido-dark.webp"
-              alt="Mascote Guido lendo um livro"
-              width={1199}
-              height={1312}
+            <GuidoMascot
+              alt="Mascote Guido"
               priority
-              className="home-mascot-image home-mascot-dark"
-              sizes="(max-width: 768px) 260px, (max-width: 1200px) 380px, 480px"
-            />
-            <Image
-              src="/images/home/mascote-guido-lendo.webp"
-              alt="Mascote Guido lendo um livro"
-              width={1106}
-              height={1295}
-              priority
-              className="home-mascot-image home-mascot-light"
+              className="home-mascot-image"
               sizes="(max-width: 768px) 260px, (max-width: 1200px) 380px, 480px"
             />
           </div>
@@ -710,10 +680,21 @@ export function HomeSearch({ applications, tasks, onOpenVoice }: HomeSearchProps
       )}
 
       {!onOpenVoice && standaloneVoiceOpen && (
-        <AskGuidoModal
+        <GuidoVoiceModal
           isOpen={standaloneVoiceOpen}
-          initialListening={true}
           onClose={() => setStandaloneVoiceOpen(false)}
+          onUseText={(text) => {
+            setStandaloneGuideDraft(text);
+            setStandaloneVoiceOpen(false);
+            setStandaloneGuideOpen(true);
+          }}
+        />
+      )}
+      {!onOpenVoice && standaloneGuideOpen && (
+        <GuideRequestModal
+          isOpen={standaloneGuideOpen}
+          initialPrompt={standaloneGuideDraft}
+          onClose={() => setStandaloneGuideOpen(false)}
         />
       )}
     </section>

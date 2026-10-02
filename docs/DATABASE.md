@@ -2,7 +2,7 @@
 
 ## Escolha
 
-PostgreSQL atende ao modelo relacional, constraints, transações, busca textual, concorrência e auditoria do Guido. A conexão é independente de Supabase e fica atrás do adapter server-side.
+PostgreSQL atende ao modelo relacional, constraints, transações, busca textual, concorrência e auditoria do Guido. A conexão está preparada para a fase posterior do Supabase e fica atrás do adapter server-side; o runtime local atual não depende do banco.
 
 ## Entidades implementadas no schema inicial
 
@@ -33,27 +33,25 @@ PostgreSQL atende ao modelo relacional, constraints, transações, busca textual
 - `20260825225755_migrate_local_guides_to_database.sql`: importa o catálogo local e os roteiros editoriais para `categories`, `applications`, `tutorials`, `guide_versions` e `steps`, sem publicar automaticamente guias reais.
 - `20260825231732_relink_existing_guide_images.sql`: relaciona os registros já existentes de `guide_public_images` às versões e etapas estruturadas sem mover ou renomear objetos no Storage.
 
-As migrations são verificadas em PostgreSQL efêmero pela CI. A aplicação remota
-ocorre somente no projeto escolhido pelo responsável e sem credenciais no Git.
-O seed de desenvolvimento permanece `draft` e não publica nada.
+As migrations históricas não são aplicadas pelo CI do runtime local atual. Quando
+o Supabase for conectado, a CI deve aplicar todas as migrations em ordem em um
+banco efêmero, validar RLS e só então permitir a integração remota. O seed de
+desenvolvimento permanece `draft` e não publica nada.
 
 ## Fonte do catálogo e dos roteiros
 
-PostgreSQL é a fonte principal do catálogo, das versões por sistema operacional
-e dos passos. O conteúdo em `src/data` permanece temporariamente como fallback
-de disponibilidade e como entrada reprodutível do gerador
-`scripts/generate-guide-catalog-migration.mjs`; ele não substitui alterações
-editoriais feitas no banco.
+Nesta fase, `src/data` é a fonte do catálogo, das versões por sistema operacional,
+dos passos e do manifesto de imagens locais. PostgreSQL poderá substituir essa
+fonte na fase de integração, usando o mesmo estado editorial e sem publicar
+rascunhos automaticamente.
 
-`tutorials.image_context_slug` mantém a chave histórica usada pelos uploads,
-`steps.editorial_key` identifica o passo de forma estável e
-`guide_public_images.guide_version_id`/`guide_step_id` ligam a imagem ao roteiro.
-Os arquivos continuam no bucket `guide-public`: somente referências relacionais
-foram acrescentadas. Na migração inicial, 745 registros de imagem foram
-preservados e vinculados, sem alterar suas chaves de Storage.
+`tutorials.image_context_slug` e `steps.editorial_key` permanecem referências
+para a futura migração. Hoje a associação é feita por
+`src/data/local-guide-images.ts`, gerado a partir dos arquivos em
+`public/images/guide-screens`.
 
-`guide_versions.public_for_upload` permite mostrar um roteiro na ferramenta de
-envio sem torná-lo um guia oficial. A navegação pública continua exigindo
+`guide_versions.public_for_upload` é legado da integração futura e não libera
+upload ou navegação no runtime local. A navegação continua exigindo
 `status = 'published'`, com exceção da demonstração explicitamente marcada.
 
 ## Acesso da aplicação

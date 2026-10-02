@@ -17,7 +17,9 @@ import {
   Heart,
   Check,
 } from "lucide-react";
-import { generateGuideWithAi, type GeneratedGuide } from "@/services/ai-guide-generator";
+import type { GeneratedGuide } from "@/services/ai-guide-generator";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { SocialAuthButtons } from "@/features/auth/social-auth-buttons";
 
 interface VoiceResultEvent {
   resultIndex: number;
@@ -267,6 +269,9 @@ export function AskGuidoModal({
   const [isLoading, setIsLoading] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [generatedGuide, setGeneratedGuide] = useState<GeneratedGuide | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [authMessage, setAuthMessage] = useState("");
+  const [inputMode, setInputMode] = useState<"text" | "voice">("text");
 
   const [speechStatus, setSpeechStatus] = useState("");
 
@@ -304,6 +309,38 @@ export function AskGuidoModal({
     VOICE_PROFILES.find((v) => v.id === selectedVoiceId) || VOICE_PROFILES[0];
   const currentAvatar =
     AVATAR_OPTIONS.find((a) => a.id === selectedAvatarId) || AVATAR_OPTIONS[0];
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let mounted = true;
+    const supabase = getSupabaseBrowserClient();
+    if (!supabase) {
+      const frame = window.requestAnimationFrame(() => {
+        if (mounted) setIsAuthenticated(false);
+      });
+      return () => {
+        mounted = false;
+        window.cancelAnimationFrame(frame);
+      };
+    }
+
+    void supabase.auth.getUser().then(({ data }) => {
+      if (mounted) setIsAuthenticated(Boolean(data.user));
+    });
+
+    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (mounted) {
+        setIsAuthenticated(Boolean(session?.user));
+        if (session?.user) setAuthMessage("");
+      }
+    });
+
+    return () => {
+      mounted = false;
+      data.subscription.unsubscribe();
+    };
+  }, [isOpen]);
 
   const stopSpeaking = useCallback(() => {
     if (audioPlayerRef.current) {
@@ -375,18 +412,12 @@ export function AskGuidoModal({
 
       // 1. TENTA PRIMEIRO A VOZ ELEVENLABS (Qualidade de Dublador Profissional de Cinema)
       try {
-        const storedElevenKey =
-          (typeof window !== "undefined"
-            ? window.localStorage.getItem("guido-elevenlabs-key")?.trim()
-            : "") || "";
-
         const res = await fetch("/api/ai/tts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             text: cleanText.slice(0, 600),
             voiceId: profile.elevenVoiceId,
-            apiKey: storedElevenKey || undefined,
           }),
         });
 
@@ -433,7 +464,15 @@ export function AskGuidoModal({
   const handleGenerate = useCallback(
     async (queryText?: string) => {
       const q = queryText || prompt;
-      if (!q.trim()) return;
+      if (!q.trim()) {
+        setAuthMessage("Escreva ou fale o que você deseja aprender.");
+        return;
+      }
+
+      if (isAuthenticated !== true) {
+        setAuthMessage("Entre na sua conta para pedir um guia personalizado.");
+        return;
+      }
 
       stopVoiceInput();
       stopSpeaking();
@@ -442,20 +481,31 @@ export function AskGuidoModal({
       setGeneratedGuide(null);
 
       try {
-        const result = await generateGuideWithAi(q);
-        setGeneratedGuide(result);
+        const response = await fetch("/api/guide-requests", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt: q.trim(), inputMode }),
+        });
+        const data = await response.json().catch(() => null);
+        if (!response.ok || !data?.guide) {
+          throw new Error(data?.error || "Não foi possível preparar o guia.");
+        }
+
+        setGeneratedGuide(data.guide as GeneratedGuide);
+        setAuthMessage("");
 
         const textToSpeak =
-          result.spokenAnswer ||
-          `${result.title}. ${result.steps[0]?.instruction || ""}`;
+          data.guide.spokenAnswer ||
+          `${data.guide.title}. ${data.guide.steps[0]?.instruction || ""}`;
         void speakText(textToSpeak);
       } catch (error) {
         console.error("Erro ao gerar guia:", error);
+        setAuthMessage(error instanceof Error ? error.message : "Não consegui preparar o guia agora.");
       } finally {
         setIsLoading(false);
       }
     },
-    [prompt, speakText, stopSpeaking, stopVoiceInput]
+    [inputMode, isAuthenticated, prompt, speakText, stopSpeaking, stopVoiceInput]
   );
 
   const startVoiceInput = useCallback(() => {
@@ -484,6 +534,7 @@ export function AskGuidoModal({
 
       recognition.onstart = () => {
         setIsListening(true);
+        setInputMode("voice");
         setSpeechStatus("Estou ouvindo com atenção... Pode falar com calma!");
       };
 
@@ -507,10 +558,9 @@ export function AskGuidoModal({
 
       recognition.onend = () => {
         setIsListening(false);
-        setSpeechStatus("");
-        if (finalCapturedTranscript.trim().length > 2) {
-          handleGenerate(finalCapturedTranscript.trim());
-        }
+        setSpeechStatus(finalCapturedTranscript.trim()
+          ? "Confira o que foi entendido e toque em Criar meu guia."
+          : "");
       };
 
       recognitionRef.current = recognition;
@@ -519,7 +569,7 @@ export function AskGuidoModal({
       setIsListening(false);
       setSpeechStatus("Permissão de microfone necessária para falar com o Guido.");
     }
-  }, [handleGenerate, stopSpeaking]);
+  }, [stopSpeaking]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -860,43 +910,87 @@ export function AskGuidoModal({
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Estado inicial: Pergunta */}
           {!generatedGuide && !isLoading && (
-            <div className="space-y-6 text-center py-6">
-              <div>
-                <p className="text-2xl font-black text-slate-800">
-                  No que você está tendo dificuldade hoje?
+            <div className="space-y-5 py-2">
+              <div className="text-center">
+                <p className="text-2xl font-black text-slate-800">Pedir um guia</p>
+                <p className="mx-auto mt-3 max-w-xl text-base font-semibold leading-relaxed text-slate-600">
+                  Conte o que você quer fazer no celular. Você pode escrever ou tocar no microfone para falar.
+                  O Guido vai preparar um passo a passo simples para você.
                 </p>
               </div>
 
-              {/* Botão de voz grande */}
-              <div className="flex flex-col items-center justify-center py-4">
+              {isAuthenticated === false && (
+                <div className="space-y-4 rounded-3xl border-2 border-blue-200 bg-blue-50 p-5 text-left">
+                  <div>
+                    <h3 className="text-lg font-black text-blue-950">Entre para pedir seu guia</h3>
+                    <p className="mt-1 text-sm font-semibold leading-relaxed text-blue-900">
+                      Para usar essa função, entre ou crie sua conta gratuitamente. Seus pedidos ficam protegidos na sua conta.
+                    </p>
+                  </div>
+                  <SocialAuthButtons next="/" />
+                  <p className="text-center text-xs font-bold text-blue-800">
+                    Você também pode entrar com e-mail e senha pela página de acesso.
+                  </p>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <label htmlFor="ask-guido-prompt" className="block text-left text-sm font-black text-slate-700">
+                  O que você quer aprender?
+                </label>
+                <textarea
+                  id="ask-guido-prompt"
+                  value={prompt}
+                  onChange={(event) => {
+                    setPrompt(event.target.value);
+                    setInputMode("text");
+                    setAuthMessage("");
+                  }}
+                  maxLength={1000}
+                  rows={4}
+                  placeholder="Ex.: quero aprender a enviar uma foto pelo WhatsApp"
+                  className="w-full resize-y rounded-2xl border-2 border-slate-200 bg-white px-4 py-3 text-base font-semibold text-slate-800 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                />
+                <p className="text-right text-xs font-bold text-slate-500">{prompt.length}/1000</p>
+              </div>
+
+              <div className="flex flex-col items-center justify-center gap-3 py-2">
                 <button
                   type="button"
                   onClick={isListening ? stopVoiceInput : startVoiceInput}
-                  className={`group relative flex size-36 items-center justify-center rounded-full transition-all duration-300 shadow-2xl ${
+                  className={`group relative flex size-24 items-center justify-center rounded-full transition-all duration-300 shadow-xl ${
                     isListening
-                      ? "bg-red-500 text-white animate-pulse ring-8 ring-red-300 scale-105"
+                      ? "bg-red-500 text-white animate-pulse ring-8 ring-red-200 scale-105"
                       : "bg-blue-600 text-white hover:bg-blue-700 hover:scale-105 ring-8 ring-blue-100"
                   }`}
-                  aria-label={isListening ? "Concluir e escutar explicação" : "Falar com o Guido"}
+                  aria-label={isListening ? "Parar de ouvir" : "Falar com o Guido"}
                 >
-                  {isListening ? (
-                    <MicOff className="size-16 animate-bounce" />
-                  ) : (
-                    <Mic className="size-16" />
-                  )}
+                  {isListening ? <MicOff className="size-11 animate-bounce" /> : <Mic className="size-11" />}
                 </button>
-
-                <div className="mt-4 space-y-1">
-                  {isListening && (
-                    <p className="text-base font-black text-slate-800">
-                      🔴 Estou ouvindo com atenção... Pode falar com calma!
-                    </p>
-                  )}
-                  {speechStatus && (
-                    <p className="text-sm font-bold text-blue-700 animate-pulse">{speechStatus}</p>
-                  )}
-                </div>
+                <span className="text-sm font-black text-slate-700">{isListening ? "Toque para parar" : "Falar com o Guido"}</span>
+                {speechStatus && <p className="text-center text-sm font-bold text-blue-700 animate-pulse">{speechStatus}</p>}
               </div>
+
+              {authMessage && (
+                <p role="alert" className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-center text-sm font-bold text-amber-950">
+                  {authMessage}
+                </p>
+              )}
+
+              <button
+                type="button"
+                onClick={() => void handleGenerate()}
+                disabled={isAuthenticated !== true || !prompt.trim()}
+                className="flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-emerald-600 px-5 py-3 text-lg font-black text-white shadow-lg transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Sparkles className="size-5" />
+                Criar meu guia
+                <ArrowRight className="size-5" />
+              </button>
+
+              <p className="text-center text-xs font-bold leading-relaxed text-slate-500">
+                Nunca envie senhas, códigos de segurança ou dados bancários.
+              </p>
             </div>
           )}
 
@@ -959,6 +1053,8 @@ export function AskGuidoModal({
                         stopSpeaking();
                         setGeneratedGuide(null);
                         setPrompt("");
+                        setAuthMessage("");
+                        setInputMode("text");
                       }}
                       className="flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100"
                     >
@@ -978,6 +1074,9 @@ export function AskGuidoModal({
               {/* Título do Guia */}
               <div className="flex items-center justify-between">
                 <div>
+                  <span className="mb-2 inline-flex rounded-full bg-emerald-100 px-3 py-1 text-xs font-black uppercase tracking-wide text-emerald-800">
+                    Guia personalizado do Guido
+                  </span>
                   <h3 className="text-xl font-black text-slate-900">
                     {generatedGuide.title}
                   </h3>

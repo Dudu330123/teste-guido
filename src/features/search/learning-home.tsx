@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useRef, useState, type RefObject } from "react";
 import { Accessibility, ArrowRight, Grid2X2, Landmark, MessageCircle, Images, Search, Settings, ShieldCheck, CircleHelp } from "lucide-react";
 import type { Application, Task } from "@/types/content";
 import { ApplicationLogo } from "@/features/applications/application-logo";
+import { GuidoMascot } from "@/features/theme/guido-mascot";
 import { otherApps } from "@/data/other-apps";
 import { rankSearch } from "./search-content";
 import { availableGuideCount, categoryTasks, learningCategories, type LearningCategory } from "./learning-catalog";
@@ -60,7 +60,7 @@ export function LearningHome({ applications, tasks, onChooseCategory, categoryBu
     showResults(`Resultados para “${query.trim()}”`, rankSearch(allTasks, query, (task) => ({ title: task.title, aliases: [...task.searchTerms, applications.find((app) => app.id === task.applicationId)?.name ?? ""], description: task.description }), 30));
   };
   return <>
-    <section className="learning-welcome" aria-labelledby="category-picker-title"><div><p className="learning-eyebrow">TECNOLOGIA NO SEU RITMO</p><h1 id="category-picker-title">O que você quer<br className="learning-title-break" /> aprender hoje?</h1><p className="learning-subtitle">Escolha um assunto e siga o passo a passo com calma.</p><LearningSearch onSearch={search} /><GettingStarted onSearch={search} /></div><aside className="learning-mascot" aria-label="Guido, seu companheiro de aprendizagem"><Image src="/images/home/mascote-guido-dark.webp" alt="Robô Guido com um livro" width={1199} height={1312} sizes="240px" priority /><p>Um passo de cada vez.<br /><strong>Você consegue.</strong></p></aside></section>
+    <section className="learning-welcome" aria-labelledby="category-picker-title"><div><p className="learning-eyebrow">TECNOLOGIA NO SEU RITMO</p><h1 id="category-picker-title">O que você quer<br className="learning-title-break" /> aprender hoje?</h1><p className="learning-subtitle">Escolha um assunto e siga o passo a passo com calma.</p><LearningSearch onSearch={search} /><GettingStarted onSearch={search} /></div><aside className="learning-mascot" aria-label="Guido, seu companheiro de aprendizagem"><GuidoMascot alt="Robô Guido" sizes="240px" priority className="guido-color-image" /><p>Um passo de cada vez.<br /><strong>Você consegue.</strong></p></aside></section>
     <section className="learning-categories" aria-labelledby="learning-categories-title"><div className="learning-section-heading"><h2 id="learning-categories-title">Aprenda por assunto</h2><p>Toque em uma opção para começar</p></div><div className="learning-grid">{learningCategories.map((category) => {
       const grouped = categoryTasks(category.id, allTasks, applications);
       const existing = ["banks", "whatsapp", "government", "others"].includes(category.id);

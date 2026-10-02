@@ -10,6 +10,7 @@ import { clearProgress, loadProgress, saveProgress } from "@/features/progress/p
 import { nextStep, previousStep, restartGuide } from "@/features/progress/guide-navigation";
 import { loadRemoteProgress, saveRemoteProgress } from "@/features/progress/remote-progress";
 import { HomeToolbar } from "@/features/theme/home-toolbar";
+import { GuidoMascot } from "@/features/theme/guido-mascot";
 import { ScreenPlaceholder } from "./screen-placeholder";
 import { GuidePreparationPanel, GuidePreparationPhoneScreen } from "./guide-preparation-state";
 import { GuideProgressStepper } from "./guide-progress-stepper";
@@ -67,7 +68,7 @@ function GuideToolbar({
             </Link>
             <Link href="/" className="guide-toolbar-brand" aria-label="Guido, página inicial">
               <span className="guide-toolbar-mascot" aria-hidden="true">
-                <Image src="/images/home/mascote-guido-dark.webp" alt="" width={1199} height={1312} sizes="38px" />
+                <GuidoMascot alt="" sizes="38px" className="guido-color-image" />
               </span>
               <strong>GUIDO</strong>
             </Link>

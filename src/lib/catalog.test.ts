@@ -62,7 +62,7 @@ const row = {
 
 describe("catálogo do Supabase", () => {
   it("abre rascunhos colaborativos somente como prévia", () => {
-    expect(canOpenGuideVersion("draft", false, true)).toBe(true);
+    expect(canOpenGuideVersion("draft", false, true)).toBe(false);
     expect(canOpenGuideVersion("draft", false, false)).toBe(false);
     expect(canOpenGuideVersion("published", false, false)).toBe(true);
   });

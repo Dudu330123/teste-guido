@@ -137,9 +137,9 @@ type MediaLocation = z.infer<typeof mediaSchema>;
 export function canOpenGuideVersion(
   status: "draft" | "under_review" | "published" | "outdated",
   isDemo: boolean,
-  publicForUpload: boolean,
+  _publicForUpload: boolean,
 ) {
-  return status === "published" || isDemo || publicForUpload;
+  return status === "published" || isDemo;
 }
 
 function mediaLocationKey(media: MediaLocation) {

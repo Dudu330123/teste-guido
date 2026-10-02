@@ -31,7 +31,9 @@ describe("AskGuidoModal - Personalização de Voz e Avatar", () => {
 
     expect(screen.getByRole("dialog", { name: /falar com o guido/i })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Personalizar voz e avatar" })).toBeInTheDocument();
-    expect(screen.getByText("No que você está tendo dificuldade hoje?")).toBeInTheDocument();
+    expect(screen.getByText("Pedir um guia")).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "O que você quer aprender?" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Criar meu guia" })).toBeInTheDocument();
   });
 
   it("ao clicar na engrenagem, abre o menu de tela cheia com avatares e 3 vozes humanas", async () => {

@@ -8,6 +8,7 @@ import { GuideViewer } from "@/features/guides/guide-viewer";
 import { getGuideFromSupabase } from "@/lib/catalog";
 import { safeReturnPath } from "@/lib/navigation/return-path";
 import { applyPublicGuideImages, getPublicGuideImages } from "@/lib/public-guide-images";
+import { canNavigateLocalTask, guideStatusForLocalTask } from "@/lib/publication";
 import { getGuideTouchTarget } from "@/data/touch-targets";
 import type { Guide, GuideStep, OperatingSystem } from "@/types/content";
 
@@ -75,7 +76,7 @@ export default async function DynamicGuidePage({ params, searchParams }: Dynamic
   const scriptSteps = getAdminScriptSteps(slug, currentOs);
   const task = tasks.find((item) => item.slug === slug);
   const taskApp = task ? applications.find((item) => item.id === task.applicationId) : undefined;
-  if (scriptSteps.length > 0 && task && taskApp) {
+  if (scriptSteps.length > 0 && task && taskApp && canNavigateLocalTask(task)) {
     const guide: Guide = {
       id: `editorial-guide-${slug}-${currentOs}`,
       taskId: task.id,
@@ -83,7 +84,7 @@ export default async function DynamicGuidePage({ params, searchParams }: Dynamic
       appVersion: "1.0",
       guideVersion: "1.0",
       lastReviewedAt: new Date().toISOString(),
-      status: "published",
+      status: guideStatusForLocalTask(task),
       estimatedMinutes: 5,
     };
     return <GuideViewer
