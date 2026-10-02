@@ -8,6 +8,7 @@ const defaultSourceRoot = path.resolve(projectRoot, "..", "capturas de tela", "f
 const sourceRoot = path.resolve(process.argv.find((value) => value.startsWith("--source="))?.slice("--source=".length) ?? defaultSourceRoot);
 const guideDataPath = path.join(projectRoot, "src", "data", "other-apps-guides.ts");
 const whatsappDataPath = path.join(projectRoot, "src", "data", "whatsapp-guides.ts");
+const govBrDataPath = path.join(projectRoot, "src", "data", "gov-br-guides.ts");
 const manifestPath = path.join(projectRoot, "src", "data", "local-guide-images.ts");
 const acceptedExtensions = new Set([".png", ".jpg", ".jpeg", ".webp"]);
 const guideFolderAliases = new Map([
@@ -55,8 +56,17 @@ const guideFolderAliases = new Map([
   ["pular-anuncios", "pular-anuncios-youtube"],
   ["ver-o-historico-de-videos-assistidos", "ver-historico-videos-youtube"],
   ["cancelar-envio-de-e-mail", "cancelar-envio-email-gmail"],
+  ["entrar-no-gov-br", "acessar-gov-br"],
+  ["aumentar-o-nivel-para-prata-ou-ouro", "aumentar-nivel-prata-ouro-gov-br"],
+  ["fazer-prova-de-vida-pelo-celular", "prova-de-vida-gov-br"],
+  ["bloquear-ou-consultar-emprestimo-consignado", "bloquear-consignado-inss-gov-br"],
+  ["consultar-o-extrato-de-contribuicoes-cnis", "extrato-cnis-inss-gov-br"],
+  ["ver-o-cartao-do-sus", "cartao-sus-gov-br"],
+  ["retirar-remedios-pelo-farmacia-popular", "farmacia-popular-gov-br"],
+  ["baixar-a-cnh-digital", "cnh-digital-gov-br"],
+  ["consultar-situacao-do-cpf", "consultar-cpf-gov-br"],
+  ["consultar-valores-a-receber", "valores-a-receber-gov-br"],
 ]);
-const ignoredApplicationFolders = new Set(["gov-br"]);
 
 function normalize(value) {
   return value
@@ -124,6 +134,7 @@ async function listDirectories(directory) {
 async function main() {
   const content = await readFile(guideDataPath, "utf8");
   const whatsappContent = await readFile(whatsappDataPath, "utf8");
+  const govBrContent = await readFile(govBrDataPath, "utf8");
   const otherAppsCatalog = extractCatalog(content);
   const whatsappTasksSection = whatsappContent.match(/export const whatsappTasks: Task\[\] = \[([\s\S]*?)\n\];/)?.[1];
   if (!whatsappTasksSection) throw new Error("Não foi possível ler os guias do WhatsApp.");
@@ -134,11 +145,21 @@ async function main() {
       slug: readField(block, "slug"),
     }))
     .filter((item) => item.applicationId && item.title && item.slug);
+  const govBrTasksSection = govBrContent.match(/export const govBrTasks: Task\[\] = \[([\s\S]*?)\n\];/)?.[1];
+  if (!govBrTasksSection) throw new Error("Não foi possível ler os guias do Gov.br.");
+  const govBrTasks = readObjectBlocks(govBrTasksSection)
+    .map((block) => ({
+      applicationId: readField(block, "applicationId"),
+      title: readField(block, "title"),
+      slug: readField(block, "slug"),
+    }))
+    .filter((item) => item.applicationId && item.title && item.slug);
   const applications = [
     ...otherAppsCatalog.applications,
     { id: "app-whatsapp", name: "WhatsApp", slug: "whatsapp" },
+    { id: "app-gov-br", name: "Gov.br", slug: "gov-br" },
   ];
-  const tasks = [...otherAppsCatalog.tasks, ...whatsappTasks];
+  const tasks = [...otherAppsCatalog.tasks, ...whatsappTasks, ...govBrTasks];
   const applicationByName = new Map(applications.flatMap((application) => [
     [normalize(application.name), application],
     [normalize(application.slug), application],
@@ -155,7 +176,6 @@ async function main() {
   }
 
   for (const applicationDirectory of applicationDirectories) {
-    if (ignoredApplicationFolders.has(normalize(applicationDirectory.name))) continue;
     const application = applicationByName.get(normalize(applicationDirectory.name));
     if (!application) {
       warnings.push(`Aplicativo sem correspondência no catálogo: ${applicationDirectory.name}`);

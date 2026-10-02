@@ -164,6 +164,90 @@ export const localGuideImages: Readonly<Record<string, Readonly<Record<number, s
     "2": "/images/guide-screens/google-maps/ver-caminho-a-pe-maps/step-2.png",
     "3": "/images/guide-screens/google-maps/ver-caminho-a-pe-maps/step-3.png"
   },
+  "acessar-gov-br": {
+    "1": "/images/guide-screens/gov-br/acessar-gov-br/step-1.png",
+    "2": "/images/guide-screens/gov-br/acessar-gov-br/step-2.png",
+    "3": "/images/guide-screens/gov-br/acessar-gov-br/step-3.png",
+    "4": "/images/guide-screens/gov-br/acessar-gov-br/step-4.png"
+  },
+  "recuperar-senha-gov-br": {
+    "1": "/images/guide-screens/gov-br/recuperar-senha-gov-br/step-1.png",
+    "2": "/images/guide-screens/gov-br/recuperar-senha-gov-br/step-2.png",
+    "3": "/images/guide-screens/gov-br/recuperar-senha-gov-br/step-3.png",
+    "4": "/images/guide-screens/gov-br/recuperar-senha-gov-br/step-4.png",
+    "5": "/images/guide-screens/gov-br/recuperar-senha-gov-br/step-5.png"
+  },
+  "recuperar-senha-facial-gov-br": {
+    "1": "/images/guide-screens/gov-br/recuperar-senha-facial-gov-br/step-1.png",
+    "2": "/images/guide-screens/gov-br/recuperar-senha-facial-gov-br/step-2.png",
+    "3": "/images/guide-screens/gov-br/recuperar-senha-facial-gov-br/step-3.png",
+    "4": "/images/guide-screens/gov-br/recuperar-senha-facial-gov-br/step-4.png"
+  },
+  "aumentar-nivel-prata-ouro-gov-br": {
+    "1": "/images/guide-screens/gov-br/aumentar-nivel-prata-ouro-gov-br/step-1.png",
+    "2": "/images/guide-screens/gov-br/aumentar-nivel-prata-ouro-gov-br/step-2.png",
+    "3": "/images/guide-screens/gov-br/aumentar-nivel-prata-ouro-gov-br/step-3.png",
+    "4": "/images/guide-screens/gov-br/aumentar-nivel-prata-ouro-gov-br/step-4.png"
+  },
+  "prova-de-vida-gov-br": {
+    "1": "/images/guide-screens/gov-br/prova-de-vida-gov-br/step-1.png",
+    "2": "/images/guide-screens/gov-br/prova-de-vida-gov-br/step-2.png",
+    "3": "/images/guide-screens/gov-br/prova-de-vida-gov-br/step-3.png",
+    "4": "/images/guide-screens/gov-br/prova-de-vida-gov-br/step-4.png"
+  },
+  "extrato-pagamento-inss-gov-br": {
+    "1": "/images/guide-screens/gov-br/extrato-pagamento-inss-gov-br/step-1.png",
+    "2": "/images/guide-screens/gov-br/extrato-pagamento-inss-gov-br/step-2.png",
+    "3": "/images/guide-screens/gov-br/extrato-pagamento-inss-gov-br/step-3.png"
+  },
+  "bloquear-consignado-inss-gov-br": {
+    "1": "/images/guide-screens/gov-br/bloquear-consignado-inss-gov-br/step-1.png",
+    "2": "/images/guide-screens/gov-br/bloquear-consignado-inss-gov-br/step-2.png",
+    "3": "/images/guide-screens/gov-br/bloquear-consignado-inss-gov-br/step-3.png",
+    "4": "/images/guide-screens/gov-br/bloquear-consignado-inss-gov-br/step-4.png"
+  },
+  "extrato-cnis-inss-gov-br": {
+    "1": "/images/guide-screens/gov-br/extrato-cnis-inss-gov-br/step-1.png",
+    "2": "/images/guide-screens/gov-br/extrato-cnis-inss-gov-br/step-2.png",
+    "3": "/images/guide-screens/gov-br/extrato-cnis-inss-gov-br/step-3.png"
+  },
+  "carteira-vacinacao-gov-br": {
+    "1": "/images/guide-screens/gov-br/carteira-vacinacao-gov-br/step-1.png",
+    "2": "/images/guide-screens/gov-br/carteira-vacinacao-gov-br/step-2.png",
+    "3": "/images/guide-screens/gov-br/carteira-vacinacao-gov-br/step-3.png"
+  },
+  "cartao-sus-gov-br": {
+    "1": "/images/guide-screens/gov-br/cartao-sus-gov-br/step-1.png",
+    "2": "/images/guide-screens/gov-br/cartao-sus-gov-br/step-2.png",
+    "3": "/images/guide-screens/gov-br/cartao-sus-gov-br/step-3.png"
+  },
+  "farmacia-popular-gov-br": {
+    "1": "/images/guide-screens/gov-br/farmacia-popular-gov-br/step-1.png",
+    "2": "/images/guide-screens/gov-br/farmacia-popular-gov-br/step-2.png",
+    "3": "/images/guide-screens/gov-br/farmacia-popular-gov-br/step-3.png"
+  },
+  "cnh-digital-gov-br": {
+    "1": "/images/guide-screens/gov-br/cnh-digital-gov-br/step-1.png",
+    "2": "/images/guide-screens/gov-br/cnh-digital-gov-br/step-2.png",
+    "3": "/images/guide-screens/gov-br/cnh-digital-gov-br/step-3.png",
+    "4": "/images/guide-screens/gov-br/cnh-digital-gov-br/step-4.png"
+  },
+  "consultar-cpf-gov-br": {
+    "1": "/images/guide-screens/gov-br/consultar-cpf-gov-br/step-1.png",
+    "2": "/images/guide-screens/gov-br/consultar-cpf-gov-br/step-2.png",
+    "3": "/images/guide-screens/gov-br/consultar-cpf-gov-br/step-3.png"
+  },
+  "assinar-documento-gov-br": {
+    "1": "/images/guide-screens/gov-br/assinar-documento-gov-br/step-1.png",
+    "2": "/images/guide-screens/gov-br/assinar-documento-gov-br/step-2.png",
+    "3": "/images/guide-screens/gov-br/assinar-documento-gov-br/step-3.png",
+    "4": "/images/guide-screens/gov-br/assinar-documento-gov-br/step-4.png"
+  },
+  "valores-a-receber-gov-br": {
+    "1": "/images/guide-screens/gov-br/valores-a-receber-gov-br/step-1.png",
+    "2": "/images/guide-screens/gov-br/valores-a-receber-gov-br/step-2.png",
+    "3": "/images/guide-screens/gov-br/valores-a-receber-gov-br/step-3.png"
+  },
   "assistir-stories-instagram": {
     "1": "/images/guide-screens/instagram/assistir-stories-instagram/step-1.png",
     "2": "/images/guide-screens/instagram/assistir-stories-instagram/step-2.png",
