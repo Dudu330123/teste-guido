@@ -12,6 +12,7 @@
     "public": "bash scripts/public",
     "test": "vitest run",
     "test:watch": "vitest",
+    "perf:budget": "node scripts/performance-budget.mjs",
     "capturar": "node scripts/capturar-guia.js",
     "importar-imagens": "node scripts/import-guide-images.mjs",
     "validate-images": "node scripts/validate-images.mjs"
@@ -44,6 +45,7 @@
     "eslint-config-next": "^16.3.8",
     "jsdom": "^30.0.0",
     "postcss": "^8.5.26",
+    "sharp": "^0.35.4",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
     "vitest": "^4.1.10"

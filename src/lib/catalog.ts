@@ -416,7 +416,7 @@ async function loadPublicCatalog(): Promise<SupabaseCatalog | null> {
     : parseSupabaseCatalogRows(applicationsResult.data, tutorialsResult.data);
   // Um catálogo é igual para todos os visitantes. A janela curta evita repetir
   // consultas em acessos consecutivos sem atrasar a publicação de alterações.
-  catalogCache = { expiresAt: Date.now() + 30_000, value };
+  catalogCache = { expiresAt: Date.now() + 300_000, value };
   return value;
 }
 

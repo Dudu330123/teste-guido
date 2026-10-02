@@ -15,18 +15,18 @@ export const guidoPositionLabels: Record<GuidoPositionPreference, string> = {
 
 export const guidoPositionImages: Record<GuidoPositionPreference, string> = {
   padrao: "/images/home/mascote-guido-dark.webp",
-  acenando: "/images/home/guido-poses/guido-acenando-transparent.png",
-  comemorando: "/images/home/guido-poses/guido-comemorando-transparent.png",
-  lendo: "/images/home/guido-poses/guido-lendo-transparent.png",
+  acenando: "/images/home/guido-poses/guido-acenando-transparent.webp",
+  comemorando: "/images/home/guido-poses/guido-comemorando-transparent.webp",
+  lendo: "/images/home/guido-poses/guido-lendo-transparent.webp",
 };
 
-export const guidoBicolorImage = "/images/home/mascote-guido-bicolor.png";
+export const guidoBicolorImage = "/images/home/mascote-guido-bicolor.webp";
 
 export const guidoBicolorPositionImages: Record<GuidoPositionPreference, string> = {
   padrao: guidoBicolorImage,
-  acenando: "/images/home/guido-poses/guido-acenando-bicolor.png",
-  comemorando: "/images/home/guido-poses/guido-comemorando-bicolor.png",
-  lendo: "/images/home/guido-poses/guido-lendo-bicolor.png",
+  acenando: "/images/home/guido-poses/guido-acenando-bicolor.webp",
+  comemorando: "/images/home/guido-poses/guido-comemorando-bicolor.webp",
+  lendo: "/images/home/guido-poses/guido-lendo-bicolor.webp",
 };
 
 export function isGuidoColorPreference(value: string | null | undefined): value is GuidoColorPreference {

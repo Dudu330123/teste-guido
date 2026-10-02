@@ -181,7 +181,7 @@ describe("controles da página inicial", () => {
 
     await user.click(screen.getByRole("button", { name: "Abrir configurações" }));
     await user.click(screen.getByRole("button", { name: /^Pedir um guia/ }));
-    expect(screen.getByRole("dialog", { name: "Pedir um guia" })).toBeVisible();
+    expect(await screen.findByRole("dialog", { name: "Pedir um guia" })).toBeVisible();
     expect(screen.getByRole("textbox", { name: "O que você quer aprender?" })).toBeVisible();
     expect(screen.getByRole("button", { name: /Criar guia/ })).toBeVisible();
     expect(screen.queryByText(/Continuar com Google/i)).not.toBeInTheDocument();

@@ -1,13 +1,15 @@
 "use client";
 
 import React, { useState } from "react";
+import dynamic from "next/dynamic";
 import { useDevice } from "@/features/device-picker/device-context";
 import { HomeToolbar } from "@/features/theme/home-toolbar";
 import { HomeSearch } from "@/features/search/home-search";
 import { HomeTvSearch } from "@/features/search/home-tv-search";
-import { GuidoVoiceModal } from "@/features/ai/guido-voice-modal";
-import { GuideRequestModal } from "@/features/ai/guide-request-modal";
 import type { Application, Task } from "@/types/content";
+
+const GuidoVoiceModal = dynamic(() => import("@/features/ai/guido-voice-modal").then((module) => module.GuidoVoiceModal));
+const GuideRequestModal = dynamic(() => import("@/features/ai/guide-request-modal").then((module) => module.GuideRequestModal));
 
 interface HomeDeviceViewProps {
   applications: Application[];

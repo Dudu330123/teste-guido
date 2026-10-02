@@ -1,6 +1,7 @@
 import { copyFile, mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import sharp from "sharp";
 
 const scriptDirectory = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(scriptDirectory, "..");
@@ -214,11 +215,16 @@ async function main() {
         }
         usedSteps.add(step);
 
-        const extension = path.extname(image.name).toLowerCase();
+        const extension = ".webp";
         const relativeTarget = path.join("images", "guide-screens", application.slug, task.slug, `step-${step}${extension}`);
         const absoluteTarget = path.join(projectRoot, "public", relativeTarget);
         await mkdir(path.dirname(absoluteTarget), { recursive: true });
-        await copyFile(path.join(sourceRoot, applicationDirectory.name, taskDirectory.name, image.name), absoluteTarget);
+        const sourceImage = path.join(sourceRoot, applicationDirectory.name, taskDirectory.name, image.name);
+        if (path.extname(image.name).toLowerCase() === ".webp") {
+          await copyFile(sourceImage, absoluteTarget);
+        } else {
+          await sharp(sourceImage).webp({ quality: 82, effort: 5 }).toFile(absoluteTarget);
+        }
         guideManifest[step] = `/${relativeTarget.replaceAll(path.sep, "/")}`;
         importedFiles += 1;
       }

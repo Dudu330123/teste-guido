@@ -10,7 +10,7 @@
   width: 100%;
   overflow-x: hidden;
   background-color: #01040c;
-  background-image: url("/images/home/cenario-home-dark.png");
+  background-image: url("/images/home/cenario-home-dark.webp");
   background-position: center right;
   background-size: cover;
   background-repeat: no-repeat;
@@ -19,7 +19,7 @@
 
 html[data-theme="light"] .guido-home {
   background-color: #eaf3fc;
-  background-image: url("/images/home/cenario-home.png");
+  background-image: url("/images/home/cenario-home.webp");
   color: #0c1e3a;
 }
 
@@ -2458,6 +2458,27 @@ html[data-contrast="high-contrast"] .home-session-actions a.secondary-action {
   background: #000000 !important;
   border: 2px solid #ffd600 !important;
   color: #ffd600 !important;
+}
+
+/* Desfoque sobre áreas grandes custa bastante GPU em celulares simples. As
+   superfícies continuam translúcidas, mas sem filtro quando o ponteiro é de
+   toque; isso preserva a leitura e reduz o trabalho de composição. */
+@media (max-width: 640px) and (hover: none) and (pointer: coarse) {
+  .home-theme-bottom-btn,
+  .home-settings-button,
+  .home-category-card,
+  .home-bank-modal-backdrop,
+  .home-settings-backdrop,
+  .guide-help-modal-backdrop {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .home-theme-bottom-btn,
+  .home-category-card,
+  .home-settings-button {
+    transition-property: transform, opacity, color, background-color, border-color, box-shadow;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

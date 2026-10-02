@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { createElement, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -36,9 +37,10 @@ import { ApplicationLogo } from "@/features/applications/application-logo";
 import type { Application, Task } from "@/types/content";
 import { OtherAppsModal } from "./other-apps-modal";
 import type { OtherApp } from "@/data/other-apps";
-import { GuidoVoiceModal } from "@/features/ai/guido-voice-modal";
-import { GuideRequestModal } from "@/features/ai/guide-request-modal";
 import { GuidoMascot } from "@/features/theme/guido-mascot";
+
+const GuidoVoiceModal = dynamic(() => import("@/features/ai/guido-voice-modal").then((module) => module.GuidoVoiceModal));
+const GuideRequestModal = dynamic(() => import("@/features/ai/guide-request-modal").then((module) => module.GuideRequestModal));
 
 interface HomeSearchProps {
   applications: Application[];

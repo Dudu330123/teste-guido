@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -266,7 +265,6 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
   const [completed, setCompleted] = useState(false);
   const [preparing, setPreparing] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
-  const [canPreload, setCanPreload] = useState(false);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const stepTitleRef = useRef<HTMLHeadingElement>(null);
@@ -297,9 +295,23 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
   }, []);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => setCanPreload(true), 600);
-    return () => window.clearTimeout(timer);
-  }, []);
+    const nextImagePath = steps[currentStep + 1]?.imagePath;
+    if (!nextImagePath || (
+      !nextImagePath.startsWith("https://")
+      && !nextImagePath.startsWith("/api/storage")
+      && !nextImagePath.startsWith("/images/")
+    )) return;
+
+    // Antecipamos somente a próxima tela e em baixa prioridade. O restante do
+    // guia continua sob demanda para não transferir vários MB no celular.
+    const preloader = new window.Image();
+    preloader.decoding = "async";
+    preloader.fetchPriority = "low";
+    preloader.src = nextImagePath;
+    return () => {
+      preloader.src = "";
+    };
+  }, [currentStep, steps]);
 
   useEffect(() => {
     if (task.slug !== "enviar-audio-whatsapp") return;
@@ -711,28 +723,6 @@ export function GuideViewer({ application, guide, steps, task, returnTo }: Guide
           </section>}
         </div>
       </div>
-      {/* Pré-carregamento em segundo plano das imagens dos passos para navegação instantânea */}
-      {canPreload && (
-        <div className="sr-only" aria-hidden="true" style={{ display: "none" }}>
-          {steps.map((guideStep, idx) => {
-            if (idx === currentStep) return null;
-            if (!guideStep.imagePath || (!guideStep.imagePath.startsWith("https://") && !guideStep.imagePath.startsWith("/api/storage") && !guideStep.imagePath.startsWith("/images/"))) {
-              return null;
-            }
-            return (
-              <div key={`preload-${guideStep.id}`} style={{ position: "relative", width: 496, height: 1000 }}>
-                <Image
-                  src={guideStep.imagePath}
-                  alt=""
-                  fill
-                  sizes="(max-width: 1024px) 92vw, 31rem"
-                  priority
-                />
-              </div>
-            );
-          })}
-        </div>
-      )}
       {helpOpen && (
         <GuideHelpModal
           activeStep={activeStep}

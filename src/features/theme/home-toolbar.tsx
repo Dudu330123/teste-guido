@@ -2,13 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { createPortal } from "react-dom";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Accessibility, ArrowLeft, BookOpen, Brush, CircleHelp, Contrast, Mic, Move, Palette, Settings, Sparkles, X } from "lucide-react";
 import { SessionNavigation } from "@/features/auth/session-navigation";
 import { useAccessibility } from "@/features/accessibility/accessibility-context";
-import { GuidoVoiceModal } from "@/features/ai/guido-voice-modal";
-import { GuideRequestModal } from "@/features/ai/guide-request-modal";
 import {
   applyGuidoPositionPreference,
   guidoBicolorImage,
@@ -20,6 +19,9 @@ import {
   type GuidoColorPreference,
   type GuidoPositionPreference,
 } from "./guido-preferences";
+
+const GuidoVoiceModal = dynamic(() => import("@/features/ai/guido-voice-modal").then((module) => module.GuidoVoiceModal));
+const GuideRequestModal = dynamic(() => import("@/features/ai/guide-request-modal").then((module) => module.GuideRequestModal));
 
 type ThemePreference = "light" | "dark" | "system";
 type GuideAccentPreference = "blue" | "purple" | "green" | "orange" | "yellow" | "red" | "cyan" | "gold" | "turquoise";
